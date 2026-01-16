@@ -74,6 +74,9 @@ export const useTeamContext = create<TeamContextState>((set, get) => ({
             org_id,
             name,
             slug,
+            join_code,
+            join_link_enabled,
+            default_role_id,
             created_at,
             updated_at,
             organization:organizations!inner (
@@ -116,6 +119,9 @@ export const useTeamContext = create<TeamContextState>((set, get) => ({
         org_id: string
         name: string
         slug: string
+        join_code: string
+        join_link_enabled: boolean
+        default_role_id: string | null
         created_at: string
         updated_at: string
         organization: {
@@ -164,7 +170,9 @@ export const useTeamContext = create<TeamContextState>((set, get) => ({
           org_id: team.org_id,
           name: team.name,
           slug: team.slug,
-          join_code: '', // Not fetched in this query, will be empty
+          join_code: team.join_code,
+          join_link_enabled: team.join_link_enabled,
+          default_role_id: team.default_role_id,
           created_at: team.created_at,
           updated_at: team.updated_at,
         },

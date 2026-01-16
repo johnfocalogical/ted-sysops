@@ -4,6 +4,8 @@ import { Home } from '@/pages/Home'
 import { Login } from '@/pages/Login'
 import { Signup } from '@/pages/Signup'
 import { ForgotPassword } from '@/pages/ForgotPassword'
+import { AcceptInvitePage } from '@/pages/AcceptInvitePage'
+import { JoinTeamPage } from '@/pages/JoinTeamPage'
 import { ThemeTest } from '@/pages/ThemeTest'
 import { ProtectedRoute } from '@/components/shared/ProtectedRoute'
 import { TeamAccessGuard } from '@/components/shared/TeamAccessGuard'
@@ -31,6 +33,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/invite/:invitationId" element={<AcceptInvitePage />} />
+        <Route path="/join/:joinCode" element={<JoinTeamPage />} />
         <Route path="/theme-test" element={<ThemeTest />} />
 
         {/* Legacy route redirects - these redirect to team-scoped URLs */}

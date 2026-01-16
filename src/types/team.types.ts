@@ -7,6 +7,8 @@ export interface Team {
   name: string
   slug: string
   join_code: string
+  join_link_enabled: boolean
+  default_role_id: string | null
   created_at: string
   updated_at: string
 }
