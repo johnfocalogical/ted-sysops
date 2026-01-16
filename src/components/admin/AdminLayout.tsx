@@ -1,24 +1,20 @@
 import { Outlet } from 'react-router-dom'
-import { Sidebar } from './Sidebar'
-import { Header } from './Header'
-import { ImpersonationBanner } from '@/components/shared/ImpersonationBanner'
+import { AdminSidebar } from './AdminSidebar'
+import { AdminHeader } from './AdminHeader'
 import { useNavigation } from '@/hooks/useNavigation'
 
-export function AppLayout() {
+export function AdminLayout() {
   const { mobileOpen, closeMobileMenu } = useNavigation()
 
   return (
     <div className="flex h-screen bg-background">
-      {/* Sidebar */}
-      <Sidebar />
+      {/* Admin Sidebar */}
+      <AdminSidebar />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Impersonation Banner (shown when admin is viewing team) */}
-        <ImpersonationBanner />
-
-        {/* Header */}
-        <Header />
+        {/* Admin Header */}
+        <AdminHeader />
 
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto p-6">

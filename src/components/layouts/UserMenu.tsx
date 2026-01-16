@@ -1,5 +1,6 @@
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { User, Settings, LogOut, ChevronDown } from 'lucide-react'
+import { User, Settings, LogOut, ChevronDown, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -10,10 +11,33 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useAuth } from '@/hooks/useAuth'
+import { supabase } from '@/lib/supabase'
 
 export function UserMenu() {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
+  const [isSuperadmin, setIsSuperadmin] = useState(false)
+
+  // Check superadmin status
+  useEffect(() => {
+    const checkSuperadmin = async () => {
+      if (!user || !supabase) return
+
+      try {
+        const { data } = await supabase
+          .from('users')
+          .select('is_superadmin')
+          .eq('id', user.id)
+          .single()
+
+        setIsSuperadmin(data?.is_superadmin || false)
+      } catch {
+        setIsSuperadmin(false)
+      }
+    }
+
+    checkSuperadmin()
+  }, [user])
 
   const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'
   const userEmail = user?.email || ''
@@ -60,6 +84,15 @@ export function UserMenu() {
           <Settings className="mr-2 h-4 w-4" />
           Settings
         </DropdownMenuItem>
+        {isSuperadmin && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => navigate('/admin')}>
+              <ShieldCheck className="mr-2 h-4 w-4 text-purple-500" />
+              Admin Panel
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
           <LogOut className="mr-2 h-4 w-4" />

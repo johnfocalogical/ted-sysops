@@ -9,10 +9,22 @@ import { JoinTeamPage } from '@/pages/JoinTeamPage'
 import { AccessDeniedPage } from '@/pages/AccessDeniedPage'
 import { ThemeTest } from '@/pages/ThemeTest'
 import { ProtectedRoute } from '@/components/shared/ProtectedRoute'
+import { SuperadminGuard } from '@/components/shared/SuperadminGuard'
 import { TeamAccessGuard } from '@/components/shared/TeamAccessGuard'
 import { SectionAccessGuard } from '@/components/shared/SectionAccessGuard'
 import { TeamRedirect } from '@/components/shared/TeamRedirect'
 import { AppLayout } from '@/components/layouts/AppLayout'
+import { AdminLayout } from '@/components/admin/AdminLayout'
+
+// Admin pages
+import { AdminDashboard } from '@/pages/admin/AdminDashboard'
+import { AdminUsers } from '@/pages/admin/AdminUsers'
+import { AdminUserDetails } from '@/pages/admin/AdminUserDetails'
+import { AdminOrganizations } from '@/pages/admin/AdminOrganizations'
+import { AdminOrgDetails } from '@/pages/admin/AdminOrgDetails'
+import { AdminTeams } from '@/pages/admin/AdminTeams'
+import { AdminTeamDetails } from '@/pages/admin/AdminTeamDetails'
+import { AdminRoleTemplates } from '@/pages/admin/AdminRoleTemplates'
 
 // App pages
 import { MyDashboard } from '@/pages/MyDashboard'
@@ -50,6 +62,25 @@ function App() {
         <Route path="/calendar" element={<ProtectedRoute><TeamRedirect /></ProtectedRoute>} />
         <Route path="/reports" element={<ProtectedRoute><TeamRedirect /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><TeamRedirect /></ProtectedRoute>} />
+
+        {/* Admin routes (superadmin only) */}
+        <Route
+          path="/admin"
+          element={
+            <SuperadminGuard>
+              <AdminLayout />
+            </SuperadminGuard>
+          }
+        >
+          <Route index element={<AdminDashboard />} />
+          <Route path="organizations" element={<AdminOrganizations />} />
+          <Route path="organizations/:orgId" element={<AdminOrgDetails />} />
+          <Route path="teams" element={<AdminTeams />} />
+          <Route path="teams/:teamId" element={<AdminTeamDetails />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="users/:userId" element={<AdminUserDetails />} />
+          <Route path="role-templates" element={<AdminRoleTemplates />} />
+        </Route>
 
         {/* Team-scoped app routes */}
         <Route
