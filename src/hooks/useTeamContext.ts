@@ -21,6 +21,7 @@ interface TeamContextState {
   // Computed helpers
   isAdmin: () => boolean
   isMember: () => boolean
+  isOrgOwner: () => boolean
   canAccess: (section: SectionKey) => boolean
   hasFullAccess: (section: SectionKey) => boolean
   getPermissionLevel: () => PermissionLevel | null
@@ -264,6 +265,13 @@ export const useTeamContext = create<TeamContextState>((set, get) => ({
     const { context } = get()
     return context?.membership.permission_level === 'admin' ||
            context?.membership.permission_level === 'member'
+  },
+
+  // Helper: Check if current user is the organization owner
+  isOrgOwner: () => {
+    const { context } = get()
+    if (!context) return false
+    return context.organization.owner_id === context.user.id
   },
 
   // Helper: Check if user can access a section (has any permission)

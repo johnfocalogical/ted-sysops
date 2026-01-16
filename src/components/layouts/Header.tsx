@@ -1,14 +1,13 @@
 import { useLocation } from 'react-router-dom'
-import { Menu, Bell, Building2, Users } from 'lucide-react'
+import { Menu, Bell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/shared/ThemeToggle'
 import { UserMenu } from './UserMenu'
+import { TeamSwitcher } from './TeamSwitcher'
 import { useNavigation, NAV_ITEMS } from '@/hooks/useNavigation'
-import { useTeamContext } from '@/hooks/useTeamContext'
 
 export function Header() {
   const { toggleMobileMenu } = useNavigation()
-  const { context } = useTeamContext()
   const location = useLocation()
 
   // Derive page title from current route
@@ -25,8 +24,8 @@ export function Header() {
 
   return (
     <header className="h-16 bg-card border-b border-border flex items-center justify-between px-4 lg:px-6">
-      {/* Left: Mobile Menu Toggle + Team Context + Page Title */}
-      <div className="flex items-center gap-4">
+      {/* Left: Mobile Menu Toggle + Team Switcher + Page Title */}
+      <div className="flex items-center gap-2 sm:gap-4">
         {/* Mobile Menu Button */}
         <Button
           variant="ghost"
@@ -37,26 +36,12 @@ export function Header() {
           <Menu className="h-6 w-6" />
         </Button>
 
-        {/* Team Context Badge */}
-        {context && (
-          <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Building2 className="h-4 w-4" />
-              <span className="max-w-[120px] truncate">{context.organization.name}</span>
-            </div>
-            <span>/</span>
-            <div className="flex items-center gap-1">
-              <Users className="h-4 w-4" />
-              <span className="max-w-[120px] truncate font-medium text-foreground">
-                {context.team.name}
-              </span>
-            </div>
-          </div>
-        )}
+        {/* Team Switcher Dropdown */}
+        <TeamSwitcher />
 
         {/* Page Title */}
         <div className="hidden sm:block w-px h-6 bg-border" />
-        <h1 className="text-lg font-semibold">{getPageTitle()}</h1>
+        <h1 className="hidden sm:block text-lg font-semibold">{getPageTitle()}</h1>
       </div>
 
       {/* Right: Actions + User Menu */}
