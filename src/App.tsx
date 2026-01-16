@@ -6,9 +6,11 @@ import { Signup } from '@/pages/Signup'
 import { ForgotPassword } from '@/pages/ForgotPassword'
 import { AcceptInvitePage } from '@/pages/AcceptInvitePage'
 import { JoinTeamPage } from '@/pages/JoinTeamPage'
+import { AccessDeniedPage } from '@/pages/AccessDeniedPage'
 import { ThemeTest } from '@/pages/ThemeTest'
 import { ProtectedRoute } from '@/components/shared/ProtectedRoute'
 import { TeamAccessGuard } from '@/components/shared/TeamAccessGuard'
+import { SectionAccessGuard } from '@/components/shared/SectionAccessGuard'
 import { TeamRedirect } from '@/components/shared/TeamRedirect'
 import { AppLayout } from '@/components/layouts/AppLayout'
 
@@ -61,16 +63,57 @@ function App() {
           }
         >
           <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<MyDashboard />} />
-          <Route path="pay-time" element={<PayTime />} />
-          <Route path="team" element={<TeamDashboard />} />
-          <Route path="whiteboard" element={<Whiteboard />} />
-          <Route path="contacts" element={<ContactHub />} />
-          <Route path="employees" element={<Employees />} />
-          <Route path="transactions" element={<Transactions />} />
-          <Route path="calendar" element={<CalendarPage />} />
-          <Route path="reports" element={<Reports />} />
-          <Route path="settings" element={<SettingsPage />} />
+          <Route path="dashboard" element={
+            <SectionAccessGuard section="dashboard">
+              <MyDashboard />
+            </SectionAccessGuard>
+          } />
+          <Route path="pay-time" element={
+            <SectionAccessGuard section="pay_time">
+              <PayTime />
+            </SectionAccessGuard>
+          } />
+          <Route path="team" element={
+            <SectionAccessGuard section="team">
+              <TeamDashboard />
+            </SectionAccessGuard>
+          } />
+          <Route path="whiteboard" element={
+            <SectionAccessGuard section="whiteboard">
+              <Whiteboard />
+            </SectionAccessGuard>
+          } />
+          <Route path="contacts" element={
+            <SectionAccessGuard section="contacts">
+              <ContactHub />
+            </SectionAccessGuard>
+          } />
+          <Route path="employees" element={
+            <SectionAccessGuard section="employees">
+              <Employees />
+            </SectionAccessGuard>
+          } />
+          <Route path="transactions" element={
+            <SectionAccessGuard section="transactions">
+              <Transactions />
+            </SectionAccessGuard>
+          } />
+          <Route path="calendar" element={
+            <SectionAccessGuard section="calendar">
+              <CalendarPage />
+            </SectionAccessGuard>
+          } />
+          <Route path="reports" element={
+            <SectionAccessGuard section="reports">
+              <Reports />
+            </SectionAccessGuard>
+          } />
+          <Route path="settings" element={
+            <SectionAccessGuard section="settings">
+              <SettingsPage />
+            </SectionAccessGuard>
+          } />
+          <Route path="access-denied" element={<AccessDeniedPage />} />
         </Route>
       </Routes>
       <Toaster />

@@ -2,8 +2,12 @@ import { User, TextCursor, Megaphone, ListChecks, Workflow, Plug } from 'lucide-
 import { Card, CardContent } from '@/components/ui/card'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { TeamMembersSection } from '@/components/settings/TeamMembersSection'
+import { RoleSettingsSection } from '@/components/settings/RoleSettingsSection'
+import { ViewOnlyBanner } from '@/components/shared/ViewOnlyBanner'
+import { usePermissions } from '@/hooks/usePermissions'
 
 export function SettingsPage() {
+  const { isViewOnly } = usePermissions('settings')
   const settingCategories = [
     {
       title: 'Profile',
@@ -44,8 +48,13 @@ export function SettingsPage() {
         subtitle="Configure your workspace"
       />
 
+      {isViewOnly && <ViewOnlyBanner className="mb-4" />}
+
       {/* Team Members Section */}
       <TeamMembersSection />
+
+      {/* Team Roles Section (Admin Only) */}
+      <RoleSettingsSection />
 
       {/* Other Settings (Coming Soon) */}
       <div>

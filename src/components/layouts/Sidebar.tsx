@@ -25,12 +25,15 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 
 export function Sidebar() {
   const { collapsed, mobileOpen, toggleCollapsed, closeMobileMenu } = useNavigation()
-  const { context } = useTeamContext()
+  const { context, canAccess } = useTeamContext()
 
   // Build the base path for team-scoped URLs
   const basePath = context
     ? `/org/${context.organization.id}/team/${context.team.id}`
     : ''
+
+  // Filter nav items based on user's section permissions
+  const accessibleItems = NAV_ITEMS.filter(item => canAccess(item.section))
 
   const handleNavClick = () => {
     // Close mobile menu when nav item clicked
@@ -73,7 +76,7 @@ export function Sidebar() {
       {/* Navigation Menu */}
       <nav className="flex-1 py-4 overflow-y-auto">
         <ul className="space-y-1 px-3">
-          {NAV_ITEMS.map((item) => {
+          {accessibleItems.map((item) => {
             const Icon = iconMap[item.icon] || LayoutDashboard
             const fullRoute = `${basePath}/${item.route}`
             return (
