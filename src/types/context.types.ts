@@ -10,8 +10,8 @@ export interface TeamContext {
   team: Team
   user: User
   membership: TeamMember
-  role: TeamRole | null
-  permissions: RolePermissions
+  roles: TeamRole[]  // Multiple roles supported
+  permissions: RolePermissions  // Merged from all roles
 }
 
 // Simplified team reference for navigation/switcher

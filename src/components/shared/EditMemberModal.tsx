@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -33,7 +34,7 @@ import type { PermissionLevel } from '@/types/team-member.types'
 
 const editSchema = z.object({
   permissionLevel: z.enum(['admin', 'member', 'viewer']),
-  roleId: z.string().optional(),
+  roleIds: z.array(z.string()).optional(),
 })
 
 type EditFormData = z.infer<typeof editSchema>
@@ -47,7 +48,7 @@ interface TeamRole {
 interface MemberToEdit {
   id: string
   permission_level: PermissionLevel
-  role_id: string | null
+  role_ids: string[]  // Changed from role_id
   user: {
     full_name: string | null
     email: string
@@ -75,7 +76,7 @@ export function EditMemberModal({
     resolver: zodResolver(editSchema),
     defaultValues: {
       permissionLevel: 'member',
-      roleId: 'none',
+      roleIds: [],
     },
   })
 
@@ -99,7 +100,7 @@ export function EditMemberModal({
       loadRoles()
       form.reset({
         permissionLevel: member.permission_level,
-        roleId: member.role_id || 'none',
+        roleIds: member.role_ids || [],
       })
     }
   }, [open, member, context])
@@ -127,17 +128,44 @@ export function EditMemberModal({
         }
       }
 
-      // Update the member
+      // Update the member's permission level
       const { error: updateError } = await supabase
         .from('team_members')
         .update({
           permission_level: data.permissionLevel as PermissionLevel,
-          role_id: data.roleId === 'none' ? null : (data.roleId || null),
         })
         .eq('id', member.id)
 
       if (updateError) {
         throw new Error(updateError.message)
+      }
+
+      // Update role assignments: delete old, insert new
+      // First, delete existing role assignments
+      const { error: deleteError } = await supabase
+        .from('team_member_roles')
+        .delete()
+        .eq('team_member_id', member.id)
+
+      if (deleteError) {
+        console.error('Error deleting old roles:', deleteError)
+      }
+
+      // Insert new role assignments
+      const selectedRoleIds = data.roleIds || []
+      if (selectedRoleIds.length > 0) {
+        const roleAssignments = selectedRoleIds.map((roleId) => ({
+          team_member_id: member.id,
+          role_id: roleId,
+        }))
+
+        const { error: insertError } = await supabase
+          .from('team_member_roles')
+          .insert(roleAssignments)
+
+        if (insertError) {
+          console.error('Error assigning new roles:', insertError)
+        }
       }
 
       // Success
@@ -154,7 +182,18 @@ export function EditMemberModal({
     onClose()
   }
 
+  // Toggle a role in the selection
+  const toggleRole = (roleId: string) => {
+    const current = form.getValues('roleIds') || []
+    if (current.includes(roleId)) {
+      form.setValue('roleIds', current.filter((id) => id !== roleId))
+    } else {
+      form.setValue('roleIds', [...current, roleId])
+    }
+  }
+
   const memberName = member?.user.full_name || member?.user.email.split('@')[0] || 'Member'
+  const selectedRoleIds = form.watch('roleIds') || []
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
@@ -162,7 +201,7 @@ export function EditMemberModal({
         <DialogHeader>
           <DialogTitle>Edit Team Member</DialogTitle>
           <DialogDescription>
-            Update role and permissions for{' '}
+            Update roles and permissions for{' '}
             <span className="font-medium text-foreground">{memberName}</span>
           </DialogDescription>
         </DialogHeader>
@@ -203,28 +242,36 @@ export function EditMemberModal({
 
             <FormField
               control={form.control}
-              name="roleId"
-              render={({ field }) => (
+              name="roleIds"
+              render={() => (
                 <FormItem>
-                  <FormLabel>Role</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a role" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="none">No specific role</SelectItem>
-                      {roles.map((role) => (
-                        <SelectItem key={role.id} value={role.id}>
-                          {role.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>Roles</FormLabel>
+                  <div className="border rounded-md p-3 space-y-2 max-h-40 overflow-y-auto">
+                    {roles.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No roles defined for this team</p>
+                    ) : (
+                      roles.map((role) => (
+                        <div key={role.id} className="flex items-start gap-2">
+                          <Checkbox
+                            id={`edit-role-${role.id}`}
+                            checked={selectedRoleIds.includes(role.id)}
+                            onCheckedChange={() => toggleRole(role.id)}
+                          />
+                          <div className="grid gap-0.5 leading-none">
+                            <label
+                              htmlFor={`edit-role-${role.id}`}
+                              className="text-sm font-medium cursor-pointer"
+                            >
+                              {role.name}
+                            </label>
+                            {role.description && (
+                              <p className="text-xs text-muted-foreground">{role.description}</p>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}

@@ -22,11 +22,15 @@ import { useAuth } from '@/hooks/useAuth'
 import type { PermissionLevel } from '@/types/team-member.types'
 import { cn } from '@/lib/utils'
 
+interface RoleInfo {
+  id: string
+  name: string
+}
+
 interface MemberWithDetails {
   id: string
   team_id: string
   user_id: string
-  role_id: string | null
   permission_level: PermissionLevel
   created_at: string
   user: {
@@ -35,10 +39,8 @@ interface MemberWithDetails {
     full_name: string | null
     avatar_url: string | null
   }
-  role: {
-    id: string
-    name: string
-  } | null
+  roles: RoleInfo[]  // Changed from single role to array
+  role_ids: string[]  // For passing to edit modal
 }
 
 interface MemberListProps {
@@ -52,6 +54,8 @@ const permissionBadgeStyles: Record<PermissionLevel, string> = {
   member: 'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800',
   viewer: 'bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700',
 }
+
+const roleBadgeStyle = 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800'
 
 export function MemberList({ onEdit, onRemove, refreshTrigger }: MemberListProps) {
   const { context, isAdmin } = useTeamContext()
@@ -70,7 +74,6 @@ export function MemberList({ onEdit, onRemove, refreshTrigger }: MemberListProps
           id,
           team_id,
           user_id,
-          role_id,
           permission_level,
           created_at,
           user:users!inner (
@@ -79,9 +82,11 @@ export function MemberList({ onEdit, onRemove, refreshTrigger }: MemberListProps
             full_name,
             avatar_url
           ),
-          role:team_roles (
-            id,
-            name
+          member_roles:team_member_roles (
+            role:team_roles (
+              id,
+              name
+            )
           )
         `)
         .eq('team_id', context.team.id)
@@ -92,7 +97,29 @@ export function MemberList({ onEdit, onRemove, refreshTrigger }: MemberListProps
         return
       }
 
-      setMembers(data as unknown as MemberWithDetails[])
+      // Transform the data to extract roles
+      const transformedMembers: MemberWithDetails[] = (data || []).map((member) => {
+        const memberRoles = member.member_roles as unknown as Array<{
+          role: RoleInfo | null
+        }> | null
+
+        const roles: RoleInfo[] = (memberRoles || [])
+          .map((mr) => mr.role)
+          .filter((r): r is RoleInfo => r !== null)
+
+        return {
+          id: member.id,
+          team_id: member.team_id,
+          user_id: member.user_id,
+          permission_level: member.permission_level as PermissionLevel,
+          created_at: member.created_at,
+          user: member.user as unknown as MemberWithDetails['user'],
+          roles,
+          role_ids: roles.map((r) => r.id),
+        }
+      })
+
+      setMembers(transformedMembers)
     } catch (err) {
       console.error('Error loading members:', err)
     } finally {
@@ -149,7 +176,7 @@ export function MemberList({ onEdit, onRemove, refreshTrigger }: MemberListProps
       <TableHeader>
         <TableRow>
           <TableHead>User</TableHead>
-          <TableHead>Role</TableHead>
+          <TableHead>Roles</TableHead>
           <TableHead>Permission</TableHead>
           <TableHead>Joined</TableHead>
           {isAdmin() && <TableHead className="w-[70px]">Actions</TableHead>}
@@ -184,8 +211,20 @@ export function MemberList({ onEdit, onRemove, refreshTrigger }: MemberListProps
               </div>
             </TableCell>
             <TableCell>
-              {member.role?.name || (
-                <span className="text-muted-foreground">No role</span>
+              {member.roles.length > 0 ? (
+                <div className="flex flex-wrap gap-1">
+                  {member.roles.map((role) => (
+                    <Badge
+                      key={role.id}
+                      variant="outline"
+                      className={cn('text-xs', roleBadgeStyle)}
+                    >
+                      {role.name}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-muted-foreground text-sm">No roles</span>
               )}
             </TableCell>
             <TableCell>

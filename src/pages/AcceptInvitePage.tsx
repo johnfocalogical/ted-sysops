@@ -13,11 +13,17 @@ import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 
 // Types for invitation data
+interface RoleInfo {
+  id: string
+  name: string
+}
+
 interface InvitationWithDetails {
   id: string
   email: string
   permission_level: 'admin' | 'member' | 'viewer'
-  role_id: string | null
+  role_ids: string[]  // Changed from single role_id to array
+  roles: RoleInfo[]   // Role details for display
   status: 'pending' | 'accepted' | 'expired' | 'revoked'
   expires_at: string
   team: {
@@ -80,12 +86,18 @@ export function AcceptInvitePage() {
         const { data, error } = await supabase
           .from('team_invitations')
           .select(`
-            id, email, permission_level, role_id, status, expires_at,
+            id, email, permission_level, status, expires_at,
             team:teams!inner (
               id, name, slug, org_id,
               organization:organizations!inner (id, name)
             ),
-            inviter:users!invited_by (id, full_name)
+            inviter:users!invited_by (id, full_name),
+            invitation_roles:team_invitation_roles (
+              role:team_roles (
+                id,
+                name
+              )
+            )
           `)
           .eq('id', invitationId)
           .single()
@@ -95,8 +107,26 @@ export function AcceptInvitePage() {
           return
         }
 
-        // Transform nested data
-        const invitationData = data as unknown as InvitationWithDetails
+        // Transform nested data, extracting roles from junction table
+        const invitationRoles = data.invitation_roles as unknown as Array<{
+          role: RoleInfo | null
+        }> | null
+
+        const roles: RoleInfo[] = (invitationRoles || [])
+          .map((ir) => ir.role)
+          .filter((r): r is RoleInfo => r !== null)
+
+        const invitationData: InvitationWithDetails = {
+          id: data.id,
+          email: data.email,
+          permission_level: data.permission_level as 'admin' | 'member' | 'viewer',
+          role_ids: roles.map((r) => r.id),
+          roles,
+          status: data.status as 'pending' | 'accepted' | 'expired' | 'revoked',
+          expires_at: data.expires_at,
+          team: data.team as unknown as InvitationWithDetails['team'],
+          inviter: data.inviter as unknown as InvitationWithDetails['inviter'],
+        }
         setInvitation(invitationData)
 
         // Check status
@@ -182,19 +212,37 @@ export function AcceptInvitePage() {
         throw new Error('Failed to accept invitation')
       }
 
-      // 2. Add to team_members
-      const { error: teamError } = await supabase
+      // 2. Add to team_members (without role_id - using junction table)
+      const { data: newMember, error: teamError } = await supabase
         .from('team_members')
         .insert({
           team_id: invitation.team.id,
           user_id: userId,
           permission_level: invitation.permission_level,
-          role_id: invitation.role_id
         })
+        .select('id')
+        .single()
 
-      if (teamError) {
+      if (teamError || !newMember) {
         console.error('Failed to add to team:', teamError)
         throw new Error('Failed to join team')
+      }
+
+      // 3. Assign roles from invitation to new team member
+      if (invitation.role_ids.length > 0) {
+        const roleAssignments = invitation.role_ids.map((roleId) => ({
+          team_member_id: newMember.id,
+          role_id: roleId,
+        }))
+
+        const { error: rolesError } = await supabase
+          .from('team_member_roles')
+          .insert(roleAssignments)
+
+        if (rolesError) {
+          console.error('Failed to assign roles:', rolesError)
+          // Don't throw - member was created, roles are optional
+        }
       }
 
       return true

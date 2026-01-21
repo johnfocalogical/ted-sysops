@@ -6,6 +6,7 @@ import { Loader2, Copy, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -37,7 +38,7 @@ import type { PermissionLevel } from '@/types/team-member.types'
 const inviteSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   permissionLevel: z.enum(['admin', 'member', 'viewer']),
-  roleId: z.string().optional(),
+  roleIds: z.array(z.string()).optional(),
 })
 
 type InviteFormData = z.infer<typeof inviteSchema>
@@ -76,7 +77,7 @@ export function InviteMemberModal({
     defaultValues: {
       email: '',
       permissionLevel: 'member',
-      roleId: 'none',
+      roleIds: [],
     },
   })
 
@@ -96,7 +97,7 @@ export function InviteMemberModal({
         // Set default role if there is one
         const defaultRole = data.find((r) => r.is_default)
         if (defaultRole) {
-          form.setValue('roleId', defaultRole.id)
+          form.setValue('roleIds', [defaultRole.id])
         }
       }
     }
@@ -129,14 +130,13 @@ export function InviteMemberModal({
         return
       }
 
-      // Create the invitation and get its ID
+      // Create the invitation (without role_id - using junction table)
       const { data: newInvitation, error: inviteError } = await supabase
         .from('team_invitations')
         .insert({
           team_id: context.team.id,
           email: data.email.toLowerCase(),
           permission_level: data.permissionLevel as PermissionLevel,
-          role_id: data.roleId === 'none' ? null : (data.roleId || null),
           invited_by: user.id,
           status: 'pending',
         })
@@ -145,6 +145,24 @@ export function InviteMemberModal({
 
       if (inviteError) {
         throw new Error(inviteError.message)
+      }
+
+      // Insert role assignments to junction table
+      const selectedRoleIds = data.roleIds || []
+      if (selectedRoleIds.length > 0) {
+        const roleAssignments = selectedRoleIds.map((roleId) => ({
+          invitation_id: newInvitation.id,
+          role_id: roleId,
+        }))
+
+        const { error: rolesError } = await supabase
+          .from('team_invitation_roles')
+          .insert(roleAssignments)
+
+        if (rolesError) {
+          console.error('Error assigning roles to invitation:', rolesError)
+          // Don't throw - invitation was created, roles are optional
+        }
       }
 
       // Success - show the invite link
@@ -172,6 +190,16 @@ export function InviteMemberModal({
     setCreatedInvitationId(null)
     setCopied(false)
     onClose()
+  }
+
+  // Toggle a role in the selection
+  const toggleRole = (roleId: string) => {
+    const current = form.getValues('roleIds') || []
+    if (current.includes(roleId)) {
+      form.setValue('roleIds', current.filter((id) => id !== roleId))
+    } else {
+      form.setValue('roleIds', [...current, roleId])
+    }
   }
 
   // Success state - show copyable link
@@ -224,6 +252,8 @@ export function InviteMemberModal({
       </Dialog>
     )
   }
+
+  const selectedRoleIds = form.watch('roleIds') || []
 
   // Form state
   return (
@@ -291,28 +321,39 @@ export function InviteMemberModal({
 
             <FormField
               control={form.control}
-              name="roleId"
-              render={({ field }) => (
+              name="roleIds"
+              render={() => (
                 <FormItem>
-                  <FormLabel>Role (Optional)</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a role" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="none">No specific role</SelectItem>
-                      {roles.map((role) => (
-                        <SelectItem key={role.id} value={role.id}>
-                          {role.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>Roles (Optional)</FormLabel>
+                  <div className="border rounded-md p-3 space-y-2 max-h-40 overflow-y-auto">
+                    {roles.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No roles defined for this team</p>
+                    ) : (
+                      roles.map((role) => (
+                        <div key={role.id} className="flex items-start gap-2">
+                          <Checkbox
+                            id={`role-${role.id}`}
+                            checked={selectedRoleIds.includes(role.id)}
+                            onCheckedChange={() => toggleRole(role.id)}
+                          />
+                          <div className="grid gap-0.5 leading-none">
+                            <label
+                              htmlFor={`role-${role.id}`}
+                              className="text-sm font-medium cursor-pointer"
+                            >
+                              {role.name}
+                              {role.is_default && (
+                                <span className="ml-2 text-xs text-muted-foreground">(Default)</span>
+                              )}
+                            </label>
+                            {role.description && (
+                              <p className="text-xs text-muted-foreground">{role.description}</p>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}

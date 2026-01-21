@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { supabase } from '@/lib/supabase'
 import type { TeamContext, TeamSwitcherItem } from '@/types'
-import type { SectionKey, RolePermissions } from '@/types/role.types'
+import type { SectionKey, RolePermissions, TeamRole } from '@/types/role.types'
 import type { PermissionLevel } from '@/types/team-member.types'
 
 interface TeamContextState {
@@ -27,8 +27,34 @@ interface TeamContextState {
   getPermissionLevel: () => PermissionLevel | null
 }
 
-// Default empty permissions
-const DEFAULT_PERMISSIONS: RolePermissions = {}
+/**
+ * Merge permissions from multiple roles.
+ * Uses union logic: if any role grants access to a section, user has access.
+ * Most permissive wins: 'full' trumps 'view'.
+ */
+function mergeRolePermissions(roles: TeamRole[]): RolePermissions {
+  const merged: RolePermissions = {}
+
+  for (const role of roles) {
+    if (!role.permissions) continue
+
+    for (const [sectionKey, permission] of Object.entries(role.permissions)) {
+      const section = sectionKey as SectionKey
+      const existing = merged[section]
+
+      if (!existing) {
+        // First permission for this section
+        merged[section] = permission
+      } else if (permission.access === 'full' && existing.access !== 'full') {
+        // Upgrade to full access
+        merged[section] = permission
+      }
+      // else keep existing (already full or same level)
+    }
+  }
+
+  return merged
+}
 
 export const useTeamContext = create<TeamContextState>((set, get) => ({
   // Initial state
@@ -48,26 +74,28 @@ export const useTeamContext = create<TeamContextState>((set, get) => ({
 
     try {
       // Query team membership with all related data
+      // Roles are now fetched from the junction table
       const { data, error } = await supabase
         .from('team_members')
         .select(`
           id,
           team_id,
           user_id,
-          role_id,
           permission_level,
           created_at,
           updated_at,
-          role:team_roles (
-            id,
-            team_id,
-            name,
-            description,
-            permissions,
-            is_default,
-            template_id,
-            created_at,
-            updated_at
+          member_roles:team_member_roles (
+            role:team_roles (
+              id,
+              team_id,
+              name,
+              description,
+              permissions,
+              is_default,
+              template_id,
+              created_at,
+              updated_at
+            )
           ),
           team:teams!inner (
             id,
@@ -144,23 +172,23 @@ export const useTeamContext = create<TeamContextState>((set, get) => ({
         updated_at: string
       }
 
-      const role = data.role as unknown as {
-        id: string
-        team_id: string
-        name: string
-        description: string | null
-        permissions: RolePermissions
-        is_default: boolean
-        template_id: string | null
-        created_at: string
-        updated_at: string
-      } | null
+      // Extract roles from junction table results
+      const memberRoles = data.member_roles as unknown as Array<{
+        role: TeamRole | null
+      }> | null
+
+      const roles: TeamRole[] = (memberRoles || [])
+        .map((mr) => mr.role)
+        .filter((r): r is TeamRole => r !== null)
 
       // Verify org matches
       if (team.organization.id !== orgId) {
         set({ error: 'Team does not belong to this organization', loading: false, context: null })
         return false
       }
+
+      // Merge permissions from all roles
+      const mergedPermissions = mergeRolePermissions(roles)
 
       // Build the context
       const context: TeamContext = {
@@ -181,13 +209,12 @@ export const useTeamContext = create<TeamContextState>((set, get) => ({
           id: data.id,
           team_id: data.team_id,
           user_id: data.user_id,
-          role_id: data.role_id,
           permission_level: data.permission_level,
           created_at: data.created_at,
           updated_at: data.updated_at,
         },
-        role: role,
-        permissions: role?.permissions || DEFAULT_PERMISSIONS,
+        roles,
+        permissions: mergedPermissions,
       }
 
       set({ context, loading: false, error: null })
@@ -290,7 +317,7 @@ export const useTeamContext = create<TeamContextState>((set, get) => ({
     // Admins can access everything
     if (context.membership.permission_level === 'admin') return true
 
-    // Check role permissions
+    // Check merged role permissions
     const permission = context.permissions[section]
     return !!permission?.access
   },
@@ -303,7 +330,7 @@ export const useTeamContext = create<TeamContextState>((set, get) => ({
     // Admins have full access to everything
     if (context.membership.permission_level === 'admin') return true
 
-    // Check role permissions
+    // Check merged role permissions
     const permission = context.permissions[section]
     return permission?.access === 'full'
   },

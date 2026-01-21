@@ -15,17 +15,18 @@ import { useTeamContext } from '@/hooks/useTeamContext'
 import type { PermissionLevel } from '@/types/team-member.types'
 import { cn } from '@/lib/utils'
 
+interface RoleInfo {
+  id: string
+  name: string
+}
+
 interface InvitationWithDetails {
   id: string
   email: string
   permission_level: PermissionLevel
-  role_id: string | null
   expires_at: string
   created_at: string
-  role: {
-    id: string
-    name: string
-  } | null
+  roles: RoleInfo[]  // Changed from single role to array
   inviter: {
     id: string
     full_name: string | null
@@ -41,6 +42,8 @@ const permissionBadgeStyles: Record<PermissionLevel, string> = {
   member: 'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800',
   viewer: 'bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700',
 }
+
+const roleBadgeStyle = 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800'
 
 export function PendingInvitations({ refreshTrigger }: PendingInvitationsProps) {
   const { context } = useTeamContext()
@@ -59,12 +62,13 @@ export function PendingInvitations({ refreshTrigger }: PendingInvitationsProps) 
           id,
           email,
           permission_level,
-          role_id,
           expires_at,
           created_at,
-          role:team_roles (
-            id,
-            name
+          invitation_roles:team_invitation_roles (
+            role:team_roles (
+              id,
+              name
+            )
           ),
           inviter:users!invited_by (
             id,
@@ -80,7 +84,28 @@ export function PendingInvitations({ refreshTrigger }: PendingInvitationsProps) 
         return
       }
 
-      setInvitations(data as unknown as InvitationWithDetails[])
+      // Transform the data to extract roles from junction table
+      const transformedInvitations: InvitationWithDetails[] = (data || []).map((inv) => {
+        const invitationRoles = inv.invitation_roles as unknown as Array<{
+          role: RoleInfo | null
+        }> | null
+
+        const roles: RoleInfo[] = (invitationRoles || [])
+          .map((ir) => ir.role)
+          .filter((r): r is RoleInfo => r !== null)
+
+        return {
+          id: inv.id,
+          email: inv.email,
+          permission_level: inv.permission_level as PermissionLevel,
+          expires_at: inv.expires_at,
+          created_at: inv.created_at,
+          roles,
+          inviter: inv.inviter as unknown as InvitationWithDetails['inviter'],
+        }
+      })
+
+      setInvitations(transformedInvitations)
     } catch (err) {
       console.error('Error loading invitations:', err)
     } finally {
@@ -173,7 +198,7 @@ export function PendingInvitations({ refreshTrigger }: PendingInvitationsProps) 
       <TableHeader>
         <TableRow>
           <TableHead>Email</TableHead>
-          <TableHead>Role</TableHead>
+          <TableHead>Roles</TableHead>
           <TableHead>Permission</TableHead>
           <TableHead>Invited By</TableHead>
           <TableHead>Expires</TableHead>
@@ -185,8 +210,20 @@ export function PendingInvitations({ refreshTrigger }: PendingInvitationsProps) 
           <TableRow key={invitation.id}>
             <TableCell className="font-medium">{invitation.email}</TableCell>
             <TableCell>
-              {invitation.role?.name || (
-                <span className="text-muted-foreground">No role</span>
+              {invitation.roles.length > 0 ? (
+                <div className="flex flex-wrap gap-1">
+                  {invitation.roles.map((role) => (
+                    <Badge
+                      key={role.id}
+                      variant="outline"
+                      className={cn('text-xs', roleBadgeStyle)}
+                    >
+                      {role.name}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-muted-foreground text-sm">No roles</span>
               )}
             </TableCell>
             <TableCell>

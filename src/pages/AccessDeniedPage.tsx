@@ -40,9 +40,12 @@ export function AccessDeniedPage() {
             Contact your team admin if you believe this is an error or if you need access to this section.
           </p>
 
-          {context?.role && (
+          {context?.roles && context.roles.length > 0 && (
             <p className="text-xs text-muted-foreground">
-              Your current role: <span className="font-medium">{context.role.name}</span>
+              Your current roles:{' '}
+              <span className="font-medium">
+                {context.roles.map((r) => r.name).join(', ')}
+              </span>
             </p>
           )}
 
