@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Copy, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Dialog,
   DialogContent,
@@ -63,13 +64,19 @@ export function InviteMemberModal({
   const { user } = useAuth()
   const [error, setError] = useState<string | null>(null)
   const [roles, setRoles] = useState<TeamRole[]>([])
+  const [createdInvitationId, setCreatedInvitationId] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  const inviteUrl = createdInvitationId
+    ? `${window.location.origin}/invite/${createdInvitationId}`
+    : ''
 
   const form = useForm<InviteFormData>({
     resolver: zodResolver(inviteSchema),
     defaultValues: {
       email: '',
       permissionLevel: 'member',
-      roleId: '',
+      roleId: 'none',
     },
   })
 
@@ -94,10 +101,10 @@ export function InviteMemberModal({
       }
     }
 
-    if (open) {
+    if (open && !createdInvitationId) {
       loadRoles()
     }
-  }, [open, context])
+  }, [open, context, createdInvitationId])
 
   const onSubmit = async (data: InviteFormData) => {
     if (!supabase || !user || !context) {
@@ -108,26 +115,7 @@ export function InviteMemberModal({
     setError(null)
 
     try {
-      // Check if user is already a team member
-      const { data: existingMember } = await supabase
-        .from('team_members')
-        .select('id')
-        .eq('team_id', context.team.id)
-        .eq('user_id', (
-          await supabase
-            .from('users')
-            .select('id')
-            .eq('email', data.email)
-            .single()
-        ).data?.id || '')
-        .single()
-
-      if (existingMember) {
-        setError('This user is already a member of this team')
-        return
-      }
-
-      // Check if there's already a pending invitation
+      // Check if there's already a pending invitation for this email
       const { data: existingInvitation } = await supabase
         .from('team_invitations')
         .select('id')
@@ -141,24 +129,26 @@ export function InviteMemberModal({
         return
       }
 
-      // Create the invitation
-      const { error: inviteError } = await supabase
+      // Create the invitation and get its ID
+      const { data: newInvitation, error: inviteError } = await supabase
         .from('team_invitations')
         .insert({
           team_id: context.team.id,
           email: data.email.toLowerCase(),
           permission_level: data.permissionLevel as PermissionLevel,
-          role_id: data.roleId || null,
+          role_id: data.roleId === 'none' ? null : (data.roleId || null),
           invited_by: user.id,
           status: 'pending',
         })
+        .select('id')
+        .single()
 
       if (inviteError) {
         throw new Error(inviteError.message)
       }
 
-      // Success
-      form.reset()
+      // Success - show the invite link
+      setCreatedInvitationId(newInvitation.id)
       onInvited()
     } catch (err) {
       console.error('Error inviting member:', err)
@@ -166,12 +156,76 @@ export function InviteMemberModal({
     }
   }
 
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(inviteUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
+  }
+
   const handleClose = () => {
     form.reset()
     setError(null)
+    setCreatedInvitationId(null)
+    setCopied(false)
     onClose()
   }
 
+  // Success state - show copyable link
+  if (createdInvitationId) {
+    return (
+      <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Invitation Sent!</DialogTitle>
+            <DialogDescription>
+              Share this link with the invitee to join{' '}
+              <span className="font-medium text-foreground">{context?.team.name}</span>
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Invitation Link</Label>
+              <div className="flex gap-2">
+                <div className="flex-1 bg-muted rounded-md px-3 py-2 text-sm font-mono truncate">
+                  {inviteUrl}
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleCopyLink}
+                  title="Copy link"
+                >
+                  {copied ? (
+                    <Check className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <p className="text-sm text-muted-foreground">
+              This link expires in 7 days. The invitee will be able to create an account
+              or sign in with the invited email address.
+            </p>
+          </div>
+
+          <DialogFooter>
+            <Button onClick={handleClose} className="bg-primary hover:bg-primary/90">
+              Done
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    )
+  }
+
+  // Form state
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
       <DialogContent className="sm:max-w-md">
@@ -251,7 +305,7 @@ export function InviteMemberModal({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">No specific role</SelectItem>
+                      <SelectItem value="none">No specific role</SelectItem>
                       {roles.map((role) => (
                         <SelectItem key={role.id} value={role.id}>
                           {role.name}

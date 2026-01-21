@@ -87,7 +87,6 @@ interface RoleRowProps {
 }
 
 function RoleRow({ role, onEdit, onDelete }: RoleRowProps) {
-  const canEdit = true
   const canDelete = role.member_count === 0
 
   return (

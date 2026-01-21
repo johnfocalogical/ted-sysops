@@ -141,7 +141,7 @@ export function JoinLinkSettings({ refreshTrigger }: JoinLinkSettingsProps) {
     try {
       const { error } = await supabase
         .from('teams')
-        .update({ default_role_id: roleId || null })
+        .update({ default_role_id: roleId === 'none' ? null : (roleId || null) })
         .eq('id', context.team.id)
 
       if (error) {
@@ -149,7 +149,7 @@ export function JoinLinkSettings({ refreshTrigger }: JoinLinkSettingsProps) {
         return
       }
 
-      setDefaultRoleId(roleId || null)
+      setDefaultRoleId(roleId === 'none' ? null : (roleId || null))
     } finally {
       setSaving(false)
     }
@@ -256,7 +256,7 @@ export function JoinLinkSettings({ refreshTrigger }: JoinLinkSettingsProps) {
             <div className="space-y-2">
               <Label htmlFor="default-role">Default Role</Label>
               <Select
-                value={defaultRoleId || ''}
+                value={defaultRoleId || 'none'}
                 onValueChange={handleDefaultRoleChange}
                 disabled={saving}
               >
@@ -264,7 +264,7 @@ export function JoinLinkSettings({ refreshTrigger }: JoinLinkSettingsProps) {
                   <SelectValue placeholder="No specific role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No specific role</SelectItem>
+                  <SelectItem value="none">No specific role</SelectItem>
                   {roles.map((role) => (
                     <SelectItem key={role.id} value={role.id}>
                       {role.name}

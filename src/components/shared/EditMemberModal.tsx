@@ -75,7 +75,7 @@ export function EditMemberModal({
     resolver: zodResolver(editSchema),
     defaultValues: {
       permissionLevel: 'member',
-      roleId: '',
+      roleId: 'none',
     },
   })
 
@@ -99,7 +99,7 @@ export function EditMemberModal({
       loadRoles()
       form.reset({
         permissionLevel: member.permission_level,
-        roleId: member.role_id || '',
+        roleId: member.role_id || 'none',
       })
     }
   }, [open, member, context])
@@ -132,7 +132,7 @@ export function EditMemberModal({
         .from('team_members')
         .update({
           permission_level: data.permissionLevel as PermissionLevel,
-          role_id: data.roleId || null,
+          role_id: data.roleId === 'none' ? null : (data.roleId || null),
         })
         .eq('id', member.id)
 
@@ -217,7 +217,7 @@ export function EditMemberModal({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">No specific role</SelectItem>
+                      <SelectItem value="none">No specific role</SelectItem>
                       {roles.map((role) => (
                         <SelectItem key={role.id} value={role.id}>
                           {role.name}

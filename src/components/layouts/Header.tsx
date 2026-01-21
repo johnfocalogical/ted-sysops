@@ -1,7 +1,8 @@
 import { useLocation } from 'react-router-dom'
-import { Menu, Bell } from 'lucide-react'
+import { Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/shared/ThemeToggle'
+import { PendingInvitationsNotification } from '@/components/shared/PendingInvitationsNotification'
 import { UserMenu } from './UserMenu'
 import { TeamSwitcher } from './TeamSwitcher'
 import { useNavigation, NAV_ITEMS } from '@/hooks/useNavigation'
@@ -49,11 +50,8 @@ export function Header() {
         {/* Theme Toggle */}
         <ThemeToggle />
 
-        {/* Notifications (placeholder) */}
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5 text-muted-foreground" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full" />
-        </Button>
+        {/* Notifications - Pending Invitations */}
+        <PendingInvitationsNotification />
 
         {/* User Menu */}
         <UserMenu />
