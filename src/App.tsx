@@ -27,6 +27,7 @@ import { AdminTeamDetails } from '@/pages/admin/AdminTeamDetails'
 import { AdminRoleTemplates } from '@/pages/admin/AdminRoleTemplates'
 
 // App pages
+import { Inbox } from '@/pages/Inbox'
 import { MyDashboard } from '@/pages/MyDashboard'
 import { PayTime } from '@/pages/PayTime'
 import { TeamDashboard } from '@/pages/TeamDashboard'
@@ -94,6 +95,11 @@ function App() {
           }
         >
           <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="inbox" element={
+            <SectionAccessGuard section="inbox">
+              <Inbox />
+            </SectionAccessGuard>
+          } />
           <Route path="dashboard" element={
             <SectionAccessGuard section="dashboard">
               <MyDashboard />

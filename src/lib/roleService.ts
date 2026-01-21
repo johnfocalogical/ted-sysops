@@ -85,7 +85,7 @@ export async function createRole(dto: CreateTeamRoleDTO): Promise<TeamRole> {
 }
 
 /**
- * Update an existing custom role
+ * Update an existing role
  */
 export async function updateRole(roleId: string, dto: UpdateTeamRoleDTO): Promise<TeamRole> {
   if (!supabase) throw new Error('Supabase not configured')
@@ -99,7 +99,6 @@ export async function updateRole(roleId: string, dto: UpdateTeamRoleDTO): Promis
     .from('team_roles')
     .update(updates)
     .eq('id', roleId)
-    .eq('is_default', false) // Only allow updating custom roles
     .select()
     .single()
 
@@ -108,7 +107,7 @@ export async function updateRole(roleId: string, dto: UpdateTeamRoleDTO): Promis
 }
 
 /**
- * Delete a custom role (only if no members assigned and not default)
+ * Delete a role (only if no members assigned)
  */
 export async function deleteRole(roleId: string): Promise<void> {
   if (!supabase) throw new Error('Supabase not configured')
@@ -117,7 +116,6 @@ export async function deleteRole(roleId: string): Promise<void> {
     .from('team_roles')
     .delete()
     .eq('id', roleId)
-    .eq('is_default', false) // Only allow deleting custom roles
 
   if (error) throw error
 }
@@ -127,21 +125,6 @@ export async function deleteRole(roleId: string): Promise<void> {
  */
 export async function canDeleteRole(roleId: string): Promise<{ canDelete: boolean; reason?: string }> {
   if (!supabase) throw new Error('Supabase not configured')
-
-  // Get the role
-  const { data: role, error: roleError } = await supabase
-    .from('team_roles')
-    .select('is_default')
-    .eq('id', roleId)
-    .single()
-
-  if (roleError) throw roleError
-  if (!role) return { canDelete: false, reason: 'Role not found' }
-
-  // Check if it's a default role
-  if (role.is_default) {
-    return { canDelete: false, reason: 'Cannot delete default roles' }
-  }
 
   // Check if any members have this role
   const { count, error: countError } = await supabase

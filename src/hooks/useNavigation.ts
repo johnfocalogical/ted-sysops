@@ -41,6 +41,7 @@ export interface NavItem {
 
 // Routes are relative - they will be prefixed with /org/{orgId}/team/{teamId}
 export const NAV_ITEMS: NavItem[] = [
+  { label: 'Inbox', route: 'inbox', icon: 'Inbox', section: 'inbox' },
   { label: 'My Dashboard', route: 'dashboard', icon: 'LayoutDashboard', section: 'dashboard', exact: true },
   { label: 'My Pay & Time', route: 'pay-time', icon: 'Wallet', section: 'pay_time' },
   { label: 'Team Dashboard', route: 'team', icon: 'Users', section: 'team' },

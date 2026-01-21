@@ -87,8 +87,8 @@ interface RoleRowProps {
 }
 
 function RoleRow({ role, onEdit, onDelete }: RoleRowProps) {
-  const canEdit = !role.is_default
-  const canDelete = !role.is_default && role.member_count === 0
+  const canEdit = true
+  const canDelete = role.member_count === 0
 
   return (
     <TableRow>
@@ -135,24 +135,10 @@ function RoleRow({ role, onEdit, onDelete }: RoleRowProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {canEdit ? (
-              <DropdownMenuItem onClick={() => onEdit(role)}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Edit
-              </DropdownMenuItem>
-            ) : (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <DropdownMenuItem disabled>
-                    <Pencil className="mr-2 h-4 w-4" />
-                    Edit
-                  </DropdownMenuItem>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Default roles cannot be edited</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
+            <DropdownMenuItem onClick={() => onEdit(role)}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit
+            </DropdownMenuItem>
 
             {canDelete ? (
               <DropdownMenuItem
@@ -171,11 +157,7 @@ function RoleRow({ role, onEdit, onDelete }: RoleRowProps) {
                   </DropdownMenuItem>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>
-                    {role.is_default
-                      ? 'Default roles cannot be deleted'
-                      : `Reassign ${role.member_count} member${role.member_count > 1 ? 's' : ''} first`}
-                  </p>
+                  <p>Reassign {role.member_count} member{role.member_count > 1 ? 's' : ''} first</p>
                 </TooltipContent>
               </Tooltip>
             )}

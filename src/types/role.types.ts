@@ -8,6 +8,7 @@ export interface SectionPermission {
 
 // Section keys that can have permissions
 export type SectionKey =
+  | 'inbox'
   | 'dashboard'
   | 'pay_time'
   | 'team'

@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, Wallet, Users, Kanban, Contact, UserCog,
+  Inbox, LayoutDashboard, Wallet, Users, Kanban, Contact, UserCog,
   Shield, Calendar, BarChart3, Settings
 } from 'lucide-react'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 
 // Section display configuration
 const SECTIONS: { key: SectionKey; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  { key: 'inbox', label: 'Inbox', icon: Inbox },
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { key: 'pay_time', label: 'Pay & Time', icon: Wallet },
   { key: 'team', label: 'Team Dashboard', icon: Users },
@@ -46,6 +47,7 @@ export function toRolePermissions(state: Record<SectionKey, AccessValue>): RoleP
  */
 export function fromRolePermissions(perms: RolePermissions | undefined): Record<SectionKey, AccessValue> {
   const state: Record<SectionKey, AccessValue> = {
+    inbox: 'none',
     dashboard: 'none',
     pay_time: 'none',
     team: 'none',

@@ -10,6 +10,7 @@ interface SectionAccessGuardProps {
 
 // Map section keys to display names for error messages
 export const SECTION_DISPLAY_NAMES: Record<SectionKey, string> = {
+  inbox: 'Inbox',
   dashboard: 'Dashboard',
   pay_time: 'Pay & Time',
   team: 'Team Dashboard',

@@ -77,11 +77,17 @@ export function CreateTeamModal({
           org_id: orgId,
           name: data.teamName,
           slug,
+          join_link_enabled: false,
+          default_role_id: null,
         })
         .select()
         .single()
 
       if (teamError) {
+        // Check for duplicate slug constraint violation
+        if (teamError.message.includes('teams_org_id_slug_key') || teamError.code === '23505') {
+          throw new Error('A team with this name already exists in this organization. Please choose a different name.')
+        }
         throw new Error(teamError.message)
       }
 

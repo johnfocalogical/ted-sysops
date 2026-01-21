@@ -44,6 +44,8 @@ CREATE POLICY "teams_select" ON teams
             SELECT 1 FROM team_members tm
             WHERE tm.team_id = teams.id AND tm.user_id = auth.uid()
         )
+        -- Org members can see all teams in their org (needed for team creation flow)
+        OR is_org_member(teams.org_id, auth.uid())
         -- Superadmins can see all
         OR is_superadmin(auth.uid())
         -- Public access for teams with join link enabled (for join flow)
@@ -82,6 +84,14 @@ CREATE POLICY "team_members_insert" ON team_members
         is_team_admin(team_id, auth.uid())
         -- Superadmins can add
         OR is_superadmin(auth.uid())
+        -- Org members can add themselves to teams in their org (for team creation flow)
+        OR (
+            user_id = auth.uid()
+            AND is_org_member(
+                (SELECT org_id FROM teams WHERE id = team_members.team_id),
+                auth.uid()
+            )
+        )
         -- Users can add themselves if they have a pending invitation
         OR (
             user_id = auth.uid()

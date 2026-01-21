@@ -462,15 +462,13 @@ CREATE POLICY "team_roles_insert" ON team_roles
 DROP POLICY IF EXISTS "team_roles_update" ON team_roles;
 CREATE POLICY "team_roles_update" ON team_roles
     FOR UPDATE USING (
-        (is_team_admin(team_id, auth.uid()) AND is_default = FALSE)
-        OR is_superadmin(auth.uid())
+        is_team_admin(team_id, auth.uid()) OR is_superadmin(auth.uid())
     );
 
 DROP POLICY IF EXISTS "team_roles_delete" ON team_roles;
 CREATE POLICY "team_roles_delete" ON team_roles
     FOR DELETE USING (
-        (is_team_admin(team_id, auth.uid()) AND is_default = FALSE)
-        OR is_superadmin(auth.uid())
+        is_team_admin(team_id, auth.uid()) OR is_superadmin(auth.uid())
     );
 
 -- ----------------------------------------------------------------------------
@@ -543,6 +541,7 @@ VALUES
         'Full Access',
         'Complete access to all sections',
         '{
+            "inbox": {"access": "full"},
             "dashboard": {"access": "full"},
             "pay_time": {"access": "full"},
             "team": {"access": "full"},
@@ -561,6 +560,7 @@ VALUES
         'Deal Manager',
         'Manage deals and contacts',
         '{
+            "inbox": {"access": "full"},
             "dashboard": {"access": "full"},
             "whiteboard": {"access": "full"},
             "contacts": {"access": "full"},
@@ -574,6 +574,7 @@ VALUES
         'Transaction Coordinator',
         'Focus on transaction processing',
         '{
+            "inbox": {"access": "view"},
             "dashboard": {"access": "view"},
             "whiteboard": {"access": "full"},
             "contacts": {"access": "view"},
@@ -587,6 +588,7 @@ VALUES
         'Finance',
         'Financial reporting and oversight',
         '{
+            "inbox": {"access": "view"},
             "dashboard": {"access": "view"},
             "reports": {"access": "full"},
             "transactions": {"access": "view"},
@@ -599,6 +601,7 @@ VALUES
         'View Only',
         'Read-only access to main sections',
         '{
+            "inbox": {"access": "view"},
             "dashboard": {"access": "view"},
             "whiteboard": {"access": "view"},
             "contacts": {"access": "view"},
