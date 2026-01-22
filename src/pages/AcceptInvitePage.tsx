@@ -83,49 +83,27 @@ export function AcceptInvitePage() {
       }
 
       try {
+        // Use SECURITY DEFINER function to bypass RLS
+        // This allows unauthenticated users to view invitation details
         const { data, error } = await supabase
-          .from('team_invitations')
-          .select(`
-            id, email, permission_level, status, expires_at,
-            team:teams!inner (
-              id, name, slug, org_id,
-              organization:organizations!inner (id, name)
-            ),
-            inviter:users!invited_by (id, full_name),
-            invitation_roles:team_invitation_roles (
-              role:team_roles (
-                id,
-                name
-              )
-            )
-          `)
-          .eq('id', invitationId)
-          .single()
+          .rpc('get_invitation_details', { p_invitation_id: invitationId })
 
         if (error || !data) {
           setPageState('invalid')
           return
         }
 
-        // Transform nested data, extracting roles from junction table
-        const invitationRoles = data.invitation_roles as unknown as Array<{
-          role: RoleInfo | null
-        }> | null
-
-        const roles: RoleInfo[] = (invitationRoles || [])
-          .map((ir) => ir.role)
-          .filter((r): r is RoleInfo => r !== null)
-
+        // Parse the JSON response from the RPC function
         const invitationData: InvitationWithDetails = {
           id: data.id,
           email: data.email,
           permission_level: data.permission_level as 'admin' | 'member' | 'viewer',
-          role_ids: roles.map((r) => r.id),
-          roles,
+          role_ids: (data.roles || []).map((r: RoleInfo) => r.id),
+          roles: data.roles || [],
           status: data.status as 'pending' | 'accepted' | 'expired' | 'revoked',
           expires_at: data.expires_at,
-          team: data.team as unknown as InvitationWithDetails['team'],
-          inviter: data.inviter as unknown as InvitationWithDetails['inviter'],
+          team: data.team,
+          inviter: data.inviter,
         }
         setInvitation(invitationData)
 
@@ -194,55 +172,21 @@ export function AcceptInvitePage() {
     checkUserState()
   }, [authLoading, user, invitation, pageState])
 
-  const acceptInvitation = async (userId: string) => {
+  const acceptInvitation = async (userId: string, userEmail: string) => {
     if (!supabase || !invitation) return false
 
     try {
-      // 1. Update invitation status
-      const { error: updateError } = await supabase
-        .from('team_invitations')
-        .update({
-          status: 'accepted',
-          accepted_at: new Date().toISOString()
-        })
-        .eq('id', invitation.id)
+      // Use SECURITY DEFINER function to bypass RLS
+      // This handles: updating invitation, creating team member, assigning roles
+      const { data, error } = await supabase.rpc('accept_invitation', {
+        p_invitation_id: invitation.id,
+        p_user_id: userId,
+        p_user_email: userEmail,
+      })
 
-      if (updateError) {
-        console.error('Failed to update invitation:', updateError)
-        throw new Error('Failed to accept invitation')
-      }
-
-      // 2. Add to team_members (without role_id - using junction table)
-      const { data: newMember, error: teamError } = await supabase
-        .from('team_members')
-        .insert({
-          team_id: invitation.team.id,
-          user_id: userId,
-          permission_level: invitation.permission_level,
-        })
-        .select('id')
-        .single()
-
-      if (teamError || !newMember) {
-        console.error('Failed to add to team:', teamError)
-        throw new Error('Failed to join team')
-      }
-
-      // 3. Assign roles from invitation to new team member
-      if (invitation.role_ids.length > 0) {
-        const roleAssignments = invitation.role_ids.map((roleId) => ({
-          team_member_id: newMember.id,
-          role_id: roleId,
-        }))
-
-        const { error: rolesError } = await supabase
-          .from('team_member_roles')
-          .insert(roleAssignments)
-
-        if (rolesError) {
-          console.error('Failed to assign roles:', rolesError)
-          // Don't throw - member was created, roles are optional
-        }
+      if (error) {
+        console.error('Failed to accept invitation:', error)
+        throw new Error(error.message || 'Failed to accept invitation')
       }
 
       return true
@@ -286,7 +230,7 @@ export function AcceptInvitePage() {
       }
 
       // Accept the invitation
-      await acceptInvitation(newUser.id)
+      await acceptInvitation(newUser.id, invitation.email)
 
       // Redirect to team dashboard
       navigate(`/org/${invitation.team.org_id}/team/${invitation.team.id}/dashboard`)
@@ -302,7 +246,7 @@ export function AcceptInvitePage() {
     setError(null)
 
     try {
-      await acceptInvitation(user.id)
+      await acceptInvitation(user.id, user.email!)
       setPageState('success')
 
       // Redirect after brief delay to show success
