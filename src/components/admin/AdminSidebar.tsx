@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import {
-  LayoutDashboard, Building2, Users2, Users, FileKey,
+  LayoutDashboard, Building2, Users2, Users, FileKey, Tag,
   ChevronLeft, ChevronRight, X, ShieldCheck
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -25,6 +25,7 @@ const ADMIN_NAV_ITEMS: AdminNavItem[] = [
 
 const ADMIN_NAV_ITEMS_SECONDARY: AdminNavItem[] = [
   { label: 'Role Templates', route: '/admin/role-templates', icon: FileKey },
+  { label: 'Type Templates', route: '/admin/type-templates', icon: Tag },
 ]
 
 export function AdminSidebar() {

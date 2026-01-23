@@ -27,6 +27,7 @@ import { AdminOrgDetails } from '@/pages/admin/AdminOrgDetails'
 import { AdminTeams } from '@/pages/admin/AdminTeams'
 import { AdminTeamDetails } from '@/pages/admin/AdminTeamDetails'
 import { AdminRoleTemplates } from '@/pages/admin/AdminRoleTemplates'
+import { AdminTypeTemplates } from '@/pages/admin/AdminTypeTemplates'
 
 // Org settings pages
 import { OrgGeneralSettings } from '@/pages/org-settings/OrgGeneralSettings'
@@ -88,6 +89,7 @@ function App() {
           <Route path="users" element={<AdminUsers />} />
           <Route path="users/:userId" element={<AdminUserDetails />} />
           <Route path="role-templates" element={<AdminRoleTemplates />} />
+          <Route path="type-templates" element={<AdminTypeTemplates />} />
         </Route>
 
         {/* Org settings routes (org owners only) */}

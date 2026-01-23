@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { TeamMembersSection } from '@/components/settings/TeamMembersSection'
 import { RoleSettingsSection } from '@/components/settings/RoleSettingsSection'
+import { TypeSettingsSection } from '@/components/settings/TypeSettingsSection'
 import { ViewOnlyBanner } from '@/components/shared/ViewOnlyBanner'
 import { usePermissions } from '@/hooks/usePermissions'
 
@@ -55,6 +56,9 @@ export function SettingsPage() {
 
       {/* Team Roles Section (Admin Only) */}
       <RoleSettingsSection />
+
+      {/* Contact & Company Types Section (Admin Only) */}
+      <TypeSettingsSection />
 
       {/* Other Settings (Coming Soon) */}
       <div>
