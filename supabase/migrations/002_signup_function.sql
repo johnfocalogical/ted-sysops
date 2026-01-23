@@ -33,6 +33,10 @@ BEGIN
   VALUES (p_org_name, p_org_slug, p_user_id)
   RETURNING id INTO v_org_id;
 
+  -- Add user as organization member with owner status
+  INSERT INTO organization_members (organization_id, user_id, is_owner)
+  VALUES (v_org_id, p_user_id, true);
+
   -- Create team (trigger will auto-install role templates)
   INSERT INTO teams (org_id, name, slug)
   VALUES (v_org_id, p_team_name, p_team_slug)
@@ -44,10 +48,16 @@ BEGIN
   WHERE tr.team_id = v_team_id AND tr.name = 'Full Access'
   LIMIT 1;
 
-  -- Create team membership with admin permission
-  INSERT INTO team_members (team_id, user_id, role_id, permission_level)
-  VALUES (v_team_id, p_user_id, v_full_access_role_id, 'admin')
+  -- Create team membership with admin permission (role assigned via junction table)
+  INSERT INTO team_members (team_id, user_id, permission_level)
+  VALUES (v_team_id, p_user_id, 'admin')
   RETURNING id INTO v_team_member_id;
+
+  -- Assign the Full Access role via junction table
+  IF v_full_access_role_id IS NOT NULL THEN
+    INSERT INTO team_member_roles (team_member_id, role_id)
+    VALUES (v_team_member_id, v_full_access_role_id);
+  END IF;
 
   out_org_id := v_org_id;
   out_team_id := v_team_id;

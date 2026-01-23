@@ -23,15 +23,9 @@ DECLARE
   v_team_member_id UUID;
   v_full_access_role_id UUID;
 BEGIN
-  -- Verify user is org owner or existing org member
-  IF NOT EXISTS (
-    SELECT 1 FROM organizations WHERE id = p_org_id AND owner_id = p_user_id
-  ) AND NOT EXISTS (
-    SELECT 1 FROM team_members tm
-    JOIN teams t ON t.id = tm.team_id
-    WHERE t.org_id = p_org_id AND tm.user_id = p_user_id
-  ) THEN
-    RAISE EXCEPTION 'User is not authorized to create teams in this organization';
+  -- Verify user is an org owner (via organization_members.is_owner or organizations.owner_id)
+  IF NOT is_org_owner(p_org_id, p_user_id) THEN
+    RAISE EXCEPTION 'Only organization owners can create teams';
   END IF;
 
   -- Create team (trigger will auto-install role templates)

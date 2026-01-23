@@ -92,6 +92,16 @@ CREATE POLICY "team_members_insert" ON team_members
                 auth.uid()
             )
         )
+        -- Org owners can add themselves to any team in their org (for first team creation)
+        OR (
+            user_id = auth.uid()
+            AND EXISTS (
+                SELECT 1 FROM organizations o
+                JOIN teams t ON t.org_id = o.id
+                WHERE t.id = team_members.team_id
+                AND o.owner_id = auth.uid()
+            )
+        )
         -- Users can add themselves if they have a pending invitation
         OR (
             user_id = auth.uid()

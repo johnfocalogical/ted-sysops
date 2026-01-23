@@ -10,11 +10,13 @@ import { AccessDeniedPage } from '@/pages/AccessDeniedPage'
 import { ThemeTest } from '@/pages/ThemeTest'
 import { ProtectedRoute } from '@/components/shared/ProtectedRoute'
 import { SuperadminGuard } from '@/components/shared/SuperadminGuard'
+import { OrgOwnerGuard } from '@/components/shared/OrgOwnerGuard'
 import { TeamAccessGuard } from '@/components/shared/TeamAccessGuard'
 import { SectionAccessGuard } from '@/components/shared/SectionAccessGuard'
 import { TeamRedirect } from '@/components/shared/TeamRedirect'
 import { AppLayout } from '@/components/layouts/AppLayout'
 import { AdminLayout } from '@/components/admin/AdminLayout'
+import { OrgSettingsLayout } from '@/components/layouts/OrgSettingsLayout'
 
 // Admin pages
 import { AdminDashboard } from '@/pages/admin/AdminDashboard'
@@ -25,6 +27,11 @@ import { AdminOrgDetails } from '@/pages/admin/AdminOrgDetails'
 import { AdminTeams } from '@/pages/admin/AdminTeams'
 import { AdminTeamDetails } from '@/pages/admin/AdminTeamDetails'
 import { AdminRoleTemplates } from '@/pages/admin/AdminRoleTemplates'
+
+// Org settings pages
+import { OrgGeneralSettings } from '@/pages/org-settings/OrgGeneralSettings'
+import { OrgTeamsPage } from '@/pages/org-settings/OrgTeamsPage'
+import { OrgMembersPage } from '@/pages/org-settings/OrgMembersPage'
 
 // App pages
 import { Inbox } from '@/pages/Inbox'
@@ -81,6 +88,23 @@ function App() {
           <Route path="users" element={<AdminUsers />} />
           <Route path="users/:userId" element={<AdminUserDetails />} />
           <Route path="role-templates" element={<AdminRoleTemplates />} />
+        </Route>
+
+        {/* Org settings routes (org owners only) */}
+        <Route
+          path="/org/:orgId/settings"
+          element={
+            <ProtectedRoute>
+              <OrgOwnerGuard>
+                <OrgSettingsLayout />
+              </OrgOwnerGuard>
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to="general" replace />} />
+          <Route path="general" element={<OrgGeneralSettings />} />
+          <Route path="teams" element={<OrgTeamsPage />} />
+          <Route path="members" element={<OrgMembersPage />} />
         </Route>
 
         {/* Team-scoped app routes */}

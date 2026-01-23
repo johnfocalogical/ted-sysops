@@ -21,6 +21,7 @@ DECLARE
   v_invitation RECORD;
   v_team_member_id UUID;
   v_existing_member_id UUID;
+  v_org_id UUID;
 BEGIN
   -- 1. Fetch and validate the invitation
   SELECT ti.id, ti.email, ti.team_id, ti.permission_level, ti.status, ti.expires_at
@@ -69,6 +70,13 @@ BEGIN
   SELECT v_team_member_id, tir.role_id
   FROM team_invitation_roles tir
   WHERE tir.invitation_id = p_invitation_id;
+
+  -- 7. Add user to organization_members if not already present
+  SELECT org_id INTO v_org_id FROM teams WHERE id = v_invitation.team_id;
+
+  INSERT INTO organization_members (organization_id, user_id, is_owner)
+  VALUES (v_org_id, p_user_id, false)
+  ON CONFLICT (organization_id, user_id) DO NOTHING;
 
   -- Return results
   out_team_member_id := v_team_member_id;

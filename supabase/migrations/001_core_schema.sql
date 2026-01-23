@@ -450,7 +450,15 @@ CREATE POLICY "role_templates_delete" ON role_templates
 DROP POLICY IF EXISTS "team_roles_select" ON team_roles;
 CREATE POLICY "team_roles_select" ON team_roles
     FOR SELECT USING (
-        is_team_member(team_id, auth.uid()) OR is_superadmin(auth.uid())
+        is_team_member(team_id, auth.uid())
+        OR is_superadmin(auth.uid())
+        -- Org owners can read roles for teams in their org (for team creation flow)
+        OR EXISTS (
+            SELECT 1 FROM organizations o
+            JOIN teams t ON t.org_id = o.id
+            WHERE t.id = team_roles.team_id
+            AND o.owner_id = auth.uid()
+        )
     );
 
 DROP POLICY IF EXISTS "team_roles_insert" ON team_roles;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { RefreshCw, X, Loader2, Mail } from 'lucide-react'
+import { RefreshCw, X, Loader2, Mail, Copy, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -50,6 +50,7 @@ export function PendingInvitations({ refreshTrigger }: PendingInvitationsProps) 
   const [invitations, setInvitations] = useState<InvitationWithDetails[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
 
   const loadInvitations = async () => {
     if (!supabase || !context) return
@@ -176,6 +177,18 @@ export function PendingInvitations({ refreshTrigger }: PendingInvitationsProps) 
     }
   }
 
+  const handleCopyLink = async (invitationId: string) => {
+    const inviteUrl = `${window.location.origin}/invite/${invitationId}`
+    try {
+      await navigator.clipboard.writeText(inviteUrl)
+      setCopiedId(invitationId)
+      // Reset after 2 seconds
+      setTimeout(() => setCopiedId(null), 2000)
+    } catch (err) {
+      console.error('Failed to copy invite link:', err)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -202,7 +215,7 @@ export function PendingInvitations({ refreshTrigger }: PendingInvitationsProps) 
           <TableHead>Permission</TableHead>
           <TableHead>Invited By</TableHead>
           <TableHead>Expires</TableHead>
-          <TableHead className="w-[120px]">Actions</TableHead>
+          <TableHead className="w-[150px]">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -250,6 +263,19 @@ export function PendingInvitations({ refreshTrigger }: PendingInvitationsProps) 
             </TableCell>
             <TableCell>
               <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => handleCopyLink(invitation.id)}
+                  title="Copy invite link"
+                >
+                  {copiedId === invitation.id ? (
+                    <Check className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"

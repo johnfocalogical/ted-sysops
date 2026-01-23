@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Building2, Users, ChevronDown, Check, Plus } from 'lucide-react'
+import { Building2, Users, ChevronDown, Check, Plus, Settings } from 'lucide-react'
+import { isOrgOwner } from '@/lib/orgService'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -26,6 +27,26 @@ export function TeamSwitcher() {
   const { user } = useAuth()
   const { context, availableTeams, loadAvailableTeams, isAdmin } = useTeamContext()
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [orgOwnerStatus, setOrgOwnerStatus] = useState<Record<string, boolean>>({})
+
+  // Check org owner status when groups change
+  useEffect(() => {
+    const checkOwnerStatus = async () => {
+      if (!user || groupedTeams.length === 0) return
+
+      const statuses: Record<string, boolean> = {}
+      for (const group of groupedTeams) {
+        try {
+          statuses[group.orgId] = await isOrgOwner(group.orgId, user.id)
+        } catch {
+          statuses[group.orgId] = false
+        }
+      }
+      setOrgOwnerStatus(statuses)
+    }
+
+    checkOwnerStatus()
+  }, [user, availableTeams])
 
   // Group teams by organization
   const groupedTeams = useMemo<GroupedTeams[]>(() => {
@@ -73,6 +94,11 @@ export function TeamSwitcher() {
     navigate(`/org/${orgId}/team/${teamId}/dashboard`)
   }
 
+  // Handle org settings click
+  const handleOrgSettings = (orgId: string) => {
+    navigate(`/org/${orgId}/settings`)
+  }
+
   // Don't render if no context
   if (!context) return null
 
@@ -102,11 +128,24 @@ export function TeamSwitcher() {
         <DropdownMenuContent align="start" className="w-72">
           {groupedTeams.map((group, groupIndex) => (
             <div key={group.orgId}>
-              {/* Organization header */}
-              <DropdownMenuLabel className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider">
-                <Building2 className="h-3 w-3" />
-                {group.orgName}
-              </DropdownMenuLabel>
+              {/* Organization header - clickable for org owners */}
+              {orgOwnerStatus[group.orgId] ? (
+                <DropdownMenuItem
+                  onClick={() => handleOrgSettings(group.orgId)}
+                  className="flex items-center justify-between cursor-pointer hover:bg-muted/50 py-1.5"
+                >
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider">
+                    <Building2 className="h-3 w-3" />
+                    {group.orgName}
+                  </div>
+                  <Settings className="h-3.5 w-3.5 text-muted-foreground" />
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuLabel className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider">
+                  <Building2 className="h-3 w-3" />
+                  {group.orgName}
+                </DropdownMenuLabel>
+              )}
 
               {/* Teams in this organization */}
               {group.teams.map((team) => (
@@ -134,8 +173,8 @@ export function TeamSwitcher() {
             </div>
           ))}
 
-          {/* Create Team option (admin only) */}
-          {isAdmin() && (
+          {/* Create Team option (org owners only) */}
+          {orgOwnerStatus[context.organization.id] && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem

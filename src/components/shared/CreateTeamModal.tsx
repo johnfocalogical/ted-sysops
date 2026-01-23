@@ -70,55 +70,23 @@ export function CreateTeamModal({
       // Generate slug from team name
       const slug = generateSlug(data.teamName)
 
-      // Create the team
-      const { data: team, error: teamError } = await supabase
-        .from('teams')
-        .insert({
-          org_id: orgId,
-          name: data.teamName,
-          slug,
-          join_link_enabled: false,
-          default_role_id: null,
+      // Use SECURITY DEFINER function to create team atomically
+      // This bypasses RLS and handles team + member + role creation
+      const { data: result, error: rpcError } = await supabase
+        .rpc('create_team', {
+          p_org_id: orgId,
+          p_user_id: user.id,
+          p_team_name: data.teamName,
+          p_team_slug: slug,
         })
-        .select()
-        .single()
+        .single<{ out_team_id: string; out_team_member_id: string }>()
 
-      if (teamError) {
+      if (rpcError) {
         // Check for duplicate slug constraint violation
-        if (teamError.message.includes('teams_org_id_slug_key') || teamError.code === '23505') {
+        if (rpcError.message.includes('teams_org_id_slug_key') || rpcError.code === '23505') {
           throw new Error('A team with this name already exists in this organization. Please choose a different name.')
         }
-        throw new Error(teamError.message)
-      }
-
-      // The database trigger auto-installs role templates
-      // Now we need to add the current user as admin
-
-      // Get the Full Access role (created by trigger)
-      const { data: role, error: roleError } = await supabase
-        .from('team_roles')
-        .select('id')
-        .eq('team_id', team.id)
-        .eq('name', 'Full Access')
-        .single()
-
-      if (roleError) {
-        console.error('Could not find Full Access role:', roleError)
-        // Continue anyway - we'll add without a role
-      }
-
-      // Add current user as admin member
-      const { error: memberError } = await supabase
-        .from('team_members')
-        .insert({
-          team_id: team.id,
-          user_id: user.id,
-          role_id: role?.id || null,
-          permission_level: 'admin',
-        })
-
-      if (memberError) {
-        throw new Error(`Team created but could not add you as member: ${memberError.message}`)
+        throw new Error(rpcError.message)
       }
 
       // Refresh available teams
@@ -126,7 +94,7 @@ export function CreateTeamModal({
 
       // Reset form and notify parent
       form.reset()
-      onCreated(orgId, team.id)
+      onCreated(orgId, result.out_team_id)
     } catch (err) {
       console.error('Error creating team:', err)
       setError(err instanceof Error ? err.message : 'Failed to create team')

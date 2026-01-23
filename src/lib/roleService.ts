@@ -22,12 +22,11 @@ export async function getTeamRoles(teamId: string): Promise<RoleWithMemberCount[
   if (rolesError) throw rolesError
   if (!roles) return []
 
-  // Get member counts for each role
+  // Get member counts for each role (via junction table)
   const { data: memberCounts, error: countError } = await supabase
-    .from('team_members')
-    .select('role_id')
-    .eq('team_id', teamId)
-    .not('role_id', 'is', null)
+    .from('team_member_roles')
+    .select('role_id, team_member:team_members!inner(team_id)')
+    .eq('team_member.team_id', teamId)
 
   if (countError) throw countError
 
@@ -126,9 +125,9 @@ export async function deleteRole(roleId: string): Promise<void> {
 export async function canDeleteRole(roleId: string): Promise<{ canDelete: boolean; reason?: string }> {
   if (!supabase) throw new Error('Supabase not configured')
 
-  // Check if any members have this role
+  // Check if any members have this role (via junction table)
   const { count, error: countError } = await supabase
-    .from('team_members')
+    .from('team_member_roles')
     .select('id', { count: 'exact', head: true })
     .eq('role_id', roleId)
 
