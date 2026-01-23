@@ -12,26 +12,30 @@ Workflow-centric deal management platform for real estate investors and wholesal
 - **Design Theme**: Space Force - Futuristic military aesthetic with teal primary color
 
 ## Critical Context Files
-Before starting any feature, READ these relevant guides:
+Before starting any feature, READ these relevant guides in `docs/claude-context/`:
 
 ### Domain Knowledge
-- **REAL-ESTATE-DOMAIN.md** - Industry terminology, deal types, workflows, and business concepts
-- **AUTOMATOR-PATTERNS.md** - The automator/process engine (our core differentiator)
+- **docs/claude-context/REAL-ESTATE-DOMAIN.md** - Industry terminology, deal types, workflows, and business concepts
+- **docs/claude-context/AUTOMATOR-PATTERNS.md** - The automator/process engine (our core differentiator)
 
-### Technical Guides  
-- **SUPABASE-PATTERNS.md** - Database patterns, RLS, realtime subscriptions
-- **FINANCIAL-PATTERNS.md** - Approach to profit calculations, commissions, JV splits
-- **UI-PATTERNS.md** - Generic component patterns (how to build forms, tables, layouts)
-- **DESIGN-SYSTEM-SPACE-FORCE.md** - Specific design specs (colors, styles, Space Force theme) ⭐
+### Technical Guides
+- **docs/claude-context/SUPABASE-PATTERNS.md** - Database patterns, RLS, realtime subscriptions
+- **docs/claude-context/FINANCIAL-PATTERNS.md** - Approach to profit calculations, commissions, JV splits
+- **docs/claude-context/UI-PATTERNS.md** - Generic component patterns (how to build forms, tables, layouts)
+- **docs/claude-context/DESIGN-SYSTEM-SPACE-FORCE.md** - Specific design specs (colors, styles, Space Force theme)
 
 ### Data Reference
-- **DATA-SCHEMA.md** - High-level data model and relationships (specific schema in GitHub issues)
+- **docs/claude-context/DATA-SCHEMA.md** - High-level data model and relationships (specific schema in GitHub issues)
+
+### Project Documentation
+- **docs/PROJECT-ARCHITECTURE.md** - Comprehensive system architecture documentation
+- **docs/QA-TEST-PLAN.md** - Manual QA test plan with 59 test cases
 
 ## Design System Usage
 
 **We use TWO design-related files that work together:**
 
-### UI-PATTERNS.md (Generic "How To" Patterns)
+### docs/claude-context/UI-PATTERNS.md (Generic "How To" Patterns)
 Use this to learn:
 - How to structure forms with React Hook Form
 - How to build tables with sorting/filtering
@@ -39,7 +43,7 @@ Use this to learn:
 - Generic shadcn/ui component patterns
 - Layout patterns (tabs, master-detail, etc.)
 
-### DESIGN-SYSTEM-SPACE-FORCE.md (Specific "What Colors/Styles" Theme)
+### docs/claude-context/DESIGN-SYSTEM-SPACE-FORCE.md (Specific "What Colors/Styles" Theme)
 Use this to learn:
 - Exact colors to use (Teal #00D2AF primary, Purple #7C3AED accent)
 - Typography specs (Inter font, sizes)
@@ -52,8 +56,8 @@ Use this to learn:
 - DESIGN-SYSTEM tells you WHAT colors/styles to apply
 
 **Example workflow:**
-1. Read UI-PATTERNS.md: "Here's how to build a form with validation"
-2. Read DESIGN-SYSTEM-SPACE-FORCE.md: "Use teal for primary buttons, purple for automators"
+1. Read docs/claude-context/UI-PATTERNS.md: "Here's how to build a form with validation"
+2. Read docs/claude-context/DESIGN-SYSTEM-SPACE-FORCE.md: "Use teal for primary buttons, purple for automators"
 3. Build the form following both guides
 
 ## Project Architecture
@@ -127,8 +131,8 @@ Our app has a unique visual identity:
 3. **Check relevant context files** for patterns and approaches
    - Domain knowledge files for business concepts
    - Technical pattern files for implementation approach
-   - UI-PATTERNS.md for component structure
-   - DESIGN-SYSTEM-SPACE-FORCE.md for colors and styling
+   - docs/claude-context/UI-PATTERNS.md for component structure
+   - docs/claude-context/DESIGN-SYSTEM-SPACE-FORCE.md for colors and styling
 4. **Ask clarifying questions** if requirements are ambiguous
 5. **Build iteratively** - start simple, add complexity
 6. **Test as you go** - verify each piece works
@@ -204,7 +208,7 @@ Our app has a unique visual identity:
 - Expenses must be tracked per deal
 
 ### Design System
-- Always reference DESIGN-SYSTEM-SPACE-FORCE.md for colors
+- Always reference docs/claude-context/DESIGN-SYSTEM-SPACE-FORCE.md for colors
 - Don't use generic blue - use our teal (#00D2AF)
 - Purple is for special features (automators)
 - Test components in both light and dark themes
@@ -218,7 +222,7 @@ Our app has a unique visual identity:
 - Data modeling decisions
 - Performance concerns
 - Security implications
-- Which colors to use (check DESIGN-SYSTEM-SPACE-FORCE.md first)
+- Which colors to use (check docs/claude-context/DESIGN-SYSTEM-SPACE-FORCE.md first)
 
 **Don't ask me for:**
 - Specific business rules (they're in the issue)
@@ -276,8 +280,7 @@ npm run lint
 
 ### Design Resources
 - Theme CSS: src/globals.css
-- Design System: DESIGN-SYSTEM-SPACE-FORCE.md
-- Setup Guide: SPACE-FORCE-SETUP.md (reference)
+- Design System: docs/claude-context/DESIGN-SYSTEM-SPACE-FORCE.md
 - Primary Color: #00D2AF (Teal)
 - Accent Color: #7C3AED (Purple)
 
