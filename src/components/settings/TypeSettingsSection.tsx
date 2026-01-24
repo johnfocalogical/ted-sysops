@@ -16,6 +16,7 @@ import type {
 import { TypeList } from './TypeList'
 import { TypeFormModal } from './TypeFormModal'
 import { TypeCreationWizard } from './TypeCreationWizard'
+import { CustomFieldDefinitionManager } from './CustomFieldDefinitionManager'
 
 type TabValue = 'contact' | 'company'
 
@@ -30,6 +31,10 @@ export function TypeSettingsSection() {
     TeamContactTypeWithUsage | TeamCompanyTypeWithUsage | null
   >(null)
   const [editingEntityType, setEditingEntityType] = useState<'contact' | 'company'>('contact')
+  const [manageFieldsType, setManageFieldsType] = useState<
+    TeamContactTypeWithUsage | TeamCompanyTypeWithUsage | null
+  >(null)
+  const [manageFieldsEntityType, setManageFieldsEntityType] = useState<'contact' | 'company'>('contact')
 
   const loadTypes = async () => {
     if (!context) return
@@ -65,6 +70,14 @@ export function TypeSettingsSection() {
   ) => {
     setEditingType(type)
     setEditingEntityType(entityType)
+  }
+
+  const handleManageFields = (
+    type: TeamContactTypeWithUsage | TeamCompanyTypeWithUsage,
+    entityType: 'contact' | 'company'
+  ) => {
+    setManageFieldsType(type)
+    setManageFieldsEntityType(entityType)
   }
 
   if (!context) return null
@@ -124,6 +137,7 @@ export function TypeSettingsSection() {
                   types={contactTypes}
                   entityType="contact"
                   onEdit={(type) => handleEditType(type, 'contact')}
+                  onManageFields={(type) => handleManageFields(type, 'contact')}
                   onRefresh={loadTypes}
                 />
               </TabsContent>
@@ -133,6 +147,7 @@ export function TypeSettingsSection() {
                   types={companyTypes}
                   entityType="company"
                   onEdit={(type) => handleEditType(type, 'company')}
+                  onManageFields={(type) => handleManageFields(type, 'company')}
                   onRefresh={loadTypes}
                 />
               </TabsContent>
@@ -156,6 +171,14 @@ export function TypeSettingsSection() {
         entityType={editingEntityType}
         onClose={() => setEditingType(null)}
         onSaved={handleTypeSaved}
+      />
+
+      {/* Custom Field Definition Manager */}
+      <CustomFieldDefinitionManager
+        open={!!manageFieldsType}
+        onOpenChange={(open) => !open && setManageFieldsType(null)}
+        type={manageFieldsType}
+        entityType={manageFieldsEntityType}
       />
     </>
   )

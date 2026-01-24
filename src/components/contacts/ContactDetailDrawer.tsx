@@ -37,7 +37,7 @@ export function ContactDetailDrawer({
 
   return (
     <Sheet open={open} onOpenChange={handleClose}>
-      <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+      <SheetContent className="w-full sm:max-w-md flex flex-col overflow-hidden">
         <SheetHeader className="sr-only">
           <SheetTitle>{displayName}</SheetTitle>
         </SheetHeader>
@@ -52,10 +52,12 @@ export function ContactDetailDrawer({
             <p className="text-muted-foreground">Contact not found</p>
           </div>
         ) : (
-          <ContactSummaryPanel
-            contact={selectedContact}
-            onClose={handleClose}
-          />
+          <div className="flex-1 min-h-0">
+            <ContactSummaryPanel
+              contact={selectedContact}
+              onClose={handleClose}
+            />
+          </div>
         )}
       </SheetContent>
     </Sheet>

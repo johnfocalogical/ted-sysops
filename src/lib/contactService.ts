@@ -192,7 +192,15 @@ export async function getContactById(contactId: string): Promise<ContactWithDeta
           id,
           name,
           city,
-          state
+          state,
+          type_assignments:company_type_assignments (
+            type:team_company_types (
+              id,
+              name,
+              icon,
+              color
+            )
+          )
         ),
         work_methods:contact_methods (*)
       ),
@@ -224,7 +232,13 @@ export async function getContactById(contactId: string): Promise<ContactWithDeta
     is_primary: boolean
     created_at: string
     updated_at: string
-    company: { id: string; name: string; city: string | null; state: string | null }
+    company: {
+      id: string
+      name: string
+      city: string | null
+      state: string | null
+      type_assignments?: Array<{ type: { id: string; name: string; icon: string; color: string } }>
+    }
     work_methods: typeof data.contact_methods
   }) => ({
     id: cl.id,
@@ -234,7 +248,15 @@ export async function getContactById(contactId: string): Promise<ContactWithDeta
     is_primary: cl.is_primary,
     created_at: cl.created_at,
     updated_at: cl.updated_at,
-    company: cl.company,
+    company: {
+      id: cl.company.id,
+      name: cl.company.name,
+      city: cl.company.city,
+      state: cl.company.state,
+      types: (cl.company.type_assignments || [])
+        .map((ta) => ta.type)
+        .filter(Boolean),
+    },
     contact_methods: cl.work_methods || [],
   }))
 

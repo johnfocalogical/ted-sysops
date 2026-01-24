@@ -70,6 +70,12 @@ export interface ContactCompanyFromContact {
     name: string
     city: string | null
     state: string | null
+    types: Array<{
+      id: string
+      name: string
+      icon: string
+      color: string
+    }>
   }
   contact_methods: ContactMethod[]
 }

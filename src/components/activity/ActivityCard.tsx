@@ -103,8 +103,52 @@ export function ActivityCard({
     loadActivities(false)
   }
 
+  // Compact mode with fixed header/input and scrollable timeline
+  if (compact) {
+    return (
+      <div className="flex flex-col h-full">
+        {/* Header - Fixed */}
+        {showHeader && (
+          <div className="flex items-center gap-2 text-base font-semibold shrink-0 pb-2">
+            <MessageSquare className="h-4 w-4" />
+            Activity
+            {activities.length > 0 && (
+              <span className="text-sm font-normal text-muted-foreground">
+                ({activities.length})
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Timeline - Scrollable */}
+        <div className="flex-1 overflow-y-auto min-h-0">
+          <ActivityTimeline
+            activities={activities}
+            currentUserId={user?.id}
+            onDelete={handleDeleteComment}
+            onLoadMore={handleLoadMore}
+            hasMore={hasMore}
+            loading={loading}
+            compact={compact}
+            maxItems={maxItems}
+          />
+        </div>
+
+        {/* Comment Input - Fixed at bottom */}
+        <div className="shrink-0 pt-2 border-t mt-2">
+          <CommentInput
+            onSubmit={handleAddComment}
+            compact={compact}
+            placeholder="Add a comment..."
+          />
+        </div>
+      </div>
+    )
+  }
+
+  // Full mode with Card wrapper
   const content = (
-    <div className={compact ? 'space-y-3' : 'space-y-4'}>
+    <div className="space-y-4">
       <CommentInput
         onSubmit={handleAddComment}
         compact={compact}

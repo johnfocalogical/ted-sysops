@@ -9,10 +9,8 @@ import {
   Phone,
   Trash2,
   User,
-  Link as LinkIcon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ContactTypeBadge } from '@/components/contacts/ContactTypeBadge'
 import { ContactForm } from '@/components/contacts/ContactForm'
@@ -27,7 +25,7 @@ import { saveContactMethodsForContact } from '@/lib/contactMethodHelpers'
 import { createCompany, linkContactToCompany } from '@/lib/companyService'
 import { getContactCustomFieldsGroupedByType } from '@/lib/customFieldValueService'
 import { toast } from 'sonner'
-import type { ContactWithDetails, ContactMethod } from '@/types/contact.types'
+import type { ContactWithDetails } from '@/types/contact.types'
 import type { CustomFieldsGroupedByType } from '@/types/custom-fields.types'
 import type { CompanyTypeSection } from '@/components/shared/CompanyTypeSectionsInput'
 
@@ -178,18 +176,6 @@ export function ContactDetailPage() {
       : contact.first_name
     : ''
 
-  // Group contact methods by type
-  const groupedMethods = contact?.contact_methods.reduce(
-    (acc, method) => {
-      if (!acc[method.method_type]) {
-        acc[method.method_type] = []
-      }
-      acc[method.method_type].push(method)
-      return acc
-    },
-    {} as Record<string, ContactMethod[]>
-  )
-
   // Get primary phone and email
   const primaryPhone = contact?.contact_methods.find(
     (m) => m.method_type === 'phone' && m.is_primary
@@ -231,30 +217,26 @@ export function ContactDetailPage() {
           Cancel Editing
         </Button>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Edit Contact</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ContactForm
-              contact={contact}
-              contactTypes={contactTypes}
-              companyTypes={companyTypes}
-              teamId={contact.team_id}
-              onSubmit={handleSubmit}
-              onCancel={() => setIsEditing(false)}
-              isSubmitting={isSubmitting}
-            />
-          </CardContent>
-        </Card>
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Edit Contact</h2>
+          <ContactForm
+            contact={contact}
+            contactTypes={contactTypes}
+            companyTypes={companyTypes}
+            teamId={contact.team_id}
+            onSubmit={handleSubmit}
+            onCancel={() => setIsEditing(false)}
+            isSubmitting={isSubmitting}
+          />
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col h-[calc(100vh-120px)]">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between shrink-0 pb-4">
         <Button variant="ghost" size="sm" asChild>
           <Link to={`/org/${orgId}/team/${teamId}/contacts`}>
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -278,15 +260,17 @@ export function ContactDetailPage() {
         </div>
       </div>
 
-      {/* Contact Header Card */}
-      <Card>
-        <CardHeader>
+      {/* Main Content - Two Column Layout */}
+      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Column - Scrollable */}
+        <div className="overflow-y-auto space-y-4 pr-2">
+          {/* Contact Header */}
           <div className="flex items-start gap-4">
-            <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-xl">
+            <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-xl shrink-0">
               <User className="h-8 w-8" />
             </div>
-            <div className="flex-1">
-              <CardTitle className="text-2xl">{displayName}</CardTitle>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl font-bold truncate">{displayName}</h1>
               {contact.types.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-2">
                   {contact.types.map((type) => (
@@ -317,159 +301,95 @@ export function ContactDetailPage() {
               </div>
             </div>
           </div>
-        </CardHeader>
-      </Card>
-
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Column */}
-        <div className="space-y-6">
-          {/* Notes */}
-          {contact.notes && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Notes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm whitespace-pre-wrap">{contact.notes}</p>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Contact Methods */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Contact Methods</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {contact.contact_methods.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No contact methods</p>
-              ) : (
-                <>
-                  {groupedMethods?.phone && groupedMethods.phone.length > 0 && (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm font-medium">
-                        <Phone className="h-4 w-4" />
-                        Phone
-                      </div>
-                      {groupedMethods.phone.map((method) => (
-                        <div key={method.id} className="flex items-center justify-between pl-6">
-                          <div>
-                            <span className="text-sm text-muted-foreground">{method.label}: </span>
-                            <a href={`tel:${method.value}`} className="text-sm hover:underline">
-                              {method.value}
-                            </a>
-                          </div>
-                          {method.is_primary && (
-                            <Badge variant="secondary" className="text-xs">Primary</Badge>
-                          )}
-                        </div>
-                      ))}
+          {contact.contact_methods.length > 0 && (
+            <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+              <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Contact Info
+              </div>
+              <div className="space-y-2">
+                {contact.contact_methods.map((method) => (
+                  <div key={method.id} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm">
+                      {method.method_type === 'phone' ? (
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                      ) : method.method_type === 'email' ? (
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <span className="w-4" />
+                      )}
+                      {method.method_type === 'phone' ? (
+                        <a href={`tel:${method.value}`} className="hover:text-primary">
+                          {method.value}
+                        </a>
+                      ) : method.method_type === 'email' ? (
+                        <a href={`mailto:${method.value}`} className="hover:text-primary">
+                          {method.value}
+                        </a>
+                      ) : (
+                        <span>{method.value}</span>
+                      )}
+                      {method.label && (
+                        <span className="text-xs text-muted-foreground">({method.label})</span>
+                      )}
                     </div>
-                  )}
-
-                  {groupedMethods?.email && groupedMethods.email.length > 0 && (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm font-medium">
-                        <Mail className="h-4 w-4" />
-                        Email
-                      </div>
-                      {groupedMethods.email.map((method) => (
-                        <div key={method.id} className="flex items-center justify-between pl-6">
-                          <div>
-                            <span className="text-sm text-muted-foreground">{method.label}: </span>
-                            <a href={`mailto:${method.value}`} className="text-sm hover:underline">
-                              {method.value}
-                            </a>
-                          </div>
-                          {method.is_primary && (
-                            <Badge variant="secondary" className="text-xs">Primary</Badge>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {groupedMethods?.fax && groupedMethods.fax.length > 0 && (
-                    <div className="space-y-2">
-                      <div className="text-sm font-medium">Fax</div>
-                      {groupedMethods.fax.map((method) => (
-                        <div key={method.id} className="flex items-center justify-between pl-6">
-                          <div>
-                            <span className="text-sm text-muted-foreground">{method.label}: </span>
-                            <span className="text-sm">{method.value}</span>
-                          </div>
-                          {method.is_primary && (
-                            <Badge variant="secondary" className="text-xs">Primary</Badge>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {groupedMethods?.other && groupedMethods.other.length > 0 && (
-                    <div className="space-y-2">
-                      <div className="text-sm font-medium">Other</div>
-                      {groupedMethods.other.map((method) => (
-                        <div key={method.id} className="flex items-center justify-between pl-6">
-                          <div>
-                            <span className="text-sm text-muted-foreground">{method.label}: </span>
-                            <span className="text-sm">{method.value}</span>
-                          </div>
-                          {method.is_primary && (
-                            <Badge variant="secondary" className="text-xs">Primary</Badge>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Custom Fields */}
-          {customFieldGroups.length > 0 && (
-            <CustomFieldsDisplay groups={customFieldGroups} />
+                    {method.is_primary && (
+                      <Badge variant="secondary" className="text-xs">Primary</Badge>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
-        </div>
 
-        {/* Right Column */}
-        <div className="space-y-6">
           {/* Companies */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Building2 className="h-4 w-4" />
-                Companies ({contact.companies.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {contact.companies.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No company links</p>
-              ) : (
-                contact.companies.map((link) => (
-                  <div key={link.id} className="p-3 border rounded-lg">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              <Building2 className="h-3 w-3" />
+              Companies ({contact.companies.length})
+            </div>
+            {contact.companies.length === 0 ? (
+              <p className="text-sm text-muted-foreground pl-1">No company links</p>
+            ) : (
+              <div className="space-y-2">
+                {contact.companies.map((link) => (
+                  <div
+                    key={link.id}
+                    className="rounded-lg border bg-muted/30 p-4 space-y-2"
+                  >
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="font-medium">{link.company.name}</div>
                         {link.role_title && (
-                          <p className="text-sm text-muted-foreground">{link.role_title}</p>
-                        )}
-                        {link.company.city && (
-                          <p className="text-xs text-muted-foreground">
-                            {link.company.city}
-                            {link.company.state && `, ${link.company.state}`}
-                          </p>
+                          <div className="text-sm text-muted-foreground">{link.role_title}</div>
                         )}
                       </div>
                       {link.is_primary && (
                         <Badge variant="secondary" className="text-xs">Primary</Badge>
                       )}
                     </div>
-                    {/* Work contact methods */}
+                    {/* Company Types */}
+                    {link.company.types && link.company.types.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {link.company.types.map((type) => (
+                          <Badge
+                            key={type.id}
+                            variant="outline"
+                            className="text-xs"
+                            style={{
+                              borderColor: type.color,
+                              color: type.color,
+                            }}
+                          >
+                            {type.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                    {/* Relationship Contact Methods */}
                     {link.contact_methods.length > 0 && (
-                      <div className="mt-2 pt-2 border-t space-y-1">
+                      <div className="space-y-1 pt-2 border-t border-border/50">
                         {link.contact_methods.map((method) => (
                           <div key={method.id} className="flex items-center gap-2 text-sm">
                             {method.method_type === 'phone' ? (
@@ -477,45 +397,69 @@ export function ContactDetailPage() {
                             ) : method.method_type === 'email' ? (
                               <Mail className="h-3 w-3 text-muted-foreground" />
                             ) : (
-                              <LinkIcon className="h-3 w-3 text-muted-foreground" />
+                              <span className="w-3" />
                             )}
-                            <span className="text-muted-foreground">{method.label}:</span>
                             {method.method_type === 'phone' ? (
-                              <a href={`tel:${method.value}`} className="hover:underline">
+                              <a href={`tel:${method.value}`} className="hover:text-primary">
                                 {method.value}
                               </a>
                             ) : method.method_type === 'email' ? (
-                              <a href={`mailto:${method.value}`} className="hover:underline">
+                              <a href={`mailto:${method.value}`} className="hover:text-primary">
                                 {method.value}
                               </a>
                             ) : (
                               <span>{method.value}</span>
+                            )}
+                            {method.label && (
+                              <span className="text-xs text-muted-foreground">({method.label})</span>
                             )}
                           </div>
                         ))}
                       </div>
                     )}
                   </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
+                ))}
+              </div>
+            )}
+          </div>
 
-          {/* Activity */}
-          {teamId && (
-            <ActivityCard
-              entityType="contact"
-              entityId={contact.id}
-              teamId={teamId}
-            />
+          {/* Notes */}
+          {contact.notes && (
+            <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
+              <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Notes
+              </div>
+              <p className="text-sm whitespace-pre-wrap">{contact.notes}</p>
+            </div>
           )}
 
-          {/* Metadata */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
+          {/* Custom Fields */}
+          {customFieldGroups.length > 0 && (
+            <CustomFieldsDisplay groups={customFieldGroups} />
+          )}
+        </div>
+
+        {/* Right Column - Activity (Full Height) */}
+        <div className="flex flex-col min-h-0">
+          {/* Activity Card - Takes most of the space */}
+          <div className="flex-1 min-h-0 rounded-lg border bg-muted/30 p-4">
+            {teamId && (
+              <ActivityCard
+                entityType="contact"
+                entityId={contact.id}
+                teamId={teamId}
+                compact
+                showHeader
+              />
+            )}
+          </div>
+
+          {/* Details Footer */}
+          <div className="shrink-0 mt-4 rounded-lg border bg-muted/30 p-4">
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+              Details
+            </div>
+            <div className="space-y-1 text-sm">
               <div>
                 <span className="text-muted-foreground">Created: </span>
                 {new Date(contact.created_at).toLocaleDateString()}
@@ -527,8 +471,8 @@ export function ContactDetailPage() {
                 <span className="text-muted-foreground">Last updated: </span>
                 {new Date(contact.updated_at).toLocaleDateString()}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
 

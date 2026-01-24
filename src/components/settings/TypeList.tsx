@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { MoreHorizontal, Pencil, Power, PowerOff, Trash2 } from 'lucide-react'
+import { MoreHorizontal, Pencil, Power, PowerOff, Settings2, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -39,10 +39,11 @@ interface TypeListProps {
   types: (TeamContactTypeWithUsage | TeamCompanyTypeWithUsage)[]
   entityType: 'contact' | 'company'
   onEdit: (type: TeamContactTypeWithUsage | TeamCompanyTypeWithUsage) => void
+  onManageFields?: (type: TeamContactTypeWithUsage | TeamCompanyTypeWithUsage) => void
   onRefresh: () => void
 }
 
-export function TypeList({ types, entityType, onEdit, onRefresh }: TypeListProps) {
+export function TypeList({ types, entityType, onEdit, onManageFields, onRefresh }: TypeListProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deletingType, setDeletingType] = useState<
     TeamContactTypeWithUsage | TeamCompanyTypeWithUsage | null
@@ -169,6 +170,10 @@ export function TypeList({ types, entityType, onEdit, onRefresh }: TypeListProps
                   <DropdownMenuItem onClick={() => onEdit(type)}>
                     <Pencil className="h-4 w-4 mr-2" />
                     Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onManageFields?.(type)}>
+                    <Settings2 className="h-4 w-4 mr-2" />
+                    Manage Fields
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleToggleActive(type)}>
                     {type.is_active ? (

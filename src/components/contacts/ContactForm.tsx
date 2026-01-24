@@ -1,8 +1,9 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Loader2 } from 'lucide-react'
+import { Building2, Loader2, Mail, Phone } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
   Form,
   FormControl,
@@ -131,43 +132,50 @@ export function ContactForm({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         {/* Name Fields */}
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="first_name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>First Name *</FormLabel>
-                <FormControl>
-                  <Input placeholder="John" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="last_name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Last Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Smith" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <div className="rounded-lg border bg-muted/30 p-4">
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
+            Basic Info
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="first_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>First Name *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="John" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="last_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Last Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Smith" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
 
         {/* Contact Types */}
-        <FormField
-          control={form.control}
-          name="type_ids"
-          render={() => (
-            <FormItem>
-              <FormLabel>Contact Types</FormLabel>
-              <div className="border rounded-md p-3">
+        <div className="rounded-lg border bg-muted/30 p-4">
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
+            Contact Types
+          </div>
+          <FormField
+            control={form.control}
+            name="type_ids"
+            render={() => (
+              <FormItem>
                 <div className="grid grid-cols-2 gap-2">
                   {contactTypes.map((type) => (
                     <div key={type.id} className="flex items-center gap-2">
@@ -185,35 +193,103 @@ export function ContactForm({
                     </div>
                   ))}
                 </div>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
-        {/* Company Type Sections - For creating new companies */}
-        <FormField
-          control={form.control}
-          name="company_sections"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Companies</FormLabel>
-              <CompanyTypeSectionsInput
-                value={field.value || []}
-                onChange={field.onChange}
-                companyTypes={companyTypes}
-                disabled={isSubmitting}
-              />
-              <FormMessage />
-            </FormItem>
+        {/* Companies Section */}
+        <div className="rounded-lg border bg-muted/30 p-4 space-y-4">
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+            <Building2 className="h-3 w-3" />
+            Companies
+          </div>
+
+          {/* Existing Linked Companies (read-only) */}
+          {contact?.companies && contact.companies.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-xs text-muted-foreground">
+                Linked Companies
+              </div>
+              <div className="space-y-2">
+                {contact.companies.map((link) => (
+                  <div
+                    key={link.id}
+                    className="rounded-lg border bg-background/50 p-3 space-y-2"
+                  >
+                    <div className="font-medium text-sm">{link.company.name}</div>
+                    {link.role_title && (
+                      <div className="text-xs text-muted-foreground">{link.role_title}</div>
+                    )}
+                    {/* Company Types */}
+                    {link.company.types && link.company.types.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {link.company.types.map((type) => (
+                          <Badge
+                            key={type.id}
+                            variant="outline"
+                            className="text-xs px-1.5 py-0"
+                            style={{
+                              borderColor: type.color,
+                              color: type.color,
+                            }}
+                          >
+                            {type.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                    {/* Relationship Contact Methods */}
+                    {link.contact_methods.length > 0 && (
+                      <div className="space-y-1 pt-1 border-t border-border/50">
+                        {link.contact_methods.map((method) => (
+                          <div key={method.id} className="flex items-center gap-2 text-xs">
+                            {method.method_type === 'phone' ? (
+                              <Phone className="h-3 w-3 text-muted-foreground" />
+                            ) : method.method_type === 'email' ? (
+                              <Mail className="h-3 w-3 text-muted-foreground" />
+                            ) : null}
+                            <span>{method.value}</span>
+                            {method.label && (
+                              <span className="text-muted-foreground">({method.label})</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
-        />
+
+          {/* Add New Company Section */}
+          <FormField
+            control={form.control}
+            name="company_sections"
+            render={({ field }) => (
+              <FormItem>
+                <div className="text-xs text-muted-foreground">
+                  Add New Company
+                </div>
+                <CompanyTypeSectionsInput
+                  value={field.value || []}
+                  onChange={field.onChange}
+                  companyTypes={companyTypes}
+                  disabled={isSubmitting}
+                />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         {/* Custom Fields (grouped by type) */}
         {customFields.sections.length > 0 && (
-          <div className="space-y-4 pt-2">
-            <div className="border-b pb-2">
-              <h3 className="text-sm font-medium">Custom Fields</h3>
+          <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Custom Fields
             </div>
             <CustomFieldsForm
               sections={customFields.sections}
@@ -227,40 +303,49 @@ export function ContactForm({
         )}
 
         {/* Contact Methods */}
-        <FormField
-          control={form.control}
-          name="contact_methods"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Contact Methods</FormLabel>
-              <ContactMethodsInput
-                value={field.value || []}
-                onChange={field.onChange}
-              />
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+            <Phone className="h-3 w-3" />
+            Contact Methods
+          </div>
+          <FormField
+            control={form.control}
+            name="contact_methods"
+            render={({ field }) => (
+              <FormItem>
+                <ContactMethodsInput
+                  value={field.value || []}
+                  onChange={field.onChange}
+                />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         {/* Notes */}
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Notes</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Additional notes about this contact..."
-                  className="resize-none"
-                  rows={3}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            Notes
+          </div>
+          <FormField
+            control={form.control}
+            name="notes"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Textarea
+                    placeholder="Additional notes about this contact..."
+                    className="resize-none bg-background"
+                    rows={3}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         {/* Actions */}
         <div className="flex justify-end gap-2 pt-4">
