@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -16,7 +15,9 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import type { ContactType, ContactWithDetails, ContactMethodInput } from '@/types/contact.types'
+import type { CompanyType } from '@/types/company.types'
 import { ContactMethodsInput } from '@/components/shared/ContactMethodsInput'
+import { CompanyTypeSectionsInput, type CompanyTypeSection } from '@/components/shared/CompanyTypeSectionsInput'
 import { CustomFieldsForm } from '@/components/custom-fields'
 import { useCustomFields } from '@/hooks/useCustomFields'
 
@@ -33,6 +34,21 @@ const contactSchema = z.object({
       is_primary: z.boolean(),
     })
   ).optional(),
+  company_sections: z.array(
+    z.object({
+      type_id: z.string(),
+      type_name: z.string(),
+      company_name: z.string().min(1, 'Company name is required'),
+      contact_methods: z.array(
+        z.object({
+          method_type: z.enum(['phone', 'email', 'fax', 'other']),
+          label: z.string(),
+          value: z.string().min(1),
+          is_primary: z.boolean(),
+        })
+      ).optional(),
+    })
+  ).optional(),
 })
 
 type ContactFormData = z.infer<typeof contactSchema>
@@ -40,6 +56,8 @@ type ContactFormData = z.infer<typeof contactSchema>
 interface ContactFormProps {
   contact?: ContactWithDetails | null
   contactTypes: ContactType[]
+  companyTypes: CompanyType[]
+  teamId: string
   onSubmit: (
     data: ContactFormData,
     saveCustomFields: (entityId: string) => Promise<void>
@@ -51,6 +69,8 @@ interface ContactFormProps {
 export function ContactForm({
   contact,
   contactTypes,
+  companyTypes,
+  teamId,
   onSubmit,
   onCancel,
   isSubmitting = false,
@@ -68,6 +88,8 @@ export function ContactForm({
         value: m.value,
         is_primary: m.is_primary,
       })) || [],
+      // Company sections are for creating NEW companies - don't pre-populate from existing links
+      company_sections: [],
     },
   })
 
@@ -164,6 +186,24 @@ export function ContactForm({
                   ))}
                 </div>
               </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Company Type Sections - For creating new companies */}
+        <FormField
+          control={form.control}
+          name="company_sections"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Companies</FormLabel>
+              <CompanyTypeSectionsInput
+                value={field.value || []}
+                onChange={field.onChange}
+                companyTypes={companyTypes}
+                disabled={isSubmitting}
+              />
               <FormMessage />
             </FormItem>
           )}

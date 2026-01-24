@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -8,9 +8,12 @@ import {
 } from '@/components/ui/dialog'
 import { ContactForm } from './ContactForm'
 import { useContactStore } from '@/hooks/useContactStore'
+import { useCompanyStore } from '@/hooks/useCompanyStore'
 import { useAuth } from '@/hooks/useAuth'
 import { createContact } from '@/lib/contactService'
+import { createCompany, linkContactToCompany } from '@/lib/companyService'
 import { toast } from 'sonner'
+import type { CompanyTypeSection } from '@/components/shared/CompanyTypeSectionsInput'
 
 interface CreateContactModalProps {
   open: boolean
@@ -25,7 +28,16 @@ export function CreateContactModal({
 }: CreateContactModalProps) {
   const { user } = useAuth()
   const { contactTypes, refreshList } = useContactStore()
+  const { companyTypes, loadCompanyTypes, setTeamId } = useCompanyStore()
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Load company types when modal opens
+  useEffect(() => {
+    if (open && teamId) {
+      setTeamId(teamId)
+      loadCompanyTypes()
+    }
+  }, [open, teamId, setTeamId, loadCompanyTypes])
 
   const handleSubmit = async (
     data: {
@@ -34,6 +46,7 @@ export function CreateContactModal({
       notes?: string
       type_ids?: string[]
       contact_methods?: { method_type: 'phone' | 'email' | 'fax' | 'other'; label: string; value: string; is_primary: boolean }[]
+      company_sections?: CompanyTypeSection[]
     },
     saveCustomFields: (entityId: string) => Promise<void>
   ) => {
@@ -56,6 +69,28 @@ export function CreateContactModal({
       // Save custom field values
       if (contact?.id) {
         await saveCustomFields(contact.id)
+
+        // Create companies and link them
+        if (data.company_sections?.length) {
+          for (const section of data.company_sections) {
+            // Create the company with the selected type
+            const company = await createCompany(
+              {
+                team_id: teamId,
+                name: section.company_name,
+                type_ids: [section.type_id],
+              },
+              user.id
+            )
+
+            // Link contact to company with relationship-level contact methods
+            await linkContactToCompany({
+              contact_id: contact.id,
+              company_id: company.id,
+              contact_methods: section.contact_methods,
+            })
+          }
+        }
       }
 
       toast.success('Contact created successfully')
@@ -80,6 +115,8 @@ export function CreateContactModal({
         </DialogHeader>
         <ContactForm
           contactTypes={contactTypes}
+          companyTypes={companyTypes}
+          teamId={teamId}
           onSubmit={handleSubmit}
           onCancel={() => onOpenChange(false)}
           isSubmitting={isSubmitting}

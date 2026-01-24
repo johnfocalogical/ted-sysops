@@ -41,6 +41,7 @@ import { PayTime } from '@/pages/PayTime'
 import { TeamDashboard } from '@/pages/TeamDashboard'
 import { Whiteboard } from '@/pages/Whiteboard'
 import { ContactHub } from '@/pages/ContactHub'
+import { ContactDetailPage } from '@/pages/ContactDetailPage'
 import { Employees } from '@/pages/Employees'
 import { Transactions } from '@/pages/Transactions'
 import { CalendarPage } from '@/pages/CalendarPage'
@@ -149,6 +150,11 @@ function App() {
           <Route path="contacts" element={
             <SectionAccessGuard section="contacts">
               <ContactHub />
+            </SectionAccessGuard>
+          } />
+          <Route path="contacts/:contactId" element={
+            <SectionAccessGuard section="contacts">
+              <ContactDetailPage />
             </SectionAccessGuard>
           } />
           <Route path="employees" element={

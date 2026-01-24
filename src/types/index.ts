@@ -140,3 +140,15 @@ export {
   OPTION_FIELD_TYPES,
   LINK_FIELD_TYPES,
 } from './custom-fields.types'
+
+// Activity log types
+export type {
+  ActivityType,
+  ActivityEntityType,
+  ActivityLog,
+  ActivityLogWithUser,
+  CreateActivityLogDTO,
+  ActivityLogsParams,
+  UserActivityParams,
+  PaginatedActivityLogs,
+} from './activity.types'
