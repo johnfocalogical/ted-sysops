@@ -17,6 +17,7 @@ import { TeamRedirect } from '@/components/shared/TeamRedirect'
 import { AppLayout } from '@/components/layouts/AppLayout'
 import { AdminLayout } from '@/components/admin/AdminLayout'
 import { OrgSettingsLayout } from '@/components/layouts/OrgSettingsLayout'
+import { TeamSettingsLayout } from '@/components/settings/TeamSettingsLayout'
 
 // Admin pages
 import { AdminDashboard } from '@/pages/admin/AdminDashboard'
@@ -46,7 +47,12 @@ import { Employees } from '@/pages/Employees'
 import { Transactions } from '@/pages/Transactions'
 import { CalendarPage } from '@/pages/CalendarPage'
 import { Reports } from '@/pages/Reports'
-import { SettingsPage } from '@/pages/SettingsPage'
+// Team settings pages
+import { SettingsHomePage } from '@/pages/settings/SettingsHomePage'
+import { TeamMembersPage } from '@/pages/settings/TeamMembersPage'
+import { RolesPage } from '@/pages/settings/RolesPage'
+import { ContactTypesPage } from '@/pages/settings/ContactTypesPage'
+import { CompanyTypesPage } from '@/pages/settings/CompanyTypesPage'
 
 function App() {
   return (
@@ -177,12 +183,27 @@ function App() {
               <Reports />
             </SectionAccessGuard>
           } />
-          <Route path="settings" element={
-            <SectionAccessGuard section="settings">
-              <SettingsPage />
-            </SectionAccessGuard>
-          } />
           <Route path="access-denied" element={<AccessDeniedPage />} />
+        </Route>
+
+        {/* Team settings routes (dedicated layout) */}
+        <Route
+          path="/org/:orgId/team/:teamId/settings"
+          element={
+            <ProtectedRoute>
+              <TeamAccessGuard>
+                <SectionAccessGuard section="settings">
+                  <TeamSettingsLayout />
+                </SectionAccessGuard>
+              </TeamAccessGuard>
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<SettingsHomePage />} />
+          <Route path="team-members" element={<TeamMembersPage />} />
+          <Route path="roles" element={<RolesPage />} />
+          <Route path="contact-types" element={<ContactTypesPage />} />
+          <Route path="company-types" element={<CompanyTypesPage />} />
         </Route>
       </Routes>
       <Toaster />
