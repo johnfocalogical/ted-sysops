@@ -5,8 +5,6 @@ import type { ActivityLogWithUser } from '@/types/activity.types'
 
 interface ActivityTimelineProps {
   activities: ActivityLogWithUser[]
-  currentUserId?: string
-  onDelete?: (activityId: string) => Promise<void>
   onLoadMore?: () => void
   hasMore?: boolean
   loading?: boolean
@@ -16,8 +14,6 @@ interface ActivityTimelineProps {
 
 export function ActivityTimeline({
   activities,
-  currentUserId,
-  onDelete,
   onLoadMore,
   hasMore = false,
   loading = false,
@@ -53,8 +49,6 @@ export function ActivityTimeline({
         <ActivityItem
           key={activity.id}
           activity={activity}
-          currentUserId={currentUserId}
-          onDelete={onDelete}
           compact={compact}
         />
       ))}

@@ -17,9 +17,8 @@ import {
   getCommissionRulesForEmployee,
   updateCommissionRule,
   deleteCommissionRule,
-  generateCommissionSummary,
 } from '@/lib/commissionRuleService'
-import { createActivityLog } from '@/lib/activityLogService'
+import { logCommissionRuleChange } from '@/lib/employeeActivityHelpers'
 import { useAuth } from '@/hooks/useAuth'
 import { toast } from 'sonner'
 import type { CommissionRuleWithCreator } from '@/types/commission.types'
@@ -81,17 +80,14 @@ export function CommissionRulesSection({
       toast.success(`${action} commission rule`)
 
       if (user) {
-        await createActivityLog(
-          {
-            team_id: teamId,
-            entity_type: 'employee',
-            activity_type: 'updated',
-            employee_profile_id: employeeProfileId,
-            content: `${action} commission rule: ${rule.name}`,
-            metadata: { commission_rule_id: rule.id },
-          },
-          user.id
-        )
+        await logCommissionRuleChange({
+          teamId,
+          employeeProfileId,
+          userId: user.id,
+          action: 'updated',
+          rule: { ...rule, is_active: !rule.is_active },
+          previousRule: { ...rule },
+        })
       }
 
       loadRules()
@@ -108,20 +104,13 @@ export function CommissionRulesSection({
       await deleteCommissionRule(deletingRule.id)
       toast.success('Commission rule deleted')
 
-      await createActivityLog(
-        {
-          team_id: teamId,
-          entity_type: 'employee',
-          activity_type: 'deleted',
-          employee_profile_id: employeeProfileId,
-          content: `Deleted commission rule: ${deletingRule.name}`,
-          metadata: {
-            commission_rule_id: deletingRule.id,
-            calculation_type: deletingRule.calculation_type,
-          },
-        },
-        user.id
-      )
+      await logCommissionRuleChange({
+        teamId,
+        employeeProfileId,
+        userId: user.id,
+        action: 'deleted',
+        rule: { ...deletingRule },
+      })
 
       setDeletingRule(null)
       loadRules()
@@ -134,34 +123,25 @@ export function CommissionRulesSection({
   const handleSaved = async () => {
     if (!user) return
 
-    // Log activity for create/update
-    const action = editingRule ? 'Updated' : 'Created'
-    const ruleName = editingRule?.name || 'New rule'
-
     // Reload first so we have the latest data
     const updatedRules = await getCommissionRulesForEmployee(employeeProfileId)
     setRules(updatedRules)
 
-    // Find the newly created/updated rule for metadata
+    // Find the newly created/updated rule
     const latestRule = editingRule
       ? updatedRules.find((r) => r.id === editingRule.id)
-      : updatedRules[0] // Newest is first (sorted by priority desc, date desc)
+      : updatedRules[0]
 
-    await createActivityLog(
-      {
-        team_id: teamId,
-        entity_type: 'employee',
-        activity_type: editingRule ? 'updated' : 'created',
-        employee_profile_id: employeeProfileId,
-        content: `${action} commission rule: ${latestRule?.name || ruleName}`,
-        metadata: {
-          commission_rule_id: latestRule?.id,
-          calculation_type: latestRule?.calculation_type,
-          summary: latestRule ? generateCommissionSummary(latestRule) : undefined,
-        },
-      },
-      user.id
-    )
+    if (latestRule) {
+      await logCommissionRuleChange({
+        teamId,
+        employeeProfileId,
+        userId: user.id,
+        action: editingRule ? 'updated' : 'created',
+        rule: { ...latestRule },
+        previousRule: editingRule ? { ...editingRule } : undefined,
+      })
+    }
   }
 
   return (

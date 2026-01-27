@@ -16,15 +16,19 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { EmployeeStatusBadge, DepartmentBadge } from '@/components/employees'
 import { EmployeeProfileForm } from '@/components/employees/EmployeeProfileForm'
+import { TypeBadge } from '@/components/shared/TypeBadge'
 import { ActivityCard } from '@/components/activity'
 import { CommissionRulesSection } from '@/components/commissions'
 import { useAuth } from '@/hooks/useAuth'
 import { useTeamContext } from '@/hooks/useTeamContext'
 import { getEmployeeProfileById, updateEmployeeProfile } from '@/lib/employeeService'
 import { getActiveDepartments } from '@/lib/departmentService'
-import { createActivityLog } from '@/lib/activityLogService'
+import { getActiveTeamEmployeeTypes } from '@/lib/teamTypeService'
+import { getEmployeeTypeAssignments, setEmployeeTypes } from '@/lib/employeeTypeAssignmentService'
+import { logProfileUpdate, logTypeChange } from '@/lib/employeeActivityHelpers'
 import { toast } from 'sonner'
 import type { EmployeeWithDetails, Department } from '@/types/employee.types'
+import type { TeamEmployeeType } from '@/types/type-system.types'
 
 export function EmployeeDetailPage() {
   const { orgId, teamId, employeeId } = useParams<{
@@ -38,6 +42,8 @@ export function EmployeeDetailPage() {
 
   const [employee, setEmployee] = useState<EmployeeWithDetails | null>(null)
   const [departments, setDepartments] = useState<Department[]>([])
+  const [employeeTypes, setEmployeeTypesState] = useState<TeamEmployeeType[]>([])
+  const [assignedTypeIds, setAssignedTypeIds] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -67,20 +73,39 @@ export function EmployeeDetailPage() {
     loadEmployee()
   }, [employeeId])
 
-  // Load departments
+  // Load departments and employee types
   useEffect(() => {
-    const loadDepts = async () => {
+    const loadLookups = async () => {
       if (!teamId) return
       try {
-        const data = await getActiveDepartments(teamId)
-        setDepartments(data)
+        const [depts, types] = await Promise.all([
+          getActiveDepartments(teamId),
+          getActiveTeamEmployeeTypes(teamId),
+        ])
+        setDepartments(depts)
+        setEmployeeTypesState(types)
       } catch (err) {
-        console.error('Error loading departments:', err)
+        console.error('Error loading lookups:', err)
       }
     }
 
-    loadDepts()
+    loadLookups()
   }, [teamId])
+
+  // Load assigned employee types
+  useEffect(() => {
+    const loadAssignments = async () => {
+      if (!employee) return
+      try {
+        const assignments = await getEmployeeTypeAssignments(employee.id)
+        setAssignedTypeIds(assignments.map((a) => a.type_id))
+      } catch (err) {
+        console.error('Error loading employee type assignments:', err)
+      }
+    }
+
+    loadAssignments()
+  }, [employee?.id])
 
   const handleSubmit = async (data: {
     job_title?: string
@@ -92,11 +117,38 @@ export function EmployeeDetailPage() {
     emergency_contact_phone?: string
     emergency_contact_relationship?: string
     contact_methods?: { method_type: 'phone' | 'email' | 'fax' | 'other'; label: string; value: string; is_primary: boolean }[]
+    type_ids?: string[]
   }) => {
     if (!employee || !user || !teamId) return
 
     setIsSubmitting(true)
     try {
+      // Capture before state for diff logging
+      const beforeState: Record<string, unknown> = {
+        job_title: employee.job_title,
+        hire_date: employee.hire_date,
+        status: employee.status,
+        employee_notes: employee.employee_notes,
+        emergency_contact_name: employee.emergency_contact_name,
+        emergency_contact_phone: employee.emergency_contact_phone,
+        emergency_contact_relationship: employee.emergency_contact_relationship,
+      }
+      const afterState: Record<string, unknown> = {
+        job_title: data.job_title || null,
+        hire_date: data.hire_date || null,
+        status: data.status,
+        employee_notes: data.employee_notes || null,
+        emergency_contact_name: data.emergency_contact_name || null,
+        emergency_contact_phone: data.emergency_contact_phone || null,
+        emergency_contact_relationship: data.emergency_contact_relationship || null,
+      }
+      const departmentIdBefore = employee.department_id
+      const departmentIdAfter = data.department_id || null
+      const departmentNameBefore = employee.department?.name || null
+      const departmentNameAfter = departmentIdAfter
+        ? departments.find((d) => d.id === departmentIdAfter)?.name || null
+        : null
+
       const updated = await updateEmployeeProfile(employee.id, {
         job_title: data.job_title || null,
         department_id: data.department_id || null,
@@ -109,17 +161,57 @@ export function EmployeeDetailPage() {
         contact_methods: data.contact_methods,
       })
 
-      // Log the update
-      await createActivityLog(
-        {
-          team_id: teamId,
-          entity_type: 'employee',
-          activity_type: 'updated',
-          employee_profile_id: employee.id,
-          content: 'Updated employee profile',
-        },
-        user.id
-      )
+      // Granular profile change logging
+      await logProfileUpdate({
+        teamId,
+        employeeProfileId: employee.id,
+        userId: user.id,
+        before: beforeState,
+        after: afterState,
+        departmentIdBefore,
+        departmentIdAfter,
+        departmentNameBefore,
+        departmentNameAfter,
+      })
+
+      // Save employee type assignments with granular logging
+      if (data.type_ids) {
+        const previousTypeIds = assignedTypeIds
+        await setEmployeeTypes(employee.id, data.type_ids)
+        setAssignedTypeIds(data.type_ids)
+
+        // Log each added type
+        const addedTypeIds = data.type_ids.filter((id) => !previousTypeIds.includes(id))
+        const removedTypeIds = previousTypeIds.filter((id) => !data.type_ids!.includes(id))
+
+        for (const typeId of addedTypeIds) {
+          const typeDef = employeeTypes.find((t) => t.id === typeId)
+          if (typeDef) {
+            await logTypeChange({
+              teamId,
+              employeeProfileId: employee.id,
+              userId: user.id,
+              typeName: typeDef.name,
+              typeId,
+              action: 'assigned',
+            })
+          }
+        }
+
+        for (const typeId of removedTypeIds) {
+          const typeDef = employeeTypes.find((t) => t.id === typeId)
+          if (typeDef) {
+            await logTypeChange({
+              teamId,
+              employeeProfileId: employee.id,
+              userId: user.id,
+              typeName: typeDef.name,
+              typeId,
+              action: 'unassigned',
+            })
+          }
+        }
+      }
 
       toast.success('Profile updated successfully')
       setEmployee(updated)
@@ -190,6 +282,8 @@ export function EmployeeDetailPage() {
           <EmployeeProfileForm
             employee={employee}
             departments={departments}
+            employeeTypes={employeeTypes}
+            assignedTypeIds={assignedTypeIds}
             onSubmit={handleSubmit}
             onCancel={() => setIsEditing(false)}
             isSubmitting={isSubmitting}
@@ -235,8 +329,21 @@ export function EmployeeDetailPage() {
               <div className="flex flex-wrap items-center gap-2 mt-2">
                 <EmployeeStatusBadge status={employee.status} />
                 {employee.department && (
-                  <DepartmentBadge name={employee.department.name} />
+                  <DepartmentBadge
+                    name={employee.department.name}
+                    icon={employee.department.icon}
+                    color={employee.department.color}
+                  />
                 )}
+                {employee.employee_types?.map((et) => (
+                  <TypeBadge
+                    key={et.id}
+                    name={et.name}
+                    icon={et.icon}
+                    color={et.color}
+                    size="sm"
+                  />
+                ))}
               </div>
               {employee.job_title && (
                 <p className="text-muted-foreground mt-1">{employee.job_title}</p>
@@ -408,6 +515,7 @@ export function EmployeeDetailPage() {
                 teamId={teamId}
                 compact
                 showHeader
+                employeeName={displayName}
               />
             )}
           </div>

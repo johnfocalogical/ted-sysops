@@ -30,6 +30,8 @@ import {
 } from '@/components/ui/select'
 import { supabase } from '@/lib/supabase'
 import { useTeamContext } from '@/hooks/useTeamContext'
+import { useAuth } from '@/hooks/useAuth'
+import { logRoleChange } from '@/lib/employeeActivityHelpers'
 import type { PermissionLevel } from '@/types/team-member.types'
 
 const editSchema = z.object({
@@ -69,6 +71,7 @@ export function EditMemberModal({
   onUpdated,
 }: EditMemberModalProps) {
   const { context } = useTeamContext()
+  const { user } = useAuth()
   const [error, setError] = useState<string | null>(null)
   const [roles, setRoles] = useState<TeamRole[]>([])
 
@@ -165,6 +168,39 @@ export function EditMemberModal({
 
         if (insertError) {
           console.error('Error assigning new roles:', insertError)
+        }
+      }
+
+      // Log role/permission changes to activity
+      if (user && supabase && context) {
+        try {
+          // Look up employee_profile_id from team_member_id
+          const { data: epData } = await supabase
+            .from('employee_profiles')
+            .select('id')
+            .eq('team_member_id', member.id)
+            .single()
+
+          if (epData) {
+            const beforeRoleNames = roles
+              .filter((r) => (member.role_ids || []).includes(r.id))
+              .map((r) => r.name)
+            const afterRoleNames = roles
+              .filter((r) => (data.roleIds || []).includes(r.id))
+              .map((r) => r.name)
+
+            await logRoleChange({
+              teamId: context.team.id,
+              employeeProfileId: epData.id,
+              userId: user.id,
+              beforeRoles: beforeRoleNames,
+              afterRoles: afterRoleNames,
+              beforePermissionLevel: member.permission_level,
+              afterPermissionLevel: data.permissionLevel,
+            })
+          }
+        } catch (logErr) {
+          console.error('Error logging role change:', logErr)
         }
       }
 
