@@ -41,6 +41,23 @@ export interface CompanyTypeTemplateWithUsage extends CompanyTypeTemplate {
   usage_count: number
 }
 
+export interface EmployeeTypeTemplate {
+  id: string
+  name: string
+  description: string | null
+  icon: string
+  color: string
+  is_system: boolean
+  auto_install: boolean
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+export interface EmployeeTypeTemplateWithUsage extends EmployeeTypeTemplate {
+  usage_count: number
+}
+
 // ============================================================================
 // Team Types (Per-Team, Customizable)
 // ============================================================================
@@ -81,6 +98,24 @@ export interface TeamCompanyTypeWithUsage extends TeamCompanyType {
   usage_count: number  // Number of companies using this type
 }
 
+export interface TeamEmployeeType {
+  id: string
+  team_id: string
+  name: string
+  description: string | null
+  icon: string
+  color: string
+  is_active: boolean
+  sort_order: number
+  template_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface TeamEmployeeTypeWithUsage extends TeamEmployeeType {
+  usage_count: number  // Number of employees using this type
+}
+
 // ============================================================================
 // Custom Field Definitions
 // ============================================================================
@@ -102,6 +137,7 @@ export interface CustomFieldDefinition {
   id: string
   team_contact_type_id: string | null
   team_company_type_id: string | null
+  team_employee_type_id: string | null
   name: string
   field_type: CustomFieldType
   description: string | null
@@ -154,6 +190,7 @@ export interface UpdateTeamTypeDTO {
 export interface CreateCustomFieldDTO {
   team_contact_type_id?: string
   team_company_type_id?: string
+  team_employee_type_id?: string
   name: string
   field_type: CustomFieldType
   description?: string

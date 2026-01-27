@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { User, Building2, ChevronLeft, ChevronRight, Loader2, Check } from 'lucide-react'
+import { User, Building2, UserCheck, ChevronLeft, ChevronRight, Loader2, Check } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -19,6 +19,7 @@ import { useTeamContext } from '@/hooks/useTeamContext'
 import {
   createTeamContactType,
   createTeamCompanyType,
+  createTeamEmployeeType,
 } from '@/lib/teamTypeService'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -27,7 +28,7 @@ interface TypeCreationWizardProps {
   open: boolean
   onClose: () => void
   onCreated: () => void
-  initialEntityType?: 'contact' | 'company'
+  initialEntityType?: 'contact' | 'company' | 'employee'
 }
 
 type WizardStep = 'type' | 'details' | 'confirm'
@@ -40,7 +41,7 @@ export function TypeCreationWizard({
 }: TypeCreationWizardProps) {
   const { context } = useTeamContext()
   const [step, setStep] = useState<WizardStep>('type')
-  const [entityType, setEntityType] = useState<'contact' | 'company'>(initialEntityType)
+  const [entityType, setEntityType] = useState<'contact' | 'company' | 'employee'>(initialEntityType)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [icon, setIcon] = useState('User')
@@ -61,9 +62,9 @@ export function TypeCreationWizard({
     onClose()
   }
 
-  const handleEntityTypeSelect = (type: 'contact' | 'company') => {
+  const handleEntityTypeSelect = (type: 'contact' | 'company' | 'employee') => {
     setEntityType(type)
-    setIcon(type === 'contact' ? 'User' : 'Building2')
+    setIcon(type === 'contact' ? 'User' : type === 'company' ? 'Building2' : 'UserCheck')
     setStep('details')
   }
 
@@ -97,11 +98,14 @@ export function TypeCreationWizard({
 
       if (entityType === 'contact') {
         await createTeamContactType(dto)
-      } else {
+      } else if (entityType === 'company') {
         await createTeamCompanyType(dto)
+      } else {
+        await createTeamEmployeeType(dto)
       }
 
-      toast.success(`${entityType === 'contact' ? 'Contact' : 'Company'} type created`)
+      const label = entityType === 'contact' ? 'Contact' : entityType === 'company' ? 'Company' : 'Employee'
+      toast.success(`${label} type created`)
       resetForm()
       onCreated()
     } catch (err) {
@@ -155,7 +159,7 @@ export function TypeCreationWizard({
         What type of category do you want to create?
       </p>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <button
           type="button"
           onClick={() => handleEntityTypeSelect('contact')}
@@ -190,6 +194,25 @@ export function TypeCreationWizard({
             <p className="font-medium">Company Type</p>
             <p className="text-xs text-muted-foreground">
               Categorize businesses
+            </p>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleEntityTypeSelect('employee')}
+          className={cn(
+            'flex flex-col items-center gap-3 p-6 rounded-lg border-2 transition-all hover:border-primary/50',
+            entityType === 'employee' && 'border-primary bg-primary/5'
+          )}
+        >
+          <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+            <UserCheck className="h-6 w-6 text-green-600 dark:text-green-400" />
+          </div>
+          <div className="text-center">
+            <p className="font-medium">Employee Type</p>
+            <p className="text-xs text-muted-foreground">
+              Categorize team members
             </p>
           </div>
         </button>
@@ -280,7 +303,7 @@ export function TypeCreationWizard({
         <DialogHeader>
           <DialogTitle>
             {step === 'type' && 'Create New Type'}
-            {step === 'details' && `New ${entityType === 'contact' ? 'Contact' : 'Company'} Type`}
+            {step === 'details' && `New ${entityType === 'contact' ? 'Contact' : entityType === 'company' ? 'Company' : 'Employee'} Type`}
             {step === 'confirm' && 'Confirm Creation'}
           </DialogTitle>
           <DialogDescription>

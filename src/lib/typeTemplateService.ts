@@ -4,6 +4,8 @@ import type {
   ContactTypeTemplateWithUsage,
   CompanyTypeTemplate,
   CompanyTypeTemplateWithUsage,
+  EmployeeTypeTemplate,
+  EmployeeTypeTemplateWithUsage,
   CreateTypeTemplateDTO,
   UpdateTypeTemplateDTO,
 } from '@/types/type-system.types'
@@ -288,6 +290,150 @@ export async function isCompanyTypeTemplateNameUnique(
 ): Promise<boolean> {
   let query = supabase
     .from('company_type_templates')
+    .select('id')
+    .eq('name', name)
+
+  if (excludeId) {
+    query = query.neq('id', excludeId)
+  }
+
+  const { data, error } = await query
+
+  if (error) throw error
+
+  return !data || data.length === 0
+}
+
+// ============================================================================
+// Employee Type Templates (Superadmin)
+// ============================================================================
+
+/**
+ * Get all employee type templates with usage counts
+ */
+export async function getEmployeeTypeTemplates(): Promise<EmployeeTypeTemplateWithUsage[]> {
+  const { data, error } = await supabase
+    .from('employee_type_templates')
+    .select('*')
+    .order('sort_order', { ascending: true })
+    .order('name', { ascending: true })
+
+  if (error) throw error
+
+  const templatesWithUsage: EmployeeTypeTemplateWithUsage[] = []
+  for (const template of data || []) {
+    const { count } = await supabase
+      .from('team_employee_types')
+      .select('*', { count: 'exact', head: true })
+      .eq('template_id', template.id)
+
+    templatesWithUsage.push({
+      ...template,
+      usage_count: count || 0,
+    })
+  }
+
+  return templatesWithUsage
+}
+
+/**
+ * Get a single employee type template by ID
+ */
+export async function getEmployeeTypeTemplate(id: string): Promise<EmployeeTypeTemplate | null> {
+  const { data, error } = await supabase
+    .from('employee_type_templates')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (error) {
+    if (error.code === 'PGRST116') return null
+    throw error
+  }
+
+  return data
+}
+
+/**
+ * Create a new employee type template
+ */
+export async function createEmployeeTypeTemplate(
+  dto: CreateTypeTemplateDTO
+): Promise<EmployeeTypeTemplate> {
+  const { data, error } = await supabase
+    .from('employee_type_templates')
+    .insert({
+      name: dto.name,
+      description: dto.description || null,
+      icon: dto.icon,
+      color: dto.color,
+      auto_install: dto.auto_install ?? true,
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+
+  return data
+}
+
+/**
+ * Update an employee type template
+ */
+export async function updateEmployeeTypeTemplate(
+  id: string,
+  dto: UpdateTypeTemplateDTO
+): Promise<EmployeeTypeTemplate> {
+  const existing = await getEmployeeTypeTemplate(id)
+  if (existing?.is_system) {
+    throw new Error('Cannot modify system templates')
+  }
+
+  const { data, error } = await supabase
+    .from('employee_type_templates')
+    .update({
+      ...(dto.name !== undefined && { name: dto.name }),
+      ...(dto.description !== undefined && { description: dto.description }),
+      ...(dto.icon !== undefined && { icon: dto.icon }),
+      ...(dto.color !== undefined && { color: dto.color }),
+      ...(dto.auto_install !== undefined && { auto_install: dto.auto_install }),
+      ...(dto.sort_order !== undefined && { sort_order: dto.sort_order }),
+    })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) throw error
+
+  return data
+}
+
+/**
+ * Delete an employee type template
+ */
+export async function deleteEmployeeTypeTemplate(id: string): Promise<void> {
+  const existing = await getEmployeeTypeTemplate(id)
+  if (existing?.is_system) {
+    throw new Error('Cannot delete system templates')
+  }
+
+  const { error } = await supabase
+    .from('employee_type_templates')
+    .delete()
+    .eq('id', id)
+
+  if (error) throw error
+}
+
+/**
+ * Check if an employee type template name is unique
+ */
+export async function isEmployeeTypeTemplateNameUnique(
+  name: string,
+  excludeId?: string
+): Promise<boolean> {
+  let query = supabase
+    .from('employee_type_templates')
     .select('id')
     .eq('name', name)
 

@@ -71,7 +71,7 @@ interface CustomFieldDefinitionFormModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   typeId: string
-  entityType: 'contact' | 'company'
+  entityType: 'contact' | 'company' | 'employee'
   field?: CustomFieldDefinition | null
   onSaved: () => void
 }
@@ -167,7 +167,9 @@ export function CustomFieldDefinitionFormModal({
           options: showOptions ? data.options : undefined,
           ...(entityType === 'contact'
             ? { team_contact_type_id: typeId }
-            : { team_company_type_id: typeId }),
+            : entityType === 'company'
+              ? { team_company_type_id: typeId }
+              : { team_employee_type_id: typeId }),
         }
         await createCustomField(dto)
         toast.success('Custom field created')

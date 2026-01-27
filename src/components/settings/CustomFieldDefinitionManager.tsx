@@ -23,11 +23,13 @@ import { CustomFieldDefinitionFormModal } from './CustomFieldDefinitionFormModal
 import {
   getCustomFieldsForContactType,
   getCustomFieldsForCompanyType,
+  getCustomFieldsForEmployeeType,
   deleteCustomField,
 } from '@/lib/teamTypeService'
 import type {
   TeamContactTypeWithUsage,
   TeamCompanyTypeWithUsage,
+  TeamEmployeeTypeWithUsage,
   CustomFieldDefinition,
 } from '@/types/type-system.types'
 import { CUSTOM_FIELD_TYPE_LABELS } from '@/types/type-system.types'
@@ -36,8 +38,8 @@ import { toast } from 'sonner'
 interface CustomFieldDefinitionManagerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  type: TeamContactTypeWithUsage | TeamCompanyTypeWithUsage | null
-  entityType: 'contact' | 'company'
+  type: TeamContactTypeWithUsage | TeamCompanyTypeWithUsage | TeamEmployeeTypeWithUsage | null
+  entityType: 'contact' | 'company' | 'employee'
   onFieldsChanged?: () => void
 }
 
@@ -70,7 +72,9 @@ export function CustomFieldDefinitionManager({
     try {
       const fieldsData = entityType === 'contact'
         ? await getCustomFieldsForContactType(type.id)
-        : await getCustomFieldsForCompanyType(type.id)
+        : entityType === 'company'
+          ? await getCustomFieldsForCompanyType(type.id)
+          : await getCustomFieldsForEmployeeType(type.id)
       setFields(fieldsData)
     } catch (err) {
       console.error('Error loading fields:', err)

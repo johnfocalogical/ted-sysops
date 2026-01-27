@@ -57,6 +57,7 @@ import { CompanyTypesPage } from '@/pages/settings/CompanyTypesPage'
 import { AutomatorsPage } from '@/pages/settings/AutomatorsPage'
 import { AutomatorBuilderPage } from '@/pages/settings/AutomatorBuilderPage'
 import { DepartmentsPage } from '@/pages/settings/DepartmentsPage'
+import { EmployeeTypesPage } from '@/pages/settings/EmployeeTypesPage'
 
 function App() {
   return (
@@ -215,6 +216,7 @@ function App() {
           <Route path="company-types" element={<CompanyTypesPage />} />
           <Route path="automators" element={<AutomatorsPage />} />
           <Route path="departments" element={<DepartmentsPage />} />
+          <Route path="employee-types" element={<EmployeeTypesPage />} />
         </Route>
 
         {/* Automator Builder (full-page layout) */}

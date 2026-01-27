@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, Plus, Loader2, Briefcase, Pencil, Trash2 } from 'lucide-react'
+import { IconPicker } from '@/components/shared/IconPicker'
+import { ColorPicker } from '@/components/shared/ColorPicker'
+import { TypeBadge } from '@/components/shared/TypeBadge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -54,6 +57,8 @@ export function DepartmentsPage() {
   const [editingDept, setEditingDept] = useState<DepartmentWithUsage | null>(null)
   const [formName, setFormName] = useState('')
   const [formDescription, setFormDescription] = useState('')
+  const [formIcon, setFormIcon] = useState('Briefcase')
+  const [formColor, setFormColor] = useState('gray')
   const [formSaving, setFormSaving] = useState(false)
 
   // Delete state
@@ -83,6 +88,8 @@ export function DepartmentsPage() {
     setEditingDept(null)
     setFormName('')
     setFormDescription('')
+    setFormIcon('Briefcase')
+    setFormColor('gray')
     setShowForm(true)
   }
 
@@ -90,6 +97,8 @@ export function DepartmentsPage() {
     setEditingDept(dept)
     setFormName(dept.name)
     setFormDescription(dept.description || '')
+    setFormIcon(dept.icon || 'Briefcase')
+    setFormColor(dept.color || 'gray')
     setShowForm(true)
   }
 
@@ -114,6 +123,8 @@ export function DepartmentsPage() {
         await updateDepartment(editingDept.id, {
           name: formName.trim(),
           description: formDescription.trim() || null,
+          icon: formIcon,
+          color: formColor,
         })
         toast.success('Department updated')
       } else {
@@ -121,6 +132,8 @@ export function DepartmentsPage() {
           team_id: context.team.id,
           name: formName.trim(),
           description: formDescription.trim() || undefined,
+          icon: formIcon,
+          color: formColor,
         })
         toast.success('Department created')
       }
@@ -234,7 +247,11 @@ export function DepartmentsPage() {
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{dept.name}</span>
+                      <TypeBadge
+                        name={dept.name}
+                        icon={dept.icon || 'Briefcase'}
+                        color={dept.color || 'gray'}
+                      />
                       {!dept.is_active && (
                         <Badge variant="secondary" className="text-xs">Inactive</Badge>
                       )}
@@ -293,6 +310,11 @@ export function DepartmentsPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            {/* Preview */}
+            <div className="flex items-center justify-center p-4 bg-muted/50 rounded-lg">
+              <TypeBadge name={formName || 'Department'} icon={formIcon} color={formColor} />
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="dept-name">Name</Label>
               <Input
@@ -311,6 +333,16 @@ export function DepartmentsPage() {
                 placeholder="Brief description of this department"
                 rows={2}
               />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Icon</Label>
+                <IconPicker value={formIcon} onChange={setFormIcon} />
+              </div>
+              <div className="space-y-2">
+                <Label>Color</Label>
+                <ColorPicker value={formColor} onChange={setFormColor} />
+              </div>
             </div>
           </div>
           <DialogFooter>

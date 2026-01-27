@@ -46,24 +46,30 @@ import {
   createCompanyTypeTemplate,
   updateCompanyTypeTemplate,
   deleteCompanyTypeTemplate,
+  getEmployeeTypeTemplates,
+  createEmployeeTypeTemplate,
+  updateEmployeeTypeTemplate,
+  deleteEmployeeTypeTemplate,
 } from '@/lib/typeTemplateService'
 import type {
   ContactTypeTemplateWithUsage,
   CompanyTypeTemplateWithUsage,
+  EmployeeTypeTemplateWithUsage,
 } from '@/types/type-system.types'
 import { toast } from 'sonner'
 
-type TabValue = 'contact' | 'company'
+type TabValue = 'contact' | 'company' | 'employee'
 
 export function AdminTypeTemplates() {
   const [activeTab, setActiveTab] = useState<TabValue>('contact')
   const [contactTemplates, setContactTemplates] = useState<ContactTypeTemplateWithUsage[]>([])
   const [companyTemplates, setCompanyTemplates] = useState<CompanyTypeTemplateWithUsage[]>([])
+  const [employeeTemplates, setEmployeeTemplates] = useState<EmployeeTypeTemplateWithUsage[]>([])
   const [loading, setLoading] = useState(true)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<
-    ContactTypeTemplateWithUsage | CompanyTypeTemplateWithUsage | null
+    ContactTypeTemplateWithUsage | CompanyTypeTemplateWithUsage | EmployeeTypeTemplateWithUsage | null
   >(null)
   const [saving, setSaving] = useState(false)
 
@@ -77,12 +83,14 @@ export function AdminTypeTemplates() {
   const loadTemplates = async () => {
     setLoading(true)
     try {
-      const [contactData, companyData] = await Promise.all([
+      const [contactData, companyData, employeeData] = await Promise.all([
         getContactTypeTemplates(),
         getCompanyTypeTemplates(),
+        getEmployeeTypeTemplates(),
       ])
       setContactTemplates(contactData)
       setCompanyTemplates(companyData)
+      setEmployeeTemplates(employeeData)
     } catch (err) {
       console.error('Error loading templates:', err)
       toast.error('Failed to load type templates')
@@ -99,7 +107,7 @@ export function AdminTypeTemplates() {
     setSelectedTemplate(null)
     setFormName('')
     setFormDescription('')
-    setFormIcon(activeTab === 'contact' ? 'User' : 'Building2')
+    setFormIcon(activeTab === 'contact' ? 'User' : activeTab === 'company' ? 'Building2' : 'UserCheck')
     setFormColor('gray')
     setFormAutoInstall(true)
     setEditDialogOpen(true)
@@ -144,16 +152,20 @@ export function AdminTypeTemplates() {
         // Update
         if (activeTab === 'contact') {
           await updateContactTypeTemplate(selectedTemplate.id, dto)
-        } else {
+        } else if (activeTab === 'company') {
           await updateCompanyTypeTemplate(selectedTemplate.id, dto)
+        } else {
+          await updateEmployeeTypeTemplate(selectedTemplate.id, dto)
         }
         toast.success('Type template updated')
       } else {
         // Create
         if (activeTab === 'contact') {
           await createContactTypeTemplate(dto)
-        } else {
+        } else if (activeTab === 'company') {
           await createCompanyTypeTemplate(dto)
+        } else {
+          await createEmployeeTypeTemplate(dto)
         }
         toast.success('Type template created')
       }
@@ -174,8 +186,10 @@ export function AdminTypeTemplates() {
     try {
       if (activeTab === 'contact') {
         await deleteContactTypeTemplate(selectedTemplate.id)
-      } else {
+      } else if (activeTab === 'company') {
         await deleteCompanyTypeTemplate(selectedTemplate.id)
+      } else {
+        await deleteEmployeeTypeTemplate(selectedTemplate.id)
       }
       toast.success('Type template deleted')
       setDeleteDialogOpen(false)
@@ -294,7 +308,7 @@ export function AdminTypeTemplates() {
         <div>
           <h1 className="text-3xl font-bold">Type Templates</h1>
           <p className="text-muted-foreground">
-            Manage contact and company type templates for teams
+            Manage contact, company, and employee type templates for teams
           </p>
         </div>
         <Button onClick={openCreateDialog}>
@@ -318,6 +332,13 @@ export function AdminTypeTemplates() {
             Company Types
             <Badge variant="secondary" className="ml-1">
               {companyTemplates.length}
+            </Badge>
+          </TabsTrigger>
+          <TabsTrigger value="employee" className="gap-2">
+            <Tag className="h-4 w-4" />
+            Employee Types
+            <Badge variant="secondary" className="ml-1">
+              {employeeTemplates.length}
             </Badge>
           </TabsTrigger>
         </TabsList>
@@ -347,6 +368,19 @@ export function AdminTypeTemplates() {
             <CardContent>{renderTemplateTable(companyTemplates)}</CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="employee" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Employee Type Templates</CardTitle>
+              <CardDescription>
+                Templates for categorizing employees (team members). System templates
+                cannot be modified.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>{renderTemplateTable(employeeTemplates)}</CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       {/* Edit/Create Dialog */}
@@ -355,8 +389,8 @@ export function AdminTypeTemplates() {
           <DialogHeader>
             <DialogTitle>
               {selectedTemplate
-                ? `Edit ${activeTab === 'contact' ? 'Contact' : 'Company'} Type Template`
-                : `Create ${activeTab === 'contact' ? 'Contact' : 'Company'} Type Template`}
+                ? `Edit ${activeTab === 'contact' ? 'Contact' : activeTab === 'company' ? 'Company' : 'Employee'} Type Template`
+                : `Create ${activeTab === 'contact' ? 'Contact' : activeTab === 'company' ? 'Company' : 'Employee'} Type Template`}
             </DialogTitle>
             <DialogDescription>
               Configure the type template. Changes do not affect existing team types.
@@ -376,7 +410,7 @@ export function AdminTypeTemplates() {
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
                 placeholder={
-                  activeTab === 'contact' ? 'e.g., Investor, Agent' : 'e.g., Title Company'
+                  activeTab === 'contact' ? 'e.g., Investor, Agent' : activeTab === 'company' ? 'e.g., Title Company' : 'e.g., Full-Time, Contractor'
                 }
               />
             </div>

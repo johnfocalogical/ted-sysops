@@ -119,6 +119,59 @@ export async function getCompanyCustomFieldsGroupedByType(
     .filter((group) => group.fields.length > 0)
 }
 
+/**
+ * Get all custom field values for an employee
+ */
+export async function getCustomFieldValuesForEmployee(
+  employeeId: string,
+  includeOrphaned: boolean = false
+): Promise<CustomFieldValueWithDefinition[]> {
+  if (!supabase) throw new Error('Supabase not configured')
+
+  let query = supabase
+    .from('custom_field_values')
+    .select(`
+      *,
+      definition:custom_field_definitions (*)
+    `)
+    .eq('employee_id', employeeId)
+
+  if (!includeOrphaned) {
+    query = query.eq('is_orphaned', false)
+  }
+
+  const { data, error } = await query
+
+  if (error) throw error
+
+  return (data || []).map((row) => ({
+    ...row,
+    definition: row.definition as CustomFieldDefinition,
+  }))
+}
+
+/**
+ * Get custom field values grouped by type for an employee (for detail view display)
+ */
+export async function getEmployeeCustomFieldsGroupedByType(
+  employeeId: string,
+  types: { id: string; name: string; color: string; icon: string }[]
+): Promise<CustomFieldsGroupedByType[]> {
+  const values = await getCustomFieldValuesForEmployee(employeeId, false)
+
+  return types
+    .map((type) => ({
+      typeId: type.id,
+      typeName: type.name,
+      typeColor: type.color,
+      typeIcon: type.icon,
+      fields: values.filter(
+        (v) => v.definition.team_employee_type_id === type.id
+      ),
+    }))
+    .filter((group) => group.fields.length > 0)
+}
+
 // ============================================================================
 // Save Values
 // ============================================================================
@@ -132,10 +185,10 @@ export async function saveCustomFieldValues(
 ): Promise<void> {
   if (!supabase) throw new Error('Supabase not configured')
 
-  const { contact_id, company_id, values } = dto
+  const { contact_id, company_id, employee_id, values } = dto
 
-  if (!contact_id && !company_id) {
-    throw new Error('Either contact_id or company_id must be provided')
+  if (!contact_id && !company_id && !employee_id) {
+    throw new Error('Either contact_id, company_id, or employee_id must be provided')
   }
 
   if (values.length === 0) return
@@ -146,17 +199,23 @@ export async function saveCustomFieldValues(
     .map(({ fieldDefinitionId, value }) => ({
       contact_id: contact_id || null,
       company_id: company_id || null,
+      employee_id: employee_id || null,
       field_definition_id: fieldDefinitionId,
       ...valueToColumns(value),
     }))
 
   if (records.length === 0) return
 
+  // Determine conflict column
+  const onConflict = contact_id
+    ? 'contact_id,field_definition_id'
+    : company_id
+      ? 'company_id,field_definition_id'
+      : 'employee_id,field_definition_id'
+
   // Upsert records
   const { error } = await supabase.from('custom_field_values').upsert(records, {
-    onConflict: contact_id
-      ? 'contact_id,field_definition_id'
-      : 'company_id,field_definition_id',
+    onConflict,
     ignoreDuplicates: false,
   })
 
@@ -177,6 +236,8 @@ export async function saveCustomFieldValues(
       deleteQuery = deleteQuery.eq('contact_id', contact_id)
     } else if (company_id) {
       deleteQuery = deleteQuery.eq('company_id', company_id)
+    } else if (employee_id) {
+      deleteQuery = deleteQuery.eq('employee_id', employee_id)
     }
 
     await deleteQuery
@@ -201,12 +262,13 @@ export async function deleteCustomFieldValue(valueId: string): Promise<void> {
  * Clear all custom field values for a contact/company
  */
 export async function clearCustomFieldValues(
-  entityType: 'contact' | 'company',
+  entityType: 'contact' | 'company' | 'employee',
   entityId: string
 ): Promise<void> {
   if (!supabase) throw new Error('Supabase not configured')
 
-  const column = entityType === 'contact' ? 'contact_id' : 'company_id'
+  const columnMap = { contact: 'contact_id', company: 'company_id', employee: 'employee_id' } as const
+  const column = columnMap[entityType]
 
   const { error } = await supabase
     .from('custom_field_values')

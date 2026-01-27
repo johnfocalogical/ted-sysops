@@ -16,6 +16,7 @@ export interface CustomFieldValue {
   id: string
   contact_id: string | null
   company_id: string | null
+  employee_id: string | null
   field_definition_id: string
   // Typed value columns
   value_text: string | null
@@ -92,6 +93,7 @@ export type CustomFieldValuesMap = Record<string, CustomFieldInputValue>
 export interface SaveCustomFieldValueDTO {
   contact_id?: string
   company_id?: string
+  employee_id?: string
   field_definition_id: string
   value: CustomFieldInputValue
 }
@@ -102,6 +104,7 @@ export interface SaveCustomFieldValueDTO {
 export interface SaveCustomFieldValuesDTO {
   contact_id?: string
   company_id?: string
+  employee_id?: string
   values: CustomFieldFormValue[]
 }
 

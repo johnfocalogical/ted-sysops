@@ -5,6 +5,7 @@ import {
   UserCircle,
   Building2,
   Briefcase,
+  UserCheck,
   Zap,
 } from 'lucide-react'
 
@@ -73,6 +74,13 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
         icon: Briefcase,
         description: 'Configure team departments for employee profiles',
         route: 'departments',
+      },
+      {
+        id: 'employee-types',
+        label: 'Employee Types',
+        icon: UserCheck,
+        description: 'Manage employee type categories and custom fields',
+        route: 'employee-types',
       },
     ],
   },

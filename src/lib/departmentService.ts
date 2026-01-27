@@ -74,6 +74,8 @@ export async function createDepartment(dto: CreateDepartmentDTO): Promise<Depart
       team_id: dto.team_id,
       name: dto.name,
       description: dto.description || null,
+      icon: dto.icon || 'Briefcase',
+      color: dto.color || 'gray',
       sort_order: dto.sort_order ?? 0,
     })
     .select()
@@ -98,6 +100,8 @@ export async function updateDepartment(
     .update({
       ...(dto.name !== undefined && { name: dto.name }),
       ...(dto.description !== undefined && { description: dto.description }),
+      ...(dto.icon !== undefined && { icon: dto.icon }),
+      ...(dto.color !== undefined && { color: dto.color }),
       ...(dto.is_active !== undefined && { is_active: dto.is_active }),
       ...(dto.sort_order !== undefined && { sort_order: dto.sort_order }),
     })

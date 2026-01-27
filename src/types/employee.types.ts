@@ -18,6 +18,8 @@ export interface Department {
   team_id: string
   name: string
   description: string | null
+  icon: string
+  color: string
   is_active: boolean
   sort_order: number
   created_at: string
@@ -34,6 +36,8 @@ export interface CreateDepartmentDTO {
   team_id: string
   name: string
   description?: string
+  icon?: string
+  color?: string
   sort_order?: number
 }
 
@@ -41,6 +45,8 @@ export interface CreateDepartmentDTO {
 export interface UpdateDepartmentDTO {
   name?: string
   description?: string | null
+  icon?: string
+  color?: string
   is_active?: boolean
   sort_order?: number
 }
@@ -66,6 +72,14 @@ export interface EmployeeProfile {
   updated_at: string
 }
 
+// Employee type assignment (from M:N join)
+export interface EmployeeTypeAssignment {
+  id: string
+  employee_profile_id: string
+  type_id: string
+  created_at: string
+}
+
 // Employee list item for directory table
 export interface EmployeeListItem extends EmployeeProfile {
   user: {
@@ -77,10 +91,18 @@ export interface EmployeeListItem extends EmployeeProfile {
   department: {
     id: string
     name: string
+    icon?: string
+    color?: string
   } | null
   roles: Array<{
     id: string
     name: string
+    color: string
+  }>
+  employee_types: Array<{
+    id: string
+    name: string
+    icon: string
     color: string
   }>
   primary_phone: string | null
@@ -97,6 +119,12 @@ export interface EmployeeWithDetails extends EmployeeProfile {
   }
   department: Department | null
   roles: TeamRole[]
+  employee_types: Array<{
+    id: string
+    name: string
+    icon: string
+    color: string
+  }>
   contact_methods: ContactMethod[]
   permission_level: 'admin' | 'member' | 'viewer'
 }
@@ -126,4 +154,5 @@ export interface EmployeeDirectoryParams {
   search?: string
   departmentId?: string | null
   status?: EmployeeStatus | null
+  employeeTypeId?: string | null
 }

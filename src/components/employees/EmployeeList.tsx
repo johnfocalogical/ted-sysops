@@ -16,6 +16,8 @@ import { EmployeeStatusBadge } from './EmployeeStatusBadge'
 import { DepartmentBadge } from './DepartmentBadge'
 import { DepartmentFilter } from './DepartmentFilter'
 import { EmployeeStatusFilter } from './EmployeeStatusFilter'
+import { EmployeeTypeFilter } from './EmployeeTypeFilter'
+import { TypeBadge } from '@/components/shared/TypeBadge'
 import type { EmployeeListItem } from '@/types/employee.types'
 
 interface EmployeeListProps {
@@ -33,13 +35,17 @@ export function EmployeeList({ onEmployeeClick }: EmployeeListProps) {
     search,
     departmentFilter,
     statusFilter,
+    employeeTypeFilter,
     departments,
+    employeeTypes,
     setPage,
     setSearch,
     setDepartmentFilter,
     setStatusFilter,
+    setEmployeeTypeFilter,
     loadEmployees,
     loadDepartments,
+    loadEmployeeTypes,
   } = useEmployeeStore()
 
   const [searchInput, setSearchInput] = useState(search)
@@ -54,10 +60,11 @@ export function EmployeeList({ onEmployeeClick }: EmployeeListProps) {
     return () => clearTimeout(timer)
   }, [searchInput, search, setSearch])
 
-  // Load departments on mount
+  // Load departments and employee types on mount
   useEffect(() => {
     loadDepartments()
-  }, [loadDepartments])
+    loadEmployeeTypes()
+  }, [loadDepartments, loadEmployeeTypes])
 
   // Format display name
   const formatName = (employee: EmployeeListItem) => {
@@ -108,13 +115,18 @@ export function EmployeeList({ onEmployeeClick }: EmployeeListProps) {
           selectedStatus={statusFilter}
           onSelectionChange={setStatusFilter}
         />
+        <EmployeeTypeFilter
+          employeeTypes={employeeTypes}
+          selectedTypeId={employeeTypeFilter}
+          onSelectionChange={setEmployeeTypeFilter}
+        />
       </div>
 
       {/* Empty State */}
       {employees.length === 0 && !loading && (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <Users className="h-12 w-12 text-muted-foreground mb-4" />
-          {searchInput || departmentFilter || statusFilter ? (
+          {searchInput || departmentFilter || statusFilter || employeeTypeFilter ? (
             <>
               <h3 className="font-medium">No employees found</h3>
               <p className="text-sm text-muted-foreground mt-1">
@@ -142,6 +154,7 @@ export function EmployeeList({ onEmployeeClick }: EmployeeListProps) {
                   <TableHead>Name</TableHead>
                   <TableHead>Job Title</TableHead>
                   <TableHead>Department</TableHead>
+                  <TableHead>Types</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Phone</TableHead>
                   <TableHead>Email</TableHead>
@@ -180,10 +193,35 @@ export function EmployeeList({ onEmployeeClick }: EmployeeListProps) {
                     </TableCell>
                     <TableCell>
                       {employee.department ? (
-                        <DepartmentBadge name={employee.department.name} />
+                        <DepartmentBadge
+                          name={employee.department.name}
+                          icon={employee.department.icon}
+                          color={employee.department.color}
+                        />
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {employee.employee_types?.slice(0, 2).map((et) => (
+                          <TypeBadge
+                            key={et.id}
+                            name={et.name}
+                            icon={et.icon}
+                            color={et.color}
+                            size="sm"
+                          />
+                        ))}
+                        {(employee.employee_types?.length || 0) > 2 && (
+                          <span className="text-xs text-muted-foreground">
+                            +{employee.employee_types!.length - 2}
+                          </span>
+                        )}
+                        {(!employee.employee_types || employee.employee_types.length === 0) && (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <EmployeeStatusBadge status={employee.status} />

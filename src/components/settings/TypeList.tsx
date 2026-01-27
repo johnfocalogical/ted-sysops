@@ -23,44 +23,50 @@ import { TypeBadge } from '@/components/shared/TypeBadge'
 import {
   updateTeamContactType,
   updateTeamCompanyType,
+  updateTeamEmployeeType,
   deleteTeamContactType,
   deleteTeamCompanyType,
+  deleteTeamEmployeeType,
   canDeleteTeamContactType,
   canDeleteTeamCompanyType,
+  canDeleteTeamEmployeeType,
 } from '@/lib/teamTypeService'
 import type {
   TeamContactTypeWithUsage,
   TeamCompanyTypeWithUsage,
+  TeamEmployeeTypeWithUsage,
 } from '@/types/type-system.types'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
+type AnyTeamTypeWithUsage = TeamContactTypeWithUsage | TeamCompanyTypeWithUsage | TeamEmployeeTypeWithUsage
+
 interface TypeListProps {
-  types: (TeamContactTypeWithUsage | TeamCompanyTypeWithUsage)[]
-  entityType: 'contact' | 'company'
-  onEdit: (type: TeamContactTypeWithUsage | TeamCompanyTypeWithUsage) => void
-  onManageFields?: (type: TeamContactTypeWithUsage | TeamCompanyTypeWithUsage) => void
+  types: AnyTeamTypeWithUsage[]
+  entityType: 'contact' | 'company' | 'employee'
+  onEdit: (type: AnyTeamTypeWithUsage) => void
+  onManageFields?: (type: AnyTeamTypeWithUsage) => void
   onRefresh: () => void
 }
 
 export function TypeList({ types, entityType, onEdit, onManageFields, onRefresh }: TypeListProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [deletingType, setDeletingType] = useState<
-    TeamContactTypeWithUsage | TeamCompanyTypeWithUsage | null
-  >(null)
+  const [deletingType, setDeletingType] = useState<AnyTeamTypeWithUsage | null>(null)
   const [canDelete, setCanDelete] = useState(true)
   const [deleteReason, setDeleteReason] = useState('')
   const [processing, setProcessing] = useState(false)
 
   const handleToggleActive = async (
-    type: TeamContactTypeWithUsage | TeamCompanyTypeWithUsage
+    type: AnyTeamTypeWithUsage
   ) => {
     setProcessing(true)
     try {
       if (entityType === 'contact') {
         await updateTeamContactType(type.id, { is_active: !type.is_active })
-      } else {
+      } else if (entityType === 'company') {
         await updateTeamCompanyType(type.id, { is_active: !type.is_active })
+      } else {
+        await updateTeamEmployeeType(type.id, { is_active: !type.is_active })
       }
       toast.success(type.is_active ? 'Type deactivated' : 'Type activated')
       onRefresh()
@@ -73,7 +79,7 @@ export function TypeList({ types, entityType, onEdit, onManageFields, onRefresh 
   }
 
   const openDeleteDialog = async (
-    type: TeamContactTypeWithUsage | TeamCompanyTypeWithUsage
+    type: AnyTeamTypeWithUsage
   ) => {
     setDeletingType(type)
     setProcessing(true)
@@ -82,7 +88,9 @@ export function TypeList({ types, entityType, onEdit, onManageFields, onRefresh 
       const result =
         entityType === 'contact'
           ? await canDeleteTeamContactType(type.id)
-          : await canDeleteTeamCompanyType(type.id)
+          : entityType === 'company'
+            ? await canDeleteTeamCompanyType(type.id)
+            : await canDeleteTeamEmployeeType(type.id)
 
       setCanDelete(result.canDelete)
       setDeleteReason(result.reason || '')
@@ -103,8 +111,10 @@ export function TypeList({ types, entityType, onEdit, onManageFields, onRefresh 
     try {
       if (entityType === 'contact') {
         await deleteTeamContactType(deletingType.id)
-      } else {
+      } else if (entityType === 'company') {
         await deleteTeamCompanyType(deletingType.id)
+      } else {
+        await deleteTeamEmployeeType(deletingType.id)
       }
       toast.success('Type deleted')
       setDeleteDialogOpen(false)
@@ -157,7 +167,7 @@ export function TypeList({ types, entityType, onEdit, onManageFields, onRefresh 
 
             <div className="flex items-center gap-4">
               <span className="text-sm text-muted-foreground">
-                {type.usage_count} {entityType === 'contact' ? 'contacts' : 'companies'}
+                {type.usage_count} {entityType === 'contact' ? 'contacts' : entityType === 'company' ? 'companies' : 'employees'}
               </span>
 
               <DropdownMenu>
@@ -208,7 +218,7 @@ export function TypeList({ types, entityType, onEdit, onManageFields, onRefresh 
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Delete {entityType === 'contact' ? 'Contact' : 'Company'} Type
+              Delete {entityType === 'contact' ? 'Contact' : entityType === 'company' ? 'Company' : 'Employee'} Type
             </AlertDialogTitle>
             <AlertDialogDescription>
               {canDelete ? (

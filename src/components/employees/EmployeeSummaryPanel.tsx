@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { EmployeeStatusBadge } from './EmployeeStatusBadge'
 import { DepartmentBadge } from './DepartmentBadge'
+import { TypeBadge } from '@/components/shared/TypeBadge'
 import { ActivityCard } from '@/components/activity'
 import type { EmployeeWithDetails } from '@/types/employee.types'
 
@@ -72,8 +73,21 @@ export function EmployeeSummaryPanel({ employee, onClose }: EmployeeSummaryPanel
           <div className="flex flex-wrap items-center gap-2 mt-1">
             <EmployeeStatusBadge status={employee.status} />
             {employee.department && (
-              <DepartmentBadge name={employee.department.name} />
+              <DepartmentBadge
+                name={employee.department.name}
+                icon={employee.department.icon}
+                color={employee.department.color}
+              />
             )}
+            {employee.employee_types?.map((et) => (
+              <TypeBadge
+                key={et.id}
+                name={et.name}
+                icon={et.icon}
+                color={et.color}
+                size="sm"
+              />
+            ))}
           </div>
           {employee.job_title && (
             <p className="text-sm text-muted-foreground mt-1">{employee.job_title}</p>

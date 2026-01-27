@@ -18,17 +18,19 @@ import { TypeBadge } from '@/components/shared/TypeBadge'
 import {
   updateTeamContactType,
   updateTeamCompanyType,
+  updateTeamEmployeeType,
 } from '@/lib/teamTypeService'
 import type {
   TeamContactTypeWithUsage,
   TeamCompanyTypeWithUsage,
+  TeamEmployeeTypeWithUsage,
 } from '@/types/type-system.types'
 import { toast } from 'sonner'
 
 interface TypeFormModalProps {
   open: boolean
-  type: TeamContactTypeWithUsage | TeamCompanyTypeWithUsage | null
-  entityType: 'contact' | 'company'
+  type: TeamContactTypeWithUsage | TeamCompanyTypeWithUsage | TeamEmployeeTypeWithUsage | null
+  entityType: 'contact' | 'company' | 'employee'
   onClose: () => void
   onSaved: () => void
 }
@@ -74,8 +76,10 @@ export function TypeFormModal({
 
       if (entityType === 'contact') {
         await updateTeamContactType(type.id, dto)
-      } else {
+      } else if (entityType === 'company') {
         await updateTeamCompanyType(type.id, dto)
+      } else {
+        await updateTeamEmployeeType(type.id, dto)
       }
 
       toast.success('Type updated')
@@ -93,7 +97,7 @@ export function TypeFormModal({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>
-            Edit {entityType === 'contact' ? 'Contact' : 'Company'} Type
+            Edit {entityType === 'contact' ? 'Contact' : entityType === 'company' ? 'Company' : 'Employee'} Type
           </DialogTitle>
           <DialogDescription>
             Update the type details. Changes take effect immediately.

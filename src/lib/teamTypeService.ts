@@ -4,6 +4,8 @@ import type {
   TeamContactTypeWithUsage,
   TeamCompanyType,
   TeamCompanyTypeWithUsage,
+  TeamEmployeeType,
+  TeamEmployeeTypeWithUsage,
   CustomFieldDefinition,
   CreateTeamTypeDTO,
   UpdateTeamTypeDTO,
@@ -372,6 +374,185 @@ export async function isTeamCompanyTypeNameUnique(
 }
 
 // ============================================================================
+// Team Employee Types
+// ============================================================================
+
+/**
+ * Get all employee types for a team with usage counts
+ */
+export async function getTeamEmployeeTypes(teamId: string): Promise<TeamEmployeeTypeWithUsage[]> {
+  const { data, error } = await supabase
+    .from('team_employee_types')
+    .select('*')
+    .eq('team_id', teamId)
+    .order('sort_order', { ascending: true })
+    .order('name', { ascending: true })
+
+  if (error) throw error
+
+  // Get usage counts for each type
+  const typesWithUsage: TeamEmployeeTypeWithUsage[] = []
+  for (const type of data || []) {
+    const { count } = await supabase
+      .from('employee_type_assignments')
+      .select('*', { count: 'exact', head: true })
+      .eq('type_id', type.id)
+
+    typesWithUsage.push({
+      ...type,
+      usage_count: count || 0,
+    })
+  }
+
+  return typesWithUsage
+}
+
+/**
+ * Get active employee types for a team (for dropdowns)
+ */
+export async function getActiveTeamEmployeeTypes(teamId: string): Promise<TeamEmployeeType[]> {
+  const { data, error } = await supabase
+    .from('team_employee_types')
+    .select('*')
+    .eq('team_id', teamId)
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true })
+    .order('name', { ascending: true })
+
+  if (error) throw error
+
+  return data || []
+}
+
+/**
+ * Get a single team employee type by ID
+ */
+export async function getTeamEmployeeType(id: string): Promise<TeamEmployeeType | null> {
+  const { data, error } = await supabase
+    .from('team_employee_types')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (error) {
+    if (error.code === 'PGRST116') return null
+    throw error
+  }
+
+  return data
+}
+
+/**
+ * Create a new team employee type
+ */
+export async function createTeamEmployeeType(dto: CreateTeamTypeDTO): Promise<TeamEmployeeType> {
+  const { data, error } = await supabase
+    .from('team_employee_types')
+    .insert({
+      team_id: dto.team_id,
+      name: dto.name,
+      description: dto.description || null,
+      icon: dto.icon,
+      color: dto.color,
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+
+  return data
+}
+
+/**
+ * Update a team employee type
+ */
+export async function updateTeamEmployeeType(
+  id: string,
+  dto: UpdateTeamTypeDTO
+): Promise<TeamEmployeeType> {
+  const { data, error } = await supabase
+    .from('team_employee_types')
+    .update({
+      ...(dto.name !== undefined && { name: dto.name }),
+      ...(dto.description !== undefined && { description: dto.description }),
+      ...(dto.icon !== undefined && { icon: dto.icon }),
+      ...(dto.color !== undefined && { color: dto.color }),
+      ...(dto.is_active !== undefined && { is_active: dto.is_active }),
+      ...(dto.sort_order !== undefined && { sort_order: dto.sort_order }),
+    })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) throw error
+
+  return data
+}
+
+/**
+ * Delete a team employee type (only if unused)
+ */
+export async function deleteTeamEmployeeType(id: string): Promise<void> {
+  const canDelete = await canDeleteTeamEmployeeType(id)
+  if (!canDelete.canDelete) {
+    throw new Error(canDelete.reason || 'Cannot delete this type')
+  }
+
+  const { error } = await supabase
+    .from('team_employee_types')
+    .delete()
+    .eq('id', id)
+
+  if (error) throw error
+}
+
+/**
+ * Check if a team employee type can be deleted
+ */
+export async function canDeleteTeamEmployeeType(
+  id: string
+): Promise<{ canDelete: boolean; reason?: string }> {
+  const { count } = await supabase
+    .from('employee_type_assignments')
+    .select('*', { count: 'exact', head: true })
+    .eq('type_id', id)
+
+  if (count && count > 0) {
+    return {
+      canDelete: false,
+      reason: `This type is assigned to ${count} employee${count === 1 ? '' : 's'}. Deactivate it instead.`,
+    }
+  }
+
+  return { canDelete: true }
+}
+
+/**
+ * Check if a team employee type name is unique within the team
+ */
+export async function isTeamEmployeeTypeNameUnique(
+  teamId: string,
+  name: string,
+  excludeId?: string
+): Promise<boolean> {
+  let query = supabase
+    .from('team_employee_types')
+    .select('id')
+    .eq('team_id', teamId)
+    .eq('name', name)
+
+  if (excludeId) {
+    query = query.neq('id', excludeId)
+  }
+
+  const { data, error } = await query
+
+  if (error) throw error
+
+  return !data || data.length === 0
+}
+
+// ============================================================================
 // Custom Field Definitions
 // ============================================================================
 
@@ -410,6 +591,23 @@ export async function getCustomFieldsForCompanyType(
 }
 
 /**
+ * Get custom fields for an employee type
+ */
+export async function getCustomFieldsForEmployeeType(
+  typeId: string
+): Promise<CustomFieldDefinition[]> {
+  const { data, error } = await supabase
+    .from('custom_field_definitions')
+    .select('*')
+    .eq('team_employee_type_id', typeId)
+    .order('sort_order', { ascending: true })
+
+  if (error) throw error
+
+  return data || []
+}
+
+/**
  * Create a custom field definition
  */
 export async function createCustomField(dto: CreateCustomFieldDTO): Promise<CustomFieldDefinition> {
@@ -418,6 +616,7 @@ export async function createCustomField(dto: CreateCustomFieldDTO): Promise<Cust
     .insert({
       team_contact_type_id: dto.team_contact_type_id || null,
       team_company_type_id: dto.team_company_type_id || null,
+      team_employee_type_id: dto.team_employee_type_id || null,
       name: dto.name,
       field_type: dto.field_type,
       description: dto.description || null,

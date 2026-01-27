@@ -32,11 +32,11 @@ export async function getEmployeeDirectory(
 ): Promise<PaginatedEmployees> {
   if (!supabase) throw new Error('Supabase not configured')
 
-  const { teamId, page = 1, pageSize = 25, search, departmentId, status } = params
+  const { teamId, page = 1, pageSize = 25, search, departmentId, status, employeeTypeId } = params
   const from = (page - 1) * pageSize
   const to = from + pageSize - 1
 
-  // Build base query — join employee_profiles → team_members → users, team_departments
+  // Build base query — join employee_profiles → team_members → users, team_departments, employee_type_assignments
   let query = supabase
     .from('employee_profiles')
     .select(
@@ -62,7 +62,19 @@ export async function getEmployeeDirectory(
       ),
       department:team_departments (
         id,
-        name
+        name,
+        icon,
+        color
+      ),
+      employee_type_assignments (
+        id,
+        type_id,
+        type:team_employee_types (
+          id,
+          name,
+          icon,
+          color
+        )
       )
     `,
       { count: 'exact' }
@@ -116,6 +128,13 @@ export async function getEmployeeDirectory(
 
     const methods = methodsByProfile[ep.id] || []
 
+    // Extract employee types from assignments
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const employeeTypes = (ep.employee_type_assignments || [])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((a: any) => a.type)
+      .filter(Boolean)
+
     return {
       id: ep.id,
       team_member_id: ep.team_member_id,
@@ -137,13 +156,21 @@ export async function getEmployeeDirectory(
         avatar_url: user.avatar_url || null,
       },
       department: ep.department
-        ? { id: ep.department.id, name: ep.department.name }
+        ? { id: ep.department.id, name: ep.department.name, icon: ep.department.icon, color: ep.department.color }
         : null,
       roles,
+      employee_types: employeeTypes,
       primary_phone: getPrimaryPhone(methods),
       primary_email: getPrimaryEmail(methods),
     }
   })
+
+  // Apply employee type filter in memory (M:N join can't be filtered in Supabase query easily)
+  if (employeeTypeId) {
+    listItems = listItems.filter(
+      (item) => item.employee_types.some((t) => t.id === employeeTypeId)
+    )
+  }
 
   // Apply search filter in memory (on user full_name, email, job_title)
   if (search) {
@@ -195,7 +222,17 @@ export async function getEmployeeProfileById(
           role:team_roles (*)
         )
       ),
-      department:team_departments (*)
+      department:team_departments (*),
+      employee_type_assignments (
+        id,
+        type_id,
+        type:team_employee_types (
+          id,
+          name,
+          icon,
+          color
+        )
+      )
     `
     )
     .eq('id', profileId)
@@ -213,6 +250,11 @@ export async function getEmployeeProfileById(
   const user = data.team_member?.user || {}
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const roles = (data.team_member?.roles || []).map((r: any) => r.role).filter(Boolean)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const employeeTypes = ((data as any).employee_type_assignments || [])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .map((a: any) => a.type)
+    .filter(Boolean)
 
   return {
     id: data.id,
@@ -236,6 +278,7 @@ export async function getEmployeeProfileById(
     },
     department: data.department || null,
     roles,
+    employee_types: employeeTypes,
     contact_methods: contactMethods,
     permission_level: data.team_member?.permission_level || 'viewer',
   }

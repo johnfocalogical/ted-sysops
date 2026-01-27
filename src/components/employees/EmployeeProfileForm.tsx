@@ -20,8 +20,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 import { ContactMethodsInput } from '@/components/shared/ContactMethodsInput'
+import { TypeBadge } from '@/components/shared/TypeBadge'
 import type { EmployeeWithDetails, Department } from '@/types/employee.types'
+import type { TeamEmployeeType } from '@/types/type-system.types'
 import type { ContactMethodInput } from '@/types/contact.types'
 
 const employeeProfileSchema = z.object({
@@ -41,6 +44,7 @@ const employeeProfileSchema = z.object({
       is_primary: z.boolean(),
     })
   ).optional(),
+  type_ids: z.array(z.string()).optional(),
 })
 
 type EmployeeProfileFormData = z.infer<typeof employeeProfileSchema>
@@ -48,6 +52,8 @@ type EmployeeProfileFormData = z.infer<typeof employeeProfileSchema>
 interface EmployeeProfileFormProps {
   employee: EmployeeWithDetails
   departments: Department[]
+  employeeTypes?: TeamEmployeeType[]
+  assignedTypeIds?: string[]
   onSubmit: (data: EmployeeProfileFormData) => Promise<void>
   onCancel: () => void
   isSubmitting?: boolean
@@ -56,6 +62,8 @@ interface EmployeeProfileFormProps {
 export function EmployeeProfileForm({
   employee,
   departments,
+  employeeTypes = [],
+  assignedTypeIds = [],
   onSubmit,
   onCancel,
   isSubmitting = false,
@@ -77,6 +85,7 @@ export function EmployeeProfileForm({
         value: m.value,
         is_primary: m.is_primary,
       })),
+      type_ids: assignedTypeIds,
     },
   })
 
@@ -174,6 +183,49 @@ export function EmployeeProfileForm({
             )}
           />
         </div>
+
+        {/* Employee Types */}
+        {employeeTypes.length > 0 && (
+          <div className="space-y-4">
+            <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+              Employee Types
+            </h4>
+            <FormField
+              control={form.control}
+              name="type_ids"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="space-y-2">
+                    {employeeTypes.map((type) => {
+                      const isChecked = (field.value || []).includes(type.id)
+                      return (
+                        <div key={type.id} className="flex items-center gap-3">
+                          <Checkbox
+                            checked={isChecked}
+                            onCheckedChange={(checked) => {
+                              const current = field.value || []
+                              if (checked) {
+                                field.onChange([...current, type.id])
+                              } else {
+                                field.onChange(current.filter((id: string) => id !== type.id))
+                              }
+                            }}
+                          />
+                          <TypeBadge
+                            name={type.name}
+                            icon={type.icon}
+                            color={type.color}
+                          />
+                        </div>
+                      )
+                    })}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        )}
 
         {/* Contact Methods */}
         <div className="space-y-4">

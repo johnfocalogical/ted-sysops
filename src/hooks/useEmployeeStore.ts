@@ -5,9 +5,11 @@ import type {
   EmployeeWithDetails,
   EmployeeStatus,
 } from '@/types/employee.types'
+import type { TeamEmployeeType } from '@/types/type-system.types'
 import { getEmployeeDirectory } from '@/lib/employeeService'
 import { getEmployeeProfileById } from '@/lib/employeeService'
 import { getActiveDepartments } from '@/lib/departmentService'
+import { getActiveTeamEmployeeTypes } from '@/lib/teamTypeService'
 
 interface EmployeeStoreState {
   // List state
@@ -23,10 +25,15 @@ interface EmployeeStoreState {
   search: string
   departmentFilter: string | null
   statusFilter: EmployeeStatus | null
+  employeeTypeFilter: string | null
 
   // Departments (lookup data)
   departments: Department[]
   departmentsLoaded: boolean
+
+  // Employee types (lookup data)
+  employeeTypes: TeamEmployeeType[]
+  employeeTypesLoaded: boolean
 
   // Selected employee (for drawer)
   selectedEmployeeId: string | null
@@ -40,10 +47,12 @@ interface EmployeeStoreState {
   setTeamId: (teamId: string) => void
   loadEmployees: () => Promise<void>
   loadDepartments: () => Promise<void>
+  loadEmployeeTypes: () => Promise<void>
   setPage: (page: number) => void
   setSearch: (search: string) => void
   setDepartmentFilter: (departmentId: string | null) => void
   setStatusFilter: (status: EmployeeStatus | null) => void
+  setEmployeeTypeFilter: (typeId: string | null) => void
   selectEmployee: (id: string | null) => Promise<void>
   refreshSelected: () => Promise<void>
   refreshList: () => Promise<void>
@@ -63,9 +72,13 @@ export const useEmployeeStore = create<EmployeeStoreState>((set, get) => ({
   search: '',
   departmentFilter: null,
   statusFilter: null,
+  employeeTypeFilter: null,
 
   departments: [],
   departmentsLoaded: false,
+
+  employeeTypes: [],
+  employeeTypesLoaded: false,
 
   selectedEmployeeId: null,
   selectedEmployee: null,
@@ -88,15 +101,18 @@ export const useEmployeeStore = create<EmployeeStoreState>((set, get) => ({
         search: '',
         departmentFilter: null,
         statusFilter: null,
+        employeeTypeFilter: null,
         departmentsLoaded: false,
         departments: [],
+        employeeTypesLoaded: false,
+        employeeTypes: [],
       })
     }
   },
 
   // Load employees for the current team
   loadEmployees: async () => {
-    const { teamId, page, pageSize, search, departmentFilter, statusFilter } = get()
+    const { teamId, page, pageSize, search, departmentFilter, statusFilter, employeeTypeFilter } = get()
     if (!teamId) return
 
     set({ loading: true, error: null })
@@ -109,6 +125,7 @@ export const useEmployeeStore = create<EmployeeStoreState>((set, get) => ({
         search: search || undefined,
         departmentId: departmentFilter,
         status: statusFilter,
+        employeeTypeId: employeeTypeFilter,
       })
 
       set({
@@ -140,6 +157,19 @@ export const useEmployeeStore = create<EmployeeStoreState>((set, get) => ({
     }
   },
 
+  // Load employee types (lookup data)
+  loadEmployeeTypes: async () => {
+    const { teamId, employeeTypesLoaded } = get()
+    if (employeeTypesLoaded || !teamId) return
+
+    try {
+      const employeeTypes = await getActiveTeamEmployeeTypes(teamId)
+      set({ employeeTypes, employeeTypesLoaded: true })
+    } catch (err) {
+      console.error('Error loading employee types:', err)
+    }
+  },
+
   // Pagination
   setPage: (page: number) => {
     set({ page })
@@ -161,6 +191,12 @@ export const useEmployeeStore = create<EmployeeStoreState>((set, get) => ({
   // Status filter
   setStatusFilter: (status: EmployeeStatus | null) => {
     set({ statusFilter: status, page: 1 })
+    get().loadEmployees()
+  },
+
+  // Employee type filter
+  setEmployeeTypeFilter: (typeId: string | null) => {
+    set({ employeeTypeFilter: typeId, page: 1 })
     get().loadEmployees()
   },
 
@@ -207,10 +243,13 @@ export const useEmployeeStore = create<EmployeeStoreState>((set, get) => ({
       search: '',
       departmentFilter: null,
       statusFilter: null,
+      employeeTypeFilter: null,
       selectedEmployeeId: null,
       selectedEmployee: null,
       loadingSelected: false,
       teamId: null,
+      employeeTypes: [],
+      employeeTypesLoaded: false,
     })
   },
 }))
