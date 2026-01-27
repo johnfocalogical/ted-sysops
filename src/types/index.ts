@@ -152,3 +152,21 @@ export type {
   UserActivityParams,
   PaginatedActivityLogs,
 } from './activity.types'
+
+// Commission types
+export type {
+  CommissionCalculationType,
+  FlatFeeConfig,
+  PercentageGrossConfig,
+  PercentageNetConfig,
+  TierBracket,
+  TieredConfig,
+  RoleBasedConfig,
+  CommissionConfiguration,
+  CommissionRule,
+  CommissionRuleWithCreator,
+  CreateCommissionRuleDTO,
+  UpdateCommissionRuleDTO,
+} from './commission.types'
+
+export { CALCULATION_TYPE_LABELS } from './commission.types'

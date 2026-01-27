@@ -44,6 +44,7 @@ import { Whiteboard } from '@/pages/Whiteboard'
 import { ContactHub } from '@/pages/ContactHub'
 import { ContactDetailPage } from '@/pages/ContactDetailPage'
 import { Employees } from '@/pages/Employees'
+import { EmployeeDetailPage } from '@/pages/EmployeeDetailPage'
 import { Transactions } from '@/pages/Transactions'
 import { CalendarPage } from '@/pages/CalendarPage'
 import { Reports } from '@/pages/Reports'
@@ -53,6 +54,9 @@ import { TeamMembersPage } from '@/pages/settings/TeamMembersPage'
 import { RolesPage } from '@/pages/settings/RolesPage'
 import { ContactTypesPage } from '@/pages/settings/ContactTypesPage'
 import { CompanyTypesPage } from '@/pages/settings/CompanyTypesPage'
+import { AutomatorsPage } from '@/pages/settings/AutomatorsPage'
+import { AutomatorBuilderPage } from '@/pages/settings/AutomatorBuilderPage'
+import { DepartmentsPage } from '@/pages/settings/DepartmentsPage'
 
 function App() {
   return (
@@ -168,6 +172,11 @@ function App() {
               <Employees />
             </SectionAccessGuard>
           } />
+          <Route path="employees/:employeeId" element={
+            <SectionAccessGuard section="employees">
+              <EmployeeDetailPage />
+            </SectionAccessGuard>
+          } />
           <Route path="transactions" element={
             <SectionAccessGuard section="transactions">
               <Transactions />
@@ -204,7 +213,23 @@ function App() {
           <Route path="roles" element={<RolesPage />} />
           <Route path="contact-types" element={<ContactTypesPage />} />
           <Route path="company-types" element={<CompanyTypesPage />} />
+          <Route path="automators" element={<AutomatorsPage />} />
+          <Route path="departments" element={<DepartmentsPage />} />
         </Route>
+
+        {/* Automator Builder (full-page layout) */}
+        <Route
+          path="/org/:orgId/team/:teamId/settings/automators/:automatorId"
+          element={
+            <ProtectedRoute>
+              <TeamAccessGuard>
+                <SectionAccessGuard section="settings">
+                  <AutomatorBuilderPage />
+                </SectionAccessGuard>
+              </TeamAccessGuard>
+            </ProtectedRoute>
+          }
+        />
       </Routes>
       <Toaster />
     </BrowserRouter>

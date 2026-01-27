@@ -4,6 +4,8 @@ import {
   Shield,
   UserCircle,
   Building2,
+  Briefcase,
+  Zap,
 } from 'lucide-react'
 
 export interface SettingsItem {
@@ -58,6 +60,32 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
         icon: Building2,
         description: 'Manage company type categories and custom fields',
         route: 'company-types',
+      },
+    ],
+  },
+  {
+    id: 'employee-sentinel',
+    label: 'Employee Sentinel',
+    items: [
+      {
+        id: 'departments',
+        label: 'Departments',
+        icon: Briefcase,
+        description: 'Configure team departments for employee profiles',
+        route: 'departments',
+      },
+    ],
+  },
+  {
+    id: 'automation',
+    label: 'Automation',
+    items: [
+      {
+        id: 'automators',
+        label: 'Automators',
+        icon: Zap,
+        description: 'Create and manage workflow automations',
+        route: 'automators',
       },
     ],
   },

@@ -108,7 +108,10 @@ ted-sysops/
 │   │   │   ├── OrgSettingsHeader.tsx
 │   │   │   └── OrgSettingsSidebar.tsx
 │   │   │
-│   │   ├── settings/           # Team settings components (9 files)
+│   │   ├── settings/           # Team settings components (18 files)
+│   │   │   ├── TeamSettingsLayout.tsx     # Settings page layout wrapper
+│   │   │   ├── TeamSettingsSidebar.tsx    # Settings sidebar navigation
+│   │   │   ├── SettingsCard.tsx           # Category card for settings home
 │   │   │   ├── RoleSettingsSection.tsx
 │   │   │   ├── RoleFormModal.tsx
 │   │   │   ├── RoleList.tsx
@@ -117,9 +120,15 @@ ted-sysops/
 │   │   │   ├── PendingInvitations.tsx
 │   │   │   ├── JoinLinkSettings.tsx
 │   │   │   ├── TeamMembersSection.tsx
-│   │   │   └── DeleteRoleDialog.tsx
+│   │   │   ├── DeleteRoleDialog.tsx
+│   │   │   ├── TypeSettingsSection.tsx    # Type CRUD for contact/company types
+│   │   │   ├── TypeList.tsx
+│   │   │   ├── TypeFormModal.tsx
+│   │   │   ├── TypeCreationWizard.tsx
+│   │   │   ├── CustomFieldDefinitionManager.tsx
+│   │   │   └── CustomFieldDefinitionFormModal.tsx
 │   │   │
-│   │   ├── shared/             # Cross-app reusable components (18 files)
+│   │   ├── shared/             # Cross-app reusable components (23 files)
 │   │   │   ├── ProtectedRoute.tsx              # Auth guard
 │   │   │   ├── SuperadminGuard.tsx             # Superadmin only
 │   │   │   ├── OrgOwnerGuard.tsx               # Org owner guard
@@ -135,13 +144,55 @@ ted-sysops/
 │   │   │   ├── ImpersonationBanner.tsx
 │   │   │   ├── ViewOnlyBanner.tsx
 │   │   │   ├── ThemeToggle.tsx
+│   │   │   ├── ComingSoon.tsx
 │   │   │   ├── PageHeader.tsx
-│   │   │   └── StepIndicator.tsx
+│   │   │   ├── StepIndicator.tsx
+│   │   │   ├── ContactMethodsInput.tsx         # Polymorphic contact methods form
+│   │   │   ├── IconPicker.tsx                  # Icon selector for types
+│   │   │   ├── ColorPicker.tsx                 # Color selector for types
+│   │   │   ├── TypeBadge.tsx                   # Generic type badge component
+│   │   │   └── CompanyTypeSectionsInput.tsx    # Company type sections input
 │   │   │
 │   │   ├── ui/                 # shadcn/ui components (23 files)
-│   │   │   └── (button, input, form, dialog, dropdown-menu, etc.)
+│   │   │   └── (button, input, form, dialog, dropdown-menu, separator, etc.)
 │   │   │
-│   │   ├── contacts/           # Contact management (placeholder)
+│   │   ├── contacts/           # Contact management (9 files)
+│   │   │   ├── index.ts
+│   │   │   ├── ContactList.tsx
+│   │   │   ├── ContactForm.tsx
+│   │   │   ├── CreateContactModal.tsx
+│   │   │   ├── ContactDetailDrawer.tsx
+│   │   │   ├── ContactSummaryPanel.tsx
+│   │   │   ├── DeleteContactDialog.tsx
+│   │   │   ├── ContactTypeBadge.tsx
+│   │   │   └── ContactTypeFilter.tsx
+│   │   │
+│   │   ├── companies/          # Company management (8 files)
+│   │   │   ├── index.ts
+│   │   │   ├── CompanyList.tsx
+│   │   │   ├── CompanyForm.tsx
+│   │   │   ├── CreateCompanyModal.tsx
+│   │   │   ├── CompanyDetailDrawer.tsx
+│   │   │   ├── DeleteCompanyDialog.tsx
+│   │   │   ├── CompanyTypeBadge.tsx
+│   │   │   └── CompanyTypeFilter.tsx
+│   │   │
+│   │   ├── automators/         # Automator workflow builder (12 files)
+│   │   │   ├── AutomatorList.tsx
+│   │   │   ├── AutomatorFormModal.tsx
+│   │   │   ├── DeleteAutomatorDialog.tsx
+│   │   │   └── builder/
+│   │   │       ├── NodePalette.tsx
+│   │   │       ├── AutomatorToolbar.tsx
+│   │   │       ├── ConfigurationPanel.tsx
+│   │   │       ├── AutomatorCanvas.tsx
+│   │   │       └── nodes/
+│   │   │           ├── nodeStyles.ts
+│   │   │           ├── StartNode.tsx
+│   │   │           ├── EndNode.tsx
+│   │   │           ├── DecisionNode.tsx
+│   │   │           └── DataCollectionNode.tsx
+│   │   │
 │   │   └── deals/              # Deal components (placeholder)
 │   │
 │   ├── pages/
@@ -159,12 +210,22 @@ ted-sysops/
 │   │   ├── PayTime.tsx
 │   │   ├── TeamDashboard.tsx
 │   │   ├── Whiteboard.tsx
-│   │   ├── ContactHub.tsx
+│   │   ├── ContactHub.tsx             # Tabbed hub: Contacts | Companies
+│   │   ├── ContactDetailPage.tsx      # Full contact detail + activity log
 │   │   ├── Employees.tsx
 │   │   ├── Transactions.tsx
 │   │   ├── CalendarPage.tsx
 │   │   ├── Reports.tsx
-│   │   ├── SettingsPage.tsx
+│   │   ├── SettingsPage.tsx           # Legacy (redirects to settings home)
+│   │   │
+│   │   ├── settings/                  # Team settings pages (7 files)
+│   │   │   ├── SettingsHomePage.tsx           # Card-grid settings index
+│   │   │   ├── TeamMembersPage.tsx           # Members/invites/join links
+│   │   │   ├── RolesPage.tsx                 # Role management
+│   │   │   ├── ContactTypesPage.tsx          # Contact type management
+│   │   │   ├── CompanyTypesPage.tsx          # Company type management
+│   │   │   ├── AutomatorsPage.tsx            # Automator list/CRUD
+│   │   │   └── AutomatorBuilderPage.tsx      # Visual workflow builder (full-page)
 │   │   │
 │   │   ├── admin/                      # Superadmin pages (8 files)
 │   │   │   ├── AdminDashboard.tsx
@@ -186,13 +247,24 @@ ted-sysops/
 │   │   ├── useTeamContext.ts           # Zustand team/org context
 │   │   ├── useOrgContext.ts            # Organization context
 │   │   ├── useNavigation.ts            # Navigation state
-│   │   └── usePermissions.ts           # Permission checking
+│   │   ├── usePermissions.ts           # Permission checking
+│   │   ├── useContactStore.ts          # Contact CRUD + list state (Zustand)
+│   │   ├── useCompanyStore.ts          # Company CRUD + list state (Zustand)
+│   │   └── useCustomFields.ts          # Custom field value read/write
 │   │
 │   ├── lib/
 │   │   ├── supabase.ts                 # Supabase client init
 │   │   ├── adminService.ts             # Admin panel operations
 │   │   ├── orgService.ts               # Organization operations
 │   │   ├── roleService.ts              # Role management
+│   │   ├── contactService.ts           # Contact CRUD operations
+│   │   ├── companyService.ts           # Company CRUD operations
+│   │   ├── contactMethodHelpers.ts     # Polymorphic contact method utilities
+│   │   ├── teamTypeService.ts          # Team contact/company type management
+│   │   ├── typeTemplateService.ts      # Superadmin type template CRUD
+│   │   ├── customFieldValueService.ts  # Custom field value operations
+│   │   ├── activityLogService.ts       # Activity log CRUD
+│   │   ├── automatorService.ts         # Automator CRUD + publish/archive
 │   │   └── utils.ts                    # Utility functions
 │   │
 │   ├── types/
@@ -204,11 +276,19 @@ ted-sysops/
 │   │   ├── team-member.types.ts
 │   │   ├── org-member.types.ts
 │   │   ├── role.types.ts               # Role & permissions
-│   │   └── invitation.types.ts
+│   │   ├── invitation.types.ts
+│   │   ├── contact.types.ts            # Contact, ContactMethod, DTOs
+│   │   ├── company.types.ts            # Company, CompanyType, DTOs
+│   │   ├── type-system.types.ts        # Type templates, team types, custom field defs
+│   │   ├── custom-fields.types.ts      # Custom field values, form types
+│   │   ├── activity.types.ts           # Activity log entries, DTOs
+│   │   └── automator.types.ts          # Automator nodes, edges, definitions
 │   │
-│   ├── stores/                         # Zustand stores (placeholder dirs)
-│   │   ├── contacts/
-│   │   └── deals/
+│   ├── stores/
+│   │   └── automatorBuilderStore.ts    # Zustand store for builder canvas state
+│   │
+│   ├── config/
+│   │   └── settingsConfig.ts           # Settings category/item definitions
 │   │
 │   ├── App.tsx                         # Router configuration
 │   ├── main.tsx                        # React entry point
@@ -223,7 +303,12 @@ ted-sysops/
 │       ├── 005_create_team_function.sql
 │       ├── 006_get_invitation_function.sql
 │       ├── 007_accept_invitation_function.sql
-│       └── 008_organization_members.sql # Multi-owner support
+│       ├── 008_organization_members.sql  # Multi-owner support
+│       ├── 009_contacts_companies.sql    # Contacts, companies, methods, types
+│       ├── 010_type_templates.sql        # Type template system, custom fields
+│       ├── 011_custom_field_values.sql   # Custom field value storage
+│       ├── 012_activity_log.sql          # Activity log system
+│       └── 013_automators.sql            # Automator definitions
 │
 └── Configuration Files
     ├── package.json
@@ -246,6 +331,19 @@ permission_level: 'admin' | 'member' | 'viewer'
 
 -- Invitation lifecycle
 invitation_status: 'pending' | 'accepted' | 'expired' | 'revoked'
+
+-- Contact method type
+contact_method_type: 'phone' | 'email' | 'fax' | 'other'
+
+-- Custom field type
+custom_field_type: 'text' | 'textarea' | 'number' | 'currency' | 'date'
+                 | 'dropdown' | 'multi_select' | 'checkbox' | 'url' | 'email' | 'phone'
+
+-- Activity type
+activity_type: 'comment' | 'created' | 'updated' | 'deleted' | 'status_change'
+
+-- Activity entity type
+activity_entity_type: 'contact' | 'company' | 'deal'
 ```
 
 ### Core Tables
@@ -422,6 +520,214 @@ type AccessLevel = 'full' | 'view'
 }
 ```
 
+### ContactHub Tables
+
+#### contacts
+Individual people tracked by the team.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| team_id | UUID | FK → teams |
+| first_name | TEXT | NOT NULL |
+| last_name | TEXT | |
+| notes | TEXT | |
+| created_by | UUID | FK → users |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
+
+**RLS**: Team members SELECT/INSERT/UPDATE; team admins DELETE.
+
+#### companies
+Organizations/businesses tracked by the team.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| team_id | UUID | FK → teams |
+| name | TEXT | NOT NULL |
+| address | TEXT | |
+| city | TEXT | |
+| state | TEXT | |
+| zip | TEXT | |
+| website | TEXT | |
+| notes | TEXT | |
+| poc_contact_id | UUID | FK → contacts (point-of-contact) |
+| created_by | UUID | FK → users |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
+
+**RLS**: Team members SELECT/INSERT/UPDATE; team admins DELETE.
+
+#### contact_companies (Junction)
+Many-to-many relationship between contacts and companies.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| contact_id | UUID | FK → contacts |
+| company_id | UUID | FK → companies |
+| role_title | TEXT | e.g., "Loan Officer" |
+| is_primary | BOOLEAN | Default FALSE |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
+
+**Unique**: (contact_id, company_id)
+
+#### contact_methods (Polymorphic)
+Contact methods that belong to a contact, company, OR contact-company relationship.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| contact_id | UUID | FK → contacts (nullable) |
+| company_id | UUID | FK → companies (nullable) |
+| contact_company_id | UUID | FK → contact_companies (nullable) |
+| method_type | contact_method_type | phone, email, fax, other |
+| label | TEXT | e.g., "Work", "Cell" |
+| value | TEXT | NOT NULL |
+| is_primary | BOOLEAN | Default FALSE |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
+
+**Constraint**: Exactly one of contact_id, company_id, or contact_company_id must be set.
+
+### Type System Tables
+
+#### contact_type_templates / company_type_templates
+System-wide type definitions (superadmin-managed).
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| name | TEXT | UNIQUE |
+| description | TEXT | |
+| icon | TEXT | Lucide icon name |
+| color | TEXT | Tailwind color key |
+| is_system | BOOLEAN | |
+| auto_install | BOOLEAN | Copy to new teams |
+| sort_order | INTEGER | |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
+
+**Default Contact Types**: Seller, Buyer, Investor, Agent, Wholesaler, Contractor, Attorney, Other
+**Default Company Types**: Title Company, Lender, Brokerage, Contractor, Property Management, Inspection, Legal, Marketing, Other
+
+#### team_contact_types / team_company_types
+Per-team type definitions (customizable, auto-copied from templates).
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| team_id | UUID | FK → teams |
+| name | TEXT | |
+| description | TEXT | |
+| icon | TEXT | Lucide icon name |
+| color | TEXT | Tailwind color key |
+| is_active | BOOLEAN | Default TRUE |
+| sort_order | INTEGER | |
+| template_id | UUID | FK → templates (nullable) |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
+
+**Unique**: (team_id, name)
+**Auto-populated** from templates when team is created via trigger.
+
+#### contact_type_assignments / company_type_assignments (Junction)
+Many-to-many: contacts/companies to their team types.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| contact_id / company_id | UUID | FK |
+| type_id | UUID | FK → team_contact_types / team_company_types |
+| created_at | TIMESTAMPTZ | |
+
+**Unique**: (contact_id/company_id, type_id)
+
+### Custom Field Tables
+
+#### custom_field_definitions
+Field definitions attached to team_contact_types or team_company_types.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| team_contact_type_id | UUID | FK (nullable) |
+| team_company_type_id | UUID | FK (nullable) |
+| name | TEXT | NOT NULL |
+| field_type | custom_field_type | text, number, date, dropdown, etc. |
+| description | TEXT | |
+| is_required | BOOLEAN | Default FALSE |
+| options | JSONB | For dropdown/multi_select |
+| default_value | TEXT | |
+| sort_order | INTEGER | |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
+
+#### custom_field_values
+Stored values for custom fields with typed columns.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| field_definition_id | UUID | FK → custom_field_definitions |
+| contact_id | UUID | FK → contacts (nullable) |
+| company_id | UUID | FK → companies (nullable) |
+| value_text | TEXT | |
+| value_number | NUMERIC | |
+| value_date | DATE | |
+| value_boolean | BOOLEAN | |
+| value_json | JSONB | For multi_select |
+| is_orphaned | BOOLEAN | Default FALSE |
+| orphaned_at | TIMESTAMPTZ | |
+| orphaned_type_name | TEXT | Preserves type name on unassign |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
+
+### Activity Log Tables
+
+#### activity_logs
+Universal activity tracking (polymorphic).
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| team_id | UUID | FK → teams |
+| user_id | UUID | FK → users |
+| contact_id | UUID | FK → contacts (nullable) |
+| company_id | UUID | FK → companies (nullable) |
+| entity_type | activity_entity_type | contact, company, deal |
+| activity_type | activity_type | comment, created, updated, etc. |
+| content | TEXT | Comment text or description |
+| metadata | JSONB | Additional structured data |
+| created_at | TIMESTAMPTZ | |
+
+**RLS**: Team members SELECT/INSERT; own entries or team admin UPDATE/DELETE.
+
+### Automator Tables
+
+#### automators
+Workflow definitions stored as JSONB.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| team_id | UUID | FK → teams |
+| name | TEXT | NOT NULL |
+| description | TEXT | |
+| definition | JSONB | {nodes, edges, viewport} |
+| status | TEXT | 'draft', 'published', 'archived' |
+| version | INTEGER | Incremented on publish |
+| created_by | UUID | FK → users |
+| updated_by | UUID | FK → users |
+| published_at | TIMESTAMPTZ | |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
+
+**Unique**: (team_id, name)
+**RLS**: Team members SELECT; team admins INSERT/UPDATE/DELETE.
+
 ### Entity Relationship Diagram
 
 ```
@@ -431,32 +737,59 @@ type AccessLevel = 'full' | 'view'
 └────────┬────────┘
          │ (trigger sync)
          ▼
-┌─────────────────┐      ┌──────────────────────┐
-│     users       │      │   role_templates     │
-│  (is_superadmin)│      │ (system-wide roles)  │
-└────────┬────────┘      └──────────┬───────────┘
-         │                          │ (auto-install)
-    ┌────┴────┐                     │
-    │         │                     ▼
-    ▼         ▼              ┌─────────────┐
-┌────────┐  ┌─────────────┐  │ team_roles  │
-│org_    │  │organizations│  │ (per-team)  │
-│members │  │  (owner_id) │  └──────┬──────┘
-└────────┘  └──────┬──────┘         │
-                   │                │
-                   ▼                │
-            ┌──────────┐            │
-            │  teams   │            │
-            │ (org_id) │            │
-            └────┬─────┘            │
-                 │                  │
-    ┌────────────┼────────────┐     │
-    │            │            │     │
-    ▼            ▼            ▼     ▼
-┌─────────┐ ┌──────────┐ ┌────────────────────┐
-│ team_   │ │ team_    │ │ team_member_roles  │
-│ members │ │invitations│ │ (member ↔ role)   │
-└─────────┘ └──────────┘ └────────────────────┘
+┌─────────────────┐      ┌──────────────────────┐     ┌──────────────────────┐
+│     users       │      │   role_templates     │     │  type_templates      │
+│  (is_superadmin)│      │ (system-wide roles)  │     │ (contact + company)  │
+└────────┬────────┘      └──────────┬───────────┘     └──────────┬───────────┘
+         │                          │ (auto-install)              │ (auto-install)
+    ┌────┴────┐                     │                             │
+    │         │                     ▼                             ▼
+    ▼         ▼              ┌─────────────┐            ┌─────────────────────┐
+┌────────┐  ┌─────────────┐  │ team_roles  │            │ team_contact_types  │
+│org_    │  │organizations│  │ (per-team)  │            │ team_company_types  │
+│members │  │  (owner_id) │  └──────┬──────┘            └──────────┬──────────┘
+└────────┘  └──────┬──────┘         │                              │
+                   │                │                              │
+                   ▼                │                              │
+            ┌──────────┐            │                              │
+            │  teams   │            │                              │
+            │ (org_id) │            │                              │
+            └────┬─────┘            │                              │
+                 │                  │                              │
+    ┌────────┬───┼────────┬─────────┤                              │
+    │        │   │        │         │                              │
+    ▼        │   ▼        ▼         ▼                              │
+┌─────────┐  │ ┌──────────┐ ┌────────────────────┐                │
+│ team_   │  │ │ team_    │ │ team_member_roles  │                │
+│ members │  │ │invitations│ │ (member ↔ role)   │                │
+└─────────┘  │ └──────────┘ └────────────────────┘                │
+             │                                                     │
+             ▼                                                     │
+      ┌────────────┐                                               │
+      │ automators │                                               │
+      │ (JSONB def)│                                               │
+      └────────────┘                                               │
+                                                                   │
+┌────── team-scoped data ──────────────────────────────────────────┤
+│                                                                   │
+│  ┌──────────┐      ┌──────────────────┐      ┌──────────────┐   │
+│  │ contacts │──┬──→│ contact_companies│←──┬──│  companies   │   │
+│  └────┬─────┘  │   └──────────────────┘   │  └──────┬───────┘   │
+│       │        │            │              │         │            │
+│       │        │   contact_methods         │         │            │
+│       │        │   (polymorphic: contact,  │         │            │
+│       │        │    company, or link)      │         │            │
+│       │        │                           │         │            │
+│       ├────────┴── contact_type_assignments─┘────────┤            │
+│       │            company_type_assignments──────────┤            │
+│       │                                              ├────────────┘
+│       │                                              │
+│       ├── custom_field_values     custom_field_definitions
+│       │   (per contact/company)   (per team type)
+│       │
+│       └── activity_logs
+│           (polymorphic: contact | company)
+└──────────────────────────────────────────────────────────────────
 ```
 
 ---
@@ -512,6 +845,16 @@ All bypass RLS for authorization checks:
 | team_members | team member OR superadmin | team admin OR self OR superadmin | team admin OR superadmin | team admin OR superadmin |
 | team_invitations | admin OR recipient OR superadmin | team admin OR superadmin | admin OR recipient | team admin OR superadmin |
 | role_templates | everyone | superadmin | superadmin | superadmin |
+| contacts | team member OR superadmin | team member OR superadmin | team member OR superadmin | team admin OR superadmin |
+| companies | team member OR superadmin | team member OR superadmin | team member OR superadmin | team admin OR superadmin |
+| contact_type_templates | everyone | superadmin | superadmin | superadmin |
+| company_type_templates | everyone | superadmin | superadmin | superadmin |
+| team_contact_types | team/org member OR superadmin | team admin OR superadmin | team admin OR superadmin | team admin OR superadmin |
+| team_company_types | team/org member OR superadmin | team admin OR superadmin | team admin OR superadmin | team admin OR superadmin |
+| custom_field_definitions | via parent type (team member) | team admin OR superadmin | team admin OR superadmin | team admin OR superadmin |
+| custom_field_values | via parent entity (team member) | team member OR superadmin | team member OR superadmin | team member OR superadmin |
+| activity_logs | team member OR superadmin | team member | own entry OR team admin | own entry OR team admin |
+| automators | team member OR superadmin | team admin OR superadmin | team admin OR superadmin | team admin OR superadmin |
 
 ### Frontend Guards
 
@@ -599,9 +942,18 @@ function mergeRolePermissions(roles: TeamRole[]): RolePermissions {
 │
 └── /org/:orgId/team/:teamId/* (TeamAccessGuard)
     ├── /dashboard, /inbox, /pay-time
-    ├── /team, /whiteboard, /contacts
+    ├── /team, /whiteboard
+    ├── /contacts                           # ContactHub (tabbed: Contacts | Companies)
+    ├── /contacts/:contactId                # ContactDetailPage (full detail + activity)
     ├── /employees, /transactions
-    ├── /calendar, /reports, /settings
+    ├── /calendar, /reports
+    ├── /settings                           # SettingsHomePage (card-grid index)
+    │   ├── /team-members                   # TeamMembersPage
+    │   ├── /roles                          # RolesPage
+    │   ├── /contact-types                  # ContactTypesPage
+    │   ├── /company-types                  # CompanyTypesPage
+    │   ├── /automators                     # AutomatorsPage (list/CRUD)
+    │   └── /automators/:automatorId        # AutomatorBuilderPage (full-page)
     └── /access-denied
 ```
 
@@ -611,9 +963,15 @@ function mergeRolePermissions(roles: TeamRole[]): RolePermissions {
 - `useTeamContext` - Current team, org, user, merged permissions
 - `useOrgContext` - Organization details and ownership
 - `useNavigation` - Mobile menu state
+- `useContactStore` - Contact list, search, type filtering, pagination, selection
+- `useCompanyStore` - Company list, search, type filtering, pagination, selection
+- `automatorBuilderStore` - Canvas state: nodes, edges, viewport, selected node, dirty flag
 
 **React Context:**
 - `useAuth` - Authentication state, login/signup operations
+
+**Custom Hooks:**
+- `useCustomFields` - Reads and saves custom field values for contacts/companies
 
 **Local State:**
 - Form data, modal visibility, loading states
@@ -640,6 +998,14 @@ export async function addUserToTeam(
 - `orgService.ts` - Organization and member management
 - `roleService.ts` - Role CRUD operations
 - `adminService.ts` - Superadmin operations
+- `contactService.ts` - Contact CRUD, type assignments, search, pagination
+- `companyService.ts` - Company CRUD, type assignments, contact linking, POC
+- `contactMethodHelpers.ts` - Polymorphic contact method utilities
+- `teamTypeService.ts` - Team-level contact/company type CRUD + custom field definitions
+- `typeTemplateService.ts` - Superadmin type template management
+- `customFieldValueService.ts` - Custom field value read/write with typed columns
+- `activityLogService.ts` - Activity log CRUD, paginated queries
+- `automatorService.ts` - Automator CRUD + publish/unpublish/duplicate/archive
 
 ### Form Pattern
 
@@ -686,6 +1052,50 @@ const form = useForm<z.infer<typeof formSchema>>({
 **Path Aliases:**
 - `@/*` → `./src/*`
 
+### Settings Architecture
+
+Team settings use a dedicated layout with sidebar navigation, separate from the main AppLayout.
+
+**Settings Config** (`src/config/settingsConfig.ts`):
+- `SETTINGS_CATEGORIES` array defines categories and items as typed data
+- 3 categories: **General** (team-members, roles), **Contact Hub** (contact-types, company-types), **Automation** (automators)
+- `ALL_SETTINGS_ITEMS` flat array for search functionality
+- Each item has: id, label, icon, description, route
+
+**Layout Structure:**
+- `TeamSettingsLayout` wraps all settings routes with sidebar + content area
+- `TeamSettingsSidebar` renders navigation grouped by category
+- `SettingsHomePage` renders a searchable card-grid of all categories
+- Individual settings pages are standalone route components
+
+**Automator Builder** (full-page, not nested in TeamSettingsLayout):
+- 3-panel layout: NodePalette (left), AutomatorCanvas (center), ConfigurationPanel (right)
+- AutomatorToolbar at the top with save/publish/status controls
+- State managed by `automatorBuilderStore` (Zustand)
+- Node types: Start, End, Decision, DataCollection
+- Status lifecycle: draft → published → archived
+
+### Type System Pattern
+
+Follows the same architecture as roles: system-wide templates auto-install to teams.
+
+1. **Templates** (superadmin-managed): `contact_type_templates`, `company_type_templates`
+2. **Team Types** (per-team, customizable): `team_contact_types`, `team_company_types`
+3. **Auto-copy trigger**: `copy_type_templates_to_team()` fires on team INSERT
+4. **Custom Fields**: Defined per team type, values stored per entity with typed columns
+5. **Orphan Management**: When a type is unassigned from a contact/company, custom field values are marked as orphaned (not deleted). Re-assigning the type restores them.
+
+### ContactHub Architecture
+
+The ContactHub uses a master-detail pattern with two entry points:
+
+1. **Hub Page** (`ContactHub.tsx`): Tabbed interface (Contacts | Companies) with count badges, search, type filtering, and pagination. Clicking a row opens a detail drawer.
+2. **Detail Page** (`ContactDetailPage.tsx`): Full-page two-column layout — left column has contact info, methods, companies, notes, and custom fields; right column has an activity feed.
+
+**Data Stores** (`useContactStore`, `useCompanyStore`): Zustand stores managing list state (contacts, pagination, search, type filter), selection state (drawer/detail), and CRUD refresh triggers.
+
+**Polymorphic Contact Methods**: A single `contact_methods` table serves three owner types (contact, company, or contact-company relationship), with a check constraint ensuring exactly one FK is set. Helper functions in `contactMethodHelpers.ts` abstract the polymorphic queries.
+
 ---
 
 ## 7. Current Implementation Status
@@ -703,16 +1113,23 @@ const form = useForm<z.infer<typeof formSchema>>({
 | Org Owners | OrgOwnerGuard, OrgMembersPage | organization_members |
 | Superadmin Panel | 8 admin pages, AdminLayout | adminService.ts |
 | Theme System | ThemeToggle, Space Force theme | next-themes, Tailwind |
+| ContactHub | ContactList, ContactForm, CreateContactModal, ContactDetailDrawer, ContactSummaryPanel, DeleteContactDialog | contactService.ts |
+| Company Management | CompanyList, CompanyForm, CreateCompanyModal, CompanyDetailDrawer, DeleteCompanyDialog | companyService.ts |
+| Contact Detail Page | ContactDetailPage (two-column layout with activity log, custom fields, company links) | contactService.ts, activityLogService.ts, customFieldValueService.ts |
+| Type System | TypeSettingsSection, TypeList, TypeFormModal, TypeCreationWizard, CustomFieldDefinitionManager | teamTypeService.ts, typeTemplateService.ts |
+| Custom Fields | CustomFieldDefinitionManager, CustomFieldDefinitionFormModal, useCustomFields | customFieldValueService.ts |
+| Activity Logging | Inline activity feed with comments on contacts/companies | activityLogService.ts |
+| Settings Redesign | SettingsHomePage (card-grid), TeamSettingsLayout, TeamSettingsSidebar, SettingsCard | settingsConfig.ts |
+| Contact Methods | ContactMethodsInput (polymorphic: personal, company, relationship) | contactMethodHelpers.ts |
 
 ### Placeholder / Not Yet Implemented
 
 | Section | Status | Notes |
 |---------|--------|-------|
 | Deals | Placeholder | Core deal management |
-| Contacts | Placeholder | Contact hub |
 | Whiteboard | Placeholder | Kanban/pipeline view |
 | Transactions | Placeholder | Transaction tracking |
-| Automators | Not started | Guided workflow engine |
+| Automators | Partially implemented | Builder UI complete (draft/publish/archive); execution engine not yet built |
 | Pay Time | Placeholder | Commission tracking |
 | Calendar | Placeholder | Scheduling |
 | Reports | Placeholder | Analytics |
@@ -874,6 +1291,16 @@ When writing epics, reference these existing implementations:
 | Multi-step form | `Signup.tsx` |
 | Junction table | `team_member_roles` |
 | SECURITY DEFINER | `create_team()`, `accept_invitation()` |
+| Contact/Company CRUD with list + drawer | `ContactList.tsx` + `ContactDetailDrawer.tsx` |
+| Tabbed hub page | `ContactHub.tsx` (Contacts / Companies tabs) |
+| Full detail page with activity | `ContactDetailPage.tsx` (two-column layout) |
+| Type system (template → team) | `team_contact_types` + `copy_type_templates_to_team()` |
+| Custom fields (definition + values) | `CustomFieldDefinitionManager.tsx` + `useCustomFields.ts` |
+| Activity logging | `activityLogService.ts` + ContactDetailPage activity feed |
+| Zustand data store (list + CRUD) | `useContactStore.ts` (search, filters, pagination) |
+| Visual workflow builder | `AutomatorBuilderPage.tsx` + `automatorBuilderStore.ts` |
+| Settings config-driven layout | `settingsConfig.ts` + `TeamSettingsLayout.tsx` |
+| Polymorphic table (owner check) | `contact_methods`, `custom_field_values`, `activity_logs` |
 
 ---
 
@@ -889,6 +1316,19 @@ When writing epics, reference these existing implementations:
 | Permission types | `src/types/role.types.ts` |
 | Org service | `src/lib/orgService.ts` |
 | Core schema | `supabase/migrations/001_core_schema.sql` |
+| Contact service | `src/lib/contactService.ts` |
+| Company service | `src/lib/companyService.ts` |
+| Automator service | `src/lib/automatorService.ts` |
+| Activity log service | `src/lib/activityLogService.ts` |
+| Contact types | `src/types/contact.types.ts` |
+| Company types | `src/types/company.types.ts` |
+| Automator types | `src/types/automator.types.ts` |
+| Settings config | `src/config/settingsConfig.ts` |
+| Builder store | `src/stores/automatorBuilderStore.ts` |
+| ContactHub page | `src/pages/ContactHub.tsx` |
+| Contact schema | `supabase/migrations/009_contacts_companies.sql` |
+| Type templates schema | `supabase/migrations/010_type_templates.sql` |
+| Automator schema | `supabase/migrations/013_automators.sql` |
 
 ### Commands
 
@@ -911,4 +1351,4 @@ npx shadcn-ui@latest add [component]  # Add shadcn component
 
 ---
 
-*Last updated: January 2025*
+*Last updated: January 2026*

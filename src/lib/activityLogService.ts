@@ -45,6 +45,8 @@ export async function getActivityLogsForEntity(
     query = query.eq('contact_id', entityId)
   } else if (entityType === 'company') {
     query = query.eq('company_id', entityId)
+  } else if (entityType === 'employee') {
+    query = query.eq('employee_profile_id', entityId)
   }
 
   const { data, count, error } = await query
@@ -129,6 +131,8 @@ export async function createActivityLog(
     insertData.contact_id = dto.contact_id
   } else if (dto.entity_type === 'company' && dto.company_id) {
     insertData.company_id = dto.company_id
+  } else if (dto.entity_type === 'employee' && dto.employee_profile_id) {
+    insertData.employee_profile_id = dto.employee_profile_id
   }
 
   const { data, error } = await supabase
@@ -201,6 +205,8 @@ export async function addComment(
     dto.contact_id = entityId
   } else if (entityType === 'company') {
     dto.company_id = entityId
+  } else if (entityType === 'employee') {
+    dto.employee_profile_id = entityId
   }
 
   // Create the activity log

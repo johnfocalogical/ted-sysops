@@ -11,6 +11,7 @@ export interface ContactMethod {
   contact_id: string | null
   company_id: string | null
   contact_company_id: string | null
+  employee_profile_id: string | null
   method_type: ContactMethodType
   label: string | null
   value: string

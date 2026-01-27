@@ -164,6 +164,60 @@ export async function saveContactMethodsForRelationship(
 }
 
 /**
+ * Get contact methods for an employee profile
+ */
+export async function getContactMethodsForEmployee(employeeProfileId: string): Promise<ContactMethod[]> {
+  if (!supabase) throw new Error('Supabase not configured')
+
+  const { data, error } = await supabase
+    .from('contact_methods')
+    .select('*')
+    .eq('employee_profile_id', employeeProfileId)
+    .order('is_primary', { ascending: false })
+    .order('method_type', { ascending: true })
+
+  if (error) throw error
+  return data || []
+}
+
+/**
+ * Save contact methods for an employee profile (replaces existing)
+ */
+export async function saveContactMethodsForEmployee(
+  employeeProfileId: string,
+  methods: ContactMethodInput[]
+): Promise<ContactMethod[]> {
+  if (!supabase) throw new Error('Supabase not configured')
+
+  // Delete existing methods
+  const { error: deleteError } = await supabase
+    .from('contact_methods')
+    .delete()
+    .eq('employee_profile_id', employeeProfileId)
+
+  if (deleteError) throw deleteError
+
+  // Insert new methods if any
+  if (methods.length === 0) return []
+
+  const { data, error } = await supabase
+    .from('contact_methods')
+    .insert(
+      methods.map((m) => ({
+        employee_profile_id: employeeProfileId,
+        method_type: m.method_type,
+        label: m.label || null,
+        value: m.value,
+        is_primary: m.is_primary,
+      }))
+    )
+    .select()
+
+  if (error) throw error
+  return data || []
+}
+
+/**
  * Get primary phone for display
  */
 export function getPrimaryPhone(methods: ContactMethod[]): string | null {

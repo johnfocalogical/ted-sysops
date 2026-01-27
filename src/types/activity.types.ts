@@ -7,7 +7,7 @@
 export type ActivityType = 'comment' | 'created' | 'updated' | 'deleted' | 'status_change'
 
 // Entity type - what entity the activity is about
-export type ActivityEntityType = 'contact' | 'company' | 'deal'
+export type ActivityEntityType = 'contact' | 'company' | 'deal' | 'employee'
 
 // Base activity log matching database table
 export interface ActivityLog {
@@ -16,6 +16,7 @@ export interface ActivityLog {
   user_id: string
   contact_id: string | null
   company_id: string | null
+  employee_profile_id: string | null
   entity_type: ActivityEntityType
   activity_type: ActivityType
   content: string | null
@@ -37,6 +38,7 @@ export interface CreateActivityLogDTO {
   team_id: string
   contact_id?: string
   company_id?: string
+  employee_profile_id?: string
   entity_type: ActivityEntityType
   activity_type: ActivityType
   content?: string

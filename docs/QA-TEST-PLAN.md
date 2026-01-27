@@ -977,6 +977,779 @@ Before running tests, ensure:
 
 ---
 
+## 11. Contact Management Tests
+
+### CONTACT-001: View Contact List
+**Prerequisites**: Team member with contacts access, team has contacts
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Contacts section | ContactHub loads with Contacts tab active |
+| 2 | View contact list | Table displays contacts with name, types, phone, email, companies |
+| 3 | Verify pagination | Page controls shown when more than 25 contacts |
+| 4 | Verify type badges | Color-coded type badges displayed per contact |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### CONTACT-002: Create New Contact
+**Prerequisites**: Team member with contacts access
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click "Add Contact" button | Create contact modal opens |
+| 2 | Enter first name (required) | Field accepts input |
+| 3 | Enter last name | Field accepts input |
+| 4 | Select one or more contact types | Type checkboxes toggle |
+| 5 | Add contact methods (phone, email) | Contact method inputs work |
+| 6 | Add notes | Textarea accepts input |
+| 7 | Click "Create" | Contact created, success toast, appears in list |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### CONTACT-003: View Contact Detail (Drawer)
+**Prerequisites**: At least one contact exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click on contact row in list | Contact detail drawer opens from right |
+| 2 | View summary panel | Name, avatar, types, contact info displayed |
+| 3 | See companies section | Associated companies with roles listed |
+| 4 | See notes preview | Notes shown (truncated to 150 chars) |
+| 5 | See activity preview | Recent activity entries shown |
+| 6 | Click "View Full Details" | Navigates to ContactDetailPage |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### CONTACT-004: View Contact Detail (Full Page)
+**Prerequisites**: Contact exists with types, methods, and activity
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to contact detail page | Two-column layout loads |
+| 2 | Left column shows contact info | Name, types, methods, companies, notes, custom fields |
+| 3 | Right column shows activity feed | Activity entries with timestamps |
+| 4 | Custom fields grouped by type | Fields displayed per assigned type |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### CONTACT-005: Edit Contact
+**Prerequisites**: Team member, contact exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Open contact detail page | Detail view loads |
+| 2 | Click edit button | Form mode activates |
+| 3 | Edit name, types, methods, notes | Fields are editable |
+| 4 | Save changes | Success toast, changes persist on reload |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### CONTACT-006: Delete Contact
+**Prerequisites**: Team admin, contact exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Open contact detail | Detail loads |
+| 2 | Click delete button | Confirmation dialog shows dependency info |
+| 3 | Dialog shows company link count | Impact information displayed |
+| 4 | Confirm deletion | Contact removed, redirected to list |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### CONTACT-007: Search Contacts
+**Prerequisites**: Multiple contacts exist
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Type in search box | List filters after debounce (300ms) |
+| 2 | Search by first name | Matching contacts shown |
+| 3 | Search by last name | Matching contacts shown |
+| 4 | Clear search | Full list restored |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### CONTACT-008: Filter Contacts by Type
+**Prerequisites**: Contacts with different types assigned
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click type filter dropdown | Available types listed |
+| 2 | Select a type (e.g., "Seller") | Only contacts with that type shown |
+| 3 | Select additional type | Filter updates (OR logic) |
+| 4 | Clear filter | Full list restored |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 12. Company Management Tests
+
+### COMPANY-001: View Company List
+**Prerequisites**: Team member, ContactHub accessible
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to ContactHub | Page loads with Contacts tab |
+| 2 | Click "Companies" tab | Companies tab activates with count badge |
+| 3 | View company list | Table shows name, types, phone, email, POC |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMPANY-002: Create New Company
+**Prerequisites**: Team member with contacts access
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | On Companies tab, click "Add Company" | Create company modal opens |
+| 2 | Enter company name (required) | Field accepts input |
+| 3 | Enter address, city, state, zip | Address fields accept input |
+| 4 | Enter website | Field accepts input |
+| 5 | Select company types | Type checkboxes toggle |
+| 6 | Add contact methods (phone, email) | Method inputs work |
+| 7 | Click "Create" | Company created, success toast, appears in list |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMPANY-003: View Company Detail
+**Prerequisites**: At least one company exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click on company row in list | Company detail drawer opens |
+| 2 | View company info | Name, address, types, methods shown |
+| 3 | See linked contacts | Associated contacts with roles listed |
+| 4 | See POC indicator | Point-of-contact highlighted if set |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMPANY-004: Edit Company
+**Prerequisites**: Team member, company exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Open company detail | Detail loads |
+| 2 | Edit name, address, website | Fields are editable |
+| 3 | Change type assignments | Types update |
+| 4 | Set POC contact | POC dropdown works |
+| 5 | Save changes | Success toast, changes persist |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMPANY-005: Delete Company
+**Prerequisites**: Team admin, company exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Open company detail | Detail loads |
+| 2 | Click delete button | Confirmation dialog with dependency info |
+| 3 | Confirm deletion | Company removed from list |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMPANY-006: Link Contact to Company
+**Prerequisites**: Both a contact and company exist
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Open contact detail page in edit mode | Edit form loads |
+| 2 | Find company association section | Section visible |
+| 3 | Add company with role title | Association created |
+| 4 | Save changes | Link persists |
+| 5 | Verify company shows in contact detail | Company listed with role |
+| 6 | Verify contact shows in company detail | Contact listed with role |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMPANY-007: Search and Filter Companies
+**Prerequisites**: Multiple companies with various types
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Enter search text in search box | Company list filters by name |
+| 2 | Use type filter dropdown | Only matching companies shown |
+| 3 | Clear filters | Full list restored |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 13. Contact & Company Types (Settings) Tests
+
+### TYPE-001: View Team Contact Types
+**Prerequisites**: Team admin
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Settings | Settings home card grid loads |
+| 2 | Click "Contact Types" card | Contact Types page loads |
+| 3 | View type list | Default types listed (Seller, Buyer, Investor, Agent, etc.) |
+| 4 | Each type shows icon, color, usage count | Details visible |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### TYPE-002: Create Custom Contact Type
+**Prerequisites**: Team admin
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click "Create Type" button | Type creation wizard opens |
+| 2 | Enter type name | Field accepts input |
+| 3 | Enter description | Field accepts input |
+| 4 | Select icon | Icon picker works |
+| 5 | Select color | Color picker works |
+| 6 | Click "Create" | New type appears in list |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### TYPE-003: Edit Contact Type
+**Prerequisites**: Team admin, type exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click edit on a type | Edit modal opens |
+| 2 | Change name, icon, or color | Fields update |
+| 3 | Toggle active/inactive | Status changes |
+| 4 | Save changes | Success toast, list updates |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### TYPE-004: Delete Unused Contact Type
+**Prerequisites**: Team admin, type with 0 usage count
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Find type with 0 usage count | Type visible in list |
+| 2 | Click delete | Confirmation dialog |
+| 3 | Confirm deletion | Type removed from list |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### TYPE-005: Cannot Delete Type in Use
+**Prerequisites**: Team admin, type assigned to contacts
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Find type with usage count > 0 | Type visible |
+| 2 | Attempt to delete | Error message or delete disabled |
+| 3 | Type remains in list | Not removed |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### TYPE-006: View Team Company Types
+**Prerequisites**: Team admin
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Settings | Settings home loads |
+| 2 | Click "Company Types" card | Company Types page loads |
+| 3 | View type list | Default types listed (Title Company, Lender, Brokerage, etc.) |
+| 4 | Each type shows icon, color, usage count | Details visible |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### TYPE-007: Create Custom Company Type
+**Prerequisites**: Team admin
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click "Create Type" | Type creation wizard opens |
+| 2 | Enter type name, select icon and color | Fields work |
+| 3 | Click "Create" | New company type appears in list |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### TYPE-008: Edit and Delete Company Type
+**Prerequisites**: Team admin, custom company type exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click edit on company type | Modal opens, fields editable |
+| 2 | Save changes | Success toast, list updates |
+| 3 | Delete unused company type | Confirmation dialog, type removed |
+| 4 | Attempt delete of in-use type | Error or disabled |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 14. Custom Fields Tests
+
+### FIELD-001: Add Custom Field to Type
+**Prerequisites**: Team admin, contact or company type exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Contact Types or Company Types settings | Page loads |
+| 2 | Click "Manage Fields" on a type | Custom field definition manager opens |
+| 3 | Click "Add Field" | Field definition form opens |
+| 4 | Enter field name, select type (text, number, date, etc.) | Fields work |
+| 5 | Set required/optional | Toggle works |
+| 6 | Save field | Field appears in type's field list |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### FIELD-002: Add Dropdown/Multi-Select Field with Options
+**Prerequisites**: Team admin
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Add new field, select "Dropdown" or "Multi-Select" type | Options input appears |
+| 2 | Add multiple options | Options listed |
+| 3 | Save field | Field with options created successfully |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### FIELD-003: Edit Custom Field Definition
+**Prerequisites**: Custom field definition exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click edit on a field definition | Edit form opens |
+| 2 | Change name, type, or options | Fields update |
+| 3 | Save changes | Definition updated, success toast |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### FIELD-004: Delete Custom Field Definition
+**Prerequisites**: Custom field definition exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click delete on a field definition | Confirmation dialog |
+| 2 | Confirm deletion | Field removed from list |
+| 3 | Existing values for this field cascade deleted | No orphaned data |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### FIELD-005: Fill Custom Field Values on Contact
+**Prerequisites**: Contact exists with assigned type that has custom fields defined
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Open contact detail page | Page loads |
+| 2 | Find custom fields section | Fields grouped by type |
+| 3 | Fill in text, number, date, dropdown fields | Inputs accept values |
+| 4 | Save values | Values persisted |
+| 5 | Reload page | Saved values shown correctly |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### FIELD-006: Orphan Preservation on Type Removal
+**Prerequisites**: Contact with type assigned and custom field values filled
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Remove a type from the contact | Type unassigned |
+| 2 | Custom field values preserved (orphaned) | Values not deleted |
+| 3 | Re-assign the same type | Type reassigned |
+| 4 | Custom field values restored | Previous values reappear |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 15. Activity Log Tests
+
+### ACT-001: View Activity Feed
+**Prerequisites**: Contact or company with activity entries
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to contact detail page | Page loads |
+| 2 | Find activity section (right column) | Activity feed visible |
+| 3 | Entries show user name, timestamp, content | Properly formatted |
+| 4 | Most recent entries at top | Reverse chronological order |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### ACT-002: Add Comment
+**Prerequisites**: Team member, contact detail page
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Find comment input area | Input visible |
+| 2 | Type a comment | Text entered |
+| 3 | Submit comment | Comment appears in feed at top |
+| 4 | Verify user name and timestamp | Correctly attributed |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### ACT-003: Edit Own Comment
+**Prerequisites**: User has posted a comment
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Find own comment in feed | Comment visible |
+| 2 | Click edit action | Comment becomes editable |
+| 3 | Change text and save | Updated text shown |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### ACT-004: Delete Own Comment
+**Prerequisites**: User has posted a comment
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Find own comment | Comment visible |
+| 2 | Click delete action | Confirmation dialog |
+| 3 | Confirm deletion | Comment removed from feed |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### ACT-005: Cannot Edit/Delete Others' Comments (Non-Admin)
+**Prerequisites**: Non-admin team member, comment by another user exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Find another user's comment | Comment visible |
+| 2 | Look for edit/delete actions | Not visible or disabled |
+| 3 | Comment is read-only | Cannot modify |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 16. Team Settings Navigation Tests
+
+### SET-001: Settings Home Card Grid
+**Prerequisites**: Team admin or member with settings access
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Settings | Settings home page loads |
+| 2 | View category cards | 3 categories: General, Contact Hub, Automation |
+| 3 | Each card shows icon, label, description | Properly rendered |
+| 4 | Click a card | Navigates to corresponding settings page |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### SET-002: Settings Search
+**Prerequisites**: Settings home page
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Type in search box | Cards filter in real time |
+| 2 | Search "roles" | Only Roles card shown |
+| 3 | Search "automators" | Only Automators card shown |
+| 4 | Clear search | All cards restored |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### SET-003: Navigate to Settings Subpage
+**Prerequisites**: Settings home page
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click "Team Members" card | TeamMembersPage loads |
+| 2 | Verify sidebar shows active item | "Team Members" highlighted |
+| 3 | Click "Roles" in sidebar | RolesPage loads |
+| 4 | Click back/home link | Settings home page loads |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### SET-004: Settings Sidebar Navigation
+**Prerequisites**: Any settings subpage
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | View sidebar | Settings items grouped by category |
+| 2 | Click each sidebar item | Corresponding page loads |
+| 3 | Active item highlighted | Visual indicator present |
+| 4 | Categories match: General, Contact Hub, Automation | Correct grouping |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### SET-005: View-Only Banner for Non-Admin
+**Prerequisites**: Team member (not admin) with settings view access
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Settings | Settings home loads |
+| 2 | View-only banner displayed | Banner indicates read-only access |
+| 3 | Edit/create buttons hidden | Admin-only controls not visible |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 17. Automator Builder Tests
+
+### AUTO-001: View Automator List
+**Prerequisites**: Team admin, navigate to Settings > Automators
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Settings > Automators | Automator list page loads |
+| 2 | View list (may be empty) | Table or empty state shown |
+| 3 | Status badges visible | Draft/Published shown with appropriate colors |
+| 4 | Purple accent color used | Automator UI uses purple theme |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### AUTO-002: Create New Automator
+**Prerequisites**: Team admin
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click "Create Automator" button | Form modal opens |
+| 2 | Enter automator name (required) | Field accepts input |
+| 3 | Enter description (optional) | Field accepts input |
+| 4 | Click "Create" | Automator created as Draft, redirects to builder |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### AUTO-003: Automator Builder Layout
+**Prerequisites**: Automator exists, navigate to builder
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to automator builder page | Full-page builder loads |
+| 2 | Verify 3-panel layout | Left: NodePalette, Center: Canvas, Right: ConfigurationPanel |
+| 3 | Toolbar visible at top | Name, status badge, save/publish buttons shown |
+| 4 | Canvas is interactive | Can pan and zoom |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### AUTO-004: Add Nodes to Canvas
+**Prerequisites**: Automator builder open
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Drag Start node from palette | Start node appears on canvas |
+| 2 | Drag End node from palette | End node appears on canvas |
+| 3 | Drag Decision node from palette | Decision node appears on canvas |
+| 4 | Drag Data Collection node from palette | Data Collection node appears on canvas |
+| 5 | Nodes are visually distinct | Different styles per node type |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### AUTO-005: Configure Node Properties
+**Prerequisites**: Nodes placed on canvas
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click on a Decision node | ConfigurationPanel shows decision properties |
+| 2 | Enter question text | Field accepts input |
+| 3 | Click on Data Collection node | Panel shows field configuration |
+| 4 | Set field type, name, required | Properties configurable |
+| 5 | Click on End node | Panel shows outcome (success/failure/cancelled) |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### AUTO-006: Save Automator Draft
+**Prerequisites**: Builder with nodes/edges configured
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click "Save" in toolbar | Definition saved, success indicator |
+| 2 | Navigate away from builder | Can leave page |
+| 3 | Return to builder | Saved state persists (nodes, edges, viewport) |
+| 4 | Status remains "Draft" | Badge shows Draft |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### AUTO-007: Publish and Unpublish Automator
+**Prerequisites**: Automator in draft status with valid definition
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click "Publish" in toolbar | Confirmation or action executes |
+| 2 | Status changes to "Published" | Badge updates |
+| 3 | Version number incremented | Version visible |
+| 4 | published_at timestamp set | Timestamp shown in list |
+| 5 | Click "Unpublish" | Status returns to "Draft" |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### AUTO-008: Duplicate Automator
+**Prerequisites**: Automator exists in list
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Find automator in list | Automator visible |
+| 2 | Click duplicate action (dropdown menu) | Duplicate created |
+| 3 | New automator has "(Copy)" suffix in name | Name modified |
+| 4 | New automator is in Draft status | Status is Draft |
+| 5 | Definition is identical to original | Same nodes and edges |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
 ## Test Summary
 
 | Category | Total Tests | Passed | Failed |
@@ -991,7 +1764,14 @@ Before running tests, ensure:
 | 8. Permission Levels | 4 | | |
 | 9. Superadmin | 8 | | |
 | 10. Theme & UI | 5 | | |
-| **TOTAL** | **59** | | |
+| 11. Contact Management | 8 | | |
+| 12. Company Management | 7 | | |
+| 13. Contact & Company Types | 8 | | |
+| 14. Custom Fields | 6 | | |
+| 15. Activity Log | 5 | | |
+| 16. Team Settings Navigation | 5 | | |
+| 17. Automator Builder | 8 | | |
+| **TOTAL** | **106** | | |
 
 ---
 
@@ -1015,4 +1795,4 @@ _________________________________
 
 ---
 
-*Last updated: January 2025*
+*Last updated: January 2026*
