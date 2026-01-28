@@ -1,16 +1,24 @@
-import { CommissionRulesSection } from '@/components/commissions/CommissionRulesSection'
+import { EffectiveCommissionsSection } from '@/components/commissions/EffectiveCommissionsSection'
 
 interface CommissionRulesTabProps {
   employeeProfileId: string
+  teamMemberId: string
   teamId: string
+  isAdmin: boolean
 }
 
-export function CommissionRulesTab({ employeeProfileId, teamId }: CommissionRulesTabProps) {
+export function CommissionRulesTab({
+  employeeProfileId,
+  teamMemberId,
+  teamId,
+  isAdmin,
+}: CommissionRulesTabProps) {
   return (
-    <CommissionRulesSection
+    <EffectiveCommissionsSection
       employeeProfileId={employeeProfileId}
+      teamMemberId={teamMemberId}
       teamId={teamId}
-      isAdmin={false}
+      isAdmin={isAdmin}
     />
   )
 }

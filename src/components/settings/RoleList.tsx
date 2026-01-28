@@ -1,4 +1,4 @@
-import { MoreHorizontal, Pencil, Trash2, Users } from 'lucide-react'
+import { DollarSign, MoreHorizontal, Pencil, Trash2, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -28,9 +28,11 @@ interface RoleListProps {
   roles: RoleWithMemberCount[]
   onEdit: (role: RoleWithMemberCount) => void
   onDelete: (role: RoleWithMemberCount) => void
+  onViewCommissions?: (roleId: string) => void
+  activeCommissionsRoleId?: string | null
 }
 
-export function RoleList({ roles, onEdit, onDelete }: RoleListProps) {
+export function RoleList({ roles, onEdit, onDelete, onViewCommissions, activeCommissionsRoleId }: RoleListProps) {
   if (roles.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -49,6 +51,7 @@ export function RoleList({ roles, onEdit, onDelete }: RoleListProps) {
         <TableHeader>
           <TableRow>
             <TableHead>Role Name</TableHead>
+            <TableHead>Department</TableHead>
             <TableHead>Type</TableHead>
             <TableHead>Members</TableHead>
             <TableHead className="w-[70px]">Actions</TableHead>
@@ -62,6 +65,8 @@ export function RoleList({ roles, onEdit, onDelete }: RoleListProps) {
               role={role}
               onEdit={onEdit}
               onDelete={onDelete}
+              onViewCommissions={onViewCommissions}
+              isCommissionsActive={activeCommissionsRoleId === role.id}
             />
           ))}
 
@@ -72,6 +77,8 @@ export function RoleList({ roles, onEdit, onDelete }: RoleListProps) {
               role={role}
               onEdit={onEdit}
               onDelete={onDelete}
+              onViewCommissions={onViewCommissions}
+              isCommissionsActive={activeCommissionsRoleId === role.id}
             />
           ))}
         </TableBody>
@@ -84,9 +91,11 @@ interface RoleRowProps {
   role: RoleWithMemberCount
   onEdit: (role: RoleWithMemberCount) => void
   onDelete: (role: RoleWithMemberCount) => void
+  onViewCommissions?: (roleId: string) => void
+  isCommissionsActive?: boolean
 }
 
-function RoleRow({ role, onEdit, onDelete }: RoleRowProps) {
+function RoleRow({ role, onEdit, onDelete, onViewCommissions, isCommissionsActive }: RoleRowProps) {
   const canDelete = role.member_count === 0
 
   return (
@@ -101,6 +110,15 @@ function RoleRow({ role, onEdit, onDelete }: RoleRowProps) {
             </div>
           )}
         </div>
+      </TableCell>
+
+      {/* Department */}
+      <TableCell>
+        {role.department ? (
+          <span className="text-sm">{role.department.name}</span>
+        ) : (
+          <span className="text-sm text-muted-foreground">—</span>
+        )}
       </TableCell>
 
       {/* Type Badge */}
@@ -138,6 +156,12 @@ function RoleRow({ role, onEdit, onDelete }: RoleRowProps) {
               <Pencil className="mr-2 h-4 w-4" />
               Edit
             </DropdownMenuItem>
+            {onViewCommissions && (
+              <DropdownMenuItem onClick={() => onViewCommissions(role.id)}>
+                <DollarSign className="mr-2 h-4 w-4" />
+                {isCommissionsActive ? 'Hide Commissions' : 'Commission Rules'}
+              </DropdownMenuItem>
+            )}
 
             {canDelete ? (
               <DropdownMenuItem

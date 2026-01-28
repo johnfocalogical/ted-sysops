@@ -32,6 +32,8 @@ export interface TeamRole {
   permissions: RolePermissions
   is_default: boolean
   template_id: string | null
+  department_id: string | null
+  department?: { id: string; name: string }
   created_at: string
   updated_at: string
 }
@@ -54,6 +56,7 @@ export interface CreateTeamRoleDTO {
   name: string
   description?: string
   permissions: RolePermissions
+  department_id?: string
 }
 
 // DTO for updating a team role
@@ -61,4 +64,5 @@ export interface UpdateTeamRoleDTO {
   name?: string
   description?: string
   permissions?: RolePermissions
+  department_id?: string | null
 }

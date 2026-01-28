@@ -100,6 +100,8 @@ export async function createCommissionRule(
       priority: dto.priority ?? 0,
       notes: dto.notes || null,
       created_by: userId,
+      role_commission_rule_id: dto.role_commission_rule_id || null,
+      expires_at: dto.expires_at || null,
     })
     .select()
     .single()
@@ -135,6 +137,7 @@ export async function updateCommissionRule(
   if (dto.is_active !== undefined) updatePayload.is_active = dto.is_active
   if (dto.priority !== undefined) updatePayload.priority = dto.priority
   if (dto.notes !== undefined) updatePayload.notes = dto.notes
+  if (dto.expires_at !== undefined) updatePayload.expires_at = dto.expires_at
 
   const { data, error } = await supabase
     .from('commission_rules')

@@ -164,7 +164,9 @@ export function PayTime() {
             <TabsContent value="commission-rules" className="mt-4">
               <CommissionRulesTab
                 employeeProfileId={activeProfile.id}
+                teamMemberId={activeProfile.team_member_id}
                 teamId={activeProfile.team_id}
+                isAdmin={admin}
               />
             </TabsContent>
 

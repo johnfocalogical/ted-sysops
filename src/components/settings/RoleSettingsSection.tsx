@@ -7,6 +7,7 @@ import { getTeamRoles, type RoleWithMemberCount } from '@/lib/roleService'
 import { RoleList } from './RoleList'
 import { RoleFormModal } from './RoleFormModal'
 import { DeleteRoleDialog } from './DeleteRoleDialog'
+import { RoleCommissionRulesSection } from '@/components/commissions/RoleCommissionRulesSection'
 
 export function RoleSettingsSection() {
   const { context, isAdmin } = useTeamContext()
@@ -15,6 +16,7 @@ export function RoleSettingsSection() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingRole, setEditingRole] = useState<RoleWithMemberCount | null>(null)
   const [deletingRole, setDeletingRole] = useState<RoleWithMemberCount | null>(null)
+  const [viewingCommissionsRoleId, setViewingCommissionsRoleId] = useState<string | null>(null)
 
   const loadRoles = async () => {
     if (!context) return
@@ -85,10 +87,34 @@ export function RoleSettingsSection() {
               roles={roles}
               onEdit={setEditingRole}
               onDelete={setDeletingRole}
+              onViewCommissions={(roleId) =>
+                setViewingCommissionsRoleId((prev) => (prev === roleId ? null : roleId))
+              }
+              activeCommissionsRoleId={viewingCommissionsRoleId}
             />
           )}
         </CardContent>
       </Card>
+
+      {/* Role Commission Rules (expanded below the table) */}
+      {viewingCommissionsRoleId && context && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">
+                Commission Rules — {roles.find((r) => r.id === viewingCommissionsRoleId)?.name}
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <RoleCommissionRulesSection
+              roleId={viewingCommissionsRoleId}
+              teamId={context.team.id}
+              isAdmin={true}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Create/Edit Modal */}
       <RoleFormModal

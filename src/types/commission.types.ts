@@ -84,6 +84,8 @@ export interface CommissionRule {
   is_active: boolean
   priority: number
   notes: string | null
+  role_commission_rule_id: string | null
+  expires_at: string | null
   created_by: string
   created_at: string
   updated_at: string
@@ -112,6 +114,8 @@ export interface CreateCommissionRuleDTO {
   end_date?: string | null
   priority?: number
   notes?: string | null
+  role_commission_rule_id?: string
+  expires_at?: string | null
 }
 
 export interface UpdateCommissionRuleDTO {
@@ -123,4 +127,5 @@ export interface UpdateCommissionRuleDTO {
   is_active?: boolean
   priority?: number
   notes?: string | null
+  expires_at?: string | null
 }

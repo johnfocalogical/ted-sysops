@@ -13,15 +13,24 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   PermissionMatrix,
   toRolePermissions,
   fromRolePermissions,
   getDefaultPermissionState,
 } from './PermissionMatrix'
 import { createRole, updateRole, isRoleNameUnique } from '@/lib/roleService'
+import { getActiveDepartments } from '@/lib/departmentService'
 import { useTeamContext } from '@/hooks/useTeamContext'
 import { toast } from 'sonner'
 import type { TeamRole, SectionKey } from '@/types/role.types'
+import type { Department } from '@/types/employee.types'
 
 type AccessValue = 'none' | 'view' | 'full'
 
@@ -36,6 +45,8 @@ export function RoleFormModal({ open, role, onClose, onSaved }: RoleFormModalPro
   const { context } = useTeamContext()
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [departmentId, setDepartmentId] = useState<string>('')
+  const [departments, setDepartments] = useState<Department[]>([])
   const [permissions, setPermissions] = useState<Record<SectionKey, AccessValue>>(
     getDefaultPermissionState()
   )
@@ -44,6 +55,15 @@ export function RoleFormModal({ open, role, onClose, onSaved }: RoleFormModalPro
 
   const isEditing = !!role
 
+  // Load departments
+  useEffect(() => {
+    if (open && context) {
+      getActiveDepartments(context.team.id)
+        .then(setDepartments)
+        .catch((err) => console.error('Error loading departments:', err))
+    }
+  }, [open, context])
+
   // Reset form when modal opens/closes or role changes
   useEffect(() => {
     if (open) {
@@ -51,11 +71,13 @@ export function RoleFormModal({ open, role, onClose, onSaved }: RoleFormModalPro
         // Edit mode - populate from existing role
         setName(role.name)
         setDescription(role.description || '')
+        setDepartmentId(role.department_id || '')
         setPermissions(fromRolePermissions(role.permissions))
       } else {
         // Create mode - reset to defaults
         setName('')
         setDescription('')
+        setDepartmentId('')
         setPermissions(getDefaultPermissionState())
       }
       setError(null)
@@ -89,6 +111,13 @@ export function RoleFormModal({ open, role, onClose, onSaved }: RoleFormModalPro
         return
       }
 
+      // Validate department selection
+      if (!departmentId) {
+        setError('Department is required')
+        setLoading(false)
+        return
+      }
+
       // Convert permissions state to JSONB format
       const permissionsJson = toRolePermissions(permissions)
 
@@ -100,6 +129,7 @@ export function RoleFormModal({ open, role, onClose, onSaved }: RoleFormModalPro
           name: name.trim(),
           description: description.trim() || undefined,
           permissions: permissionsJson,
+          department_id: departmentId || null,
         })
         toast.success('Role updated successfully')
       } else {
@@ -109,6 +139,7 @@ export function RoleFormModal({ open, role, onClose, onSaved }: RoleFormModalPro
           name: name.trim(),
           description: description.trim() || undefined,
           permissions: permissionsJson,
+          department_id: departmentId || undefined,
         })
         toast.success('Role created successfully')
       }
@@ -160,6 +191,27 @@ export function RoleFormModal({ open, role, onClose, onSaved }: RoleFormModalPro
                 disabled={loading}
                 rows={2}
               />
+            </div>
+
+            {/* Department */}
+            <div className="space-y-2">
+              <Label>Department *</Label>
+              <Select
+                value={departmentId}
+                onValueChange={setDepartmentId}
+                disabled={loading}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a department" />
+                </SelectTrigger>
+                <SelectContent>
+                  {departments.map((dept) => (
+                    <SelectItem key={dept.id} value={dept.id}>
+                      {dept.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Permissions Matrix */}

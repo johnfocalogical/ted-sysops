@@ -11,10 +11,10 @@ export interface RoleWithMemberCount extends TeamRole {
 export async function getTeamRoles(teamId: string): Promise<RoleWithMemberCount[]> {
   if (!supabase) throw new Error('Supabase not configured')
 
-  // Get roles
+  // Get roles with department info
   const { data: roles, error: rolesError } = await supabase
     .from('team_roles')
-    .select('*')
+    .select('*, department:team_departments!team_roles_department_id_fkey(id, name)')
     .eq('team_id', teamId)
     .order('is_default', { ascending: false })
     .order('name', { ascending: true })
@@ -75,6 +75,7 @@ export async function createRole(dto: CreateTeamRoleDTO): Promise<TeamRole> {
       permissions: dto.permissions,
       is_default: false,
       template_id: null,
+      department_id: dto.department_id || null,
     })
     .select()
     .single()
@@ -93,6 +94,7 @@ export async function updateRole(roleId: string, dto: UpdateTeamRoleDTO): Promis
   if (dto.name !== undefined) updates.name = dto.name
   if (dto.description !== undefined) updates.description = dto.description
   if (dto.permissions !== undefined) updates.permissions = dto.permissions
+  if (dto.department_id !== undefined) updates.department_id = dto.department_id
 
   const { data, error } = await supabase
     .from('team_roles')
