@@ -2542,6 +2542,515 @@ Before running tests, ensure:
 
 ---
 
+## 25. Whiteboard Pipeline Tests
+
+### WB-001: Whiteboard Page Load
+**Prerequisites**: Logged in, team selected, at least one deal exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Whiteboard page | Page loads with metric cards, filters, and deal view |
+| 2 | Verify metric cards display | 6 status cards showing count and estimated profit per status |
+| 3 | Verify default view is Kanban | Kanban columns visible (Active, For Sale, Pending Sale, On Hold) |
+| 4 | Verify collapsed section exists | Closed/Funded/Canceled section at bottom, expandable |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### WB-002: Create New Deal
+**Prerequisites**: Logged in with create permission
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click "New Deal" button | Create Deal modal opens |
+| 2 | Enter address (required) | Field accepts input |
+| 3 | Select deal type | Dropdown shows wholesale, listing, novation, purchase |
+| 4 | Select owner from team members | Dropdown populated with team members |
+| 5 | Fill optional fields (city, state, zip, contract price) | Fields accept input |
+| 6 | Click "Create Deal" | Modal closes, deal appears in pipeline, metric cards refresh |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### WB-003: Kanban Drag and Drop
+**Prerequisites**: At least one deal in "Active" status
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Drag a deal card from Active to For Sale | Card shows grab cursor, drag overlay with rotation |
+| 2 | Drop card on For Sale column | Deal status changes, card appears in new column |
+| 3 | Verify metric cards update | Active count decreases, For Sale count increases |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### WB-004: List View Toggle
+**Prerequisites**: At least one deal exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click List view toggle | View switches from Kanban to table |
+| 2 | Verify table columns | Address, City, Status, Type, Owner, Contract Price, Closing Date |
+| 3 | Click a column header | Rows sort by that column |
+| 4 | Click a table row | Navigates to deal detail page |
+| 5 | Verify pagination | "Showing X to Y of Z" text, Previous/Next buttons |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### WB-005: Pipeline Filters
+**Prerequisites**: Multiple deals with different statuses, types, and owners
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Type in search box | Deals filter by address/city match |
+| 2 | Select a status filter | Only deals with that status shown |
+| 3 | Select a deal type filter | Only deals with that type shown |
+| 4 | Select an owner filter | Only deals owned by that user shown |
+| 5 | Verify active filter badges appear | Badges shown below filters with X to remove |
+| 6 | Click "Clear Filters" | All filters reset, all deals shown |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### WB-006: Metric Card Filtering
+**Prerequisites**: Deals in multiple statuses
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click a metric card (e.g., "Active") | Pipeline filters to show only Active deals |
+| 2 | Click the same card again | Filter toggles off, all deals shown |
+| 3 | Verify card shows ring highlight when active | Selected card has visual ring indicator |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 26. Deal Detail Tests
+
+### DEAL-001: Deal Detail Page Load
+**Prerequisites**: At least one deal exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click a deal from whiteboard | Deal detail page loads |
+| 2 | Verify pinned header | Address, status, owner, deal type badge, TPT bar visible |
+| 3 | Verify two-panel layout | Left panel (tabs) ~65%, right panel (sidebar) ~35% |
+| 4 | Verify 6 tabs in left panel | Deal Info, Action, Employee, Dispo, Financial, Intake |
+| 5 | Verify 4 tabs in right sidebar | Checklist, Activity, Comments, Notes |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### DEAL-002: Deal Header - Status Change
+**Prerequisites**: Deal in "Active" status
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click status dropdown in header | Dropdown shows all 7 statuses with colored badges |
+| 2 | Select "For Sale" | Status changes immediately |
+| 3 | Select "Canceled" | Confirmation dialog appears ("Are you sure?") |
+| 4 | Confirm cancellation | Status changes to Canceled |
+| 5 | Select "Closed" | Confirmation dialog appears |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### DEAL-003: Deal Header - Owner Change
+**Prerequisites**: Team has multiple members
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click owner dropdown in header | Dropdown shows team members |
+| 2 | Select a different owner | Owner updates in header |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### DEAL-004: Deal Header - Save and Delete
+**Prerequisites**: Deal detail page loaded
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Make a change (e.g., change owner) | Amber dirty indicator dot appears on Save button |
+| 2 | Click Save | Changes saved, dirty indicator disappears |
+| 3 | Click Delete button | Confirmation dialog appears |
+| 4 | Confirm delete | Deal soft-deleted, navigates back to whiteboard |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### DEAL-005: Deal Info Tab - Contract Facts
+**Prerequisites**: Deal detail page loaded, Deal Info tab active
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Expand Contract Facts section | Fields visible: Contract Price, dates, earnest money |
+| 2 | Enter Contract Price | Currency field with $ prefix, commits on blur |
+| 3 | Set Contract Date | Date picker works |
+| 4 | Set DD Start/End dates | Date fields accept input |
+| 5 | Set Closing/Extended Closing dates | Date fields accept input |
+| 6 | Enter Earnest Money (amount, held by, date) | Fields accept input |
+| 7 | Verify "Unsaved changes" banner appears | Banner with Save button shown at top |
+| 8 | Click Save | Changes saved, banner disappears |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### DEAL-006: Deal Info Tab - Property Facts
+**Prerequisites**: Deal detail page loaded
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Expand Property Facts section (collapsed by default) | Fields visible |
+| 2 | Select Property Type | Dropdown with 10 options |
+| 3 | Enter bed/bath/sqft/year/lot size | Number fields accept input |
+| 4 | Enter ARV and Estimated Repair Cost | Currency fields in Valuation subsection |
+| 5 | Enter mortgage info (lender, balance, payment) | Fields in Mortgage & Liens subsection |
+| 6 | Toggle Foreclosure on | Foreclosure status and auction date fields appear |
+| 7 | Save changes | All property facts persisted |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### DEAL-007: Deal Info Tab - Deal Facts & Title Stepper
+**Prerequisites**: Deal detail page loaded
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Expand Deal Facts section | Fields visible including Title Status Stepper |
+| 2 | Verify 3-step stepper (Open → Ordered → Ready) | Visual stepper with current step highlighted |
+| 3 | Click forward step | Title status advances |
+| 4 | Click backward step | Confirmation dialog appears |
+| 5 | Select Purchase Type | Dropdown with 5 options |
+| 6 | Enter Lead Source and Reason for Selling | Text fields accept input |
+| 7 | Toggle POA Required | Checkbox toggles |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### DEAL-008: Deal Info Tab - Close Section
+**Prerequisites**: Deal not yet closed
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Expand Close Section (collapsed by default) | Actual Closing Date and Price fields |
+| 2 | Enter Actual Closing Date | Date picker works |
+| 3 | Enter Actual Closing Price | Currency field works |
+| 4 | When both fields filled | Dialog prompts "Mark deal as Closed?" |
+| 5 | Confirm | Deal status changes to Closed, "Closed" badge appears |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 27. Deal Disposition & Showings Tests
+
+### DISPO-001: Showings List CRUD
+**Prerequisites**: Deal detail page, Dispo tab active
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click "Add Showing" | Dialog opens with date, time, buyer, vendor, buffer, notes |
+| 2 | Set date and time (required) | Fields accept input |
+| 3 | Search for buyer contact | Debounced search returns matching contacts |
+| 4 | Search for vendor/runner contact | Debounced search returns matching contacts |
+| 5 | Set buffer minutes (default 15) | Number field works |
+| 6 | Click Add | Showing appears in table, activity logged |
+| 7 | Click delete on a showing | Confirmation dialog, then showing removed |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### DISPO-002: Disposition Details
+**Prerequisites**: Deal detail page, Dispo tab active
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Enter Original Projected Sales Price | Currency field, locks after first save |
+| 2 | Enter Updated Projected Sales Price | Currency field accepts input |
+| 3 | Toggle "JV Deal" on | JV configuration section appears |
+| 4 | Select Fixed Amount | Currency field for JV amount appears |
+| 5 | Switch to Percentage | Percentage field + calculated dollar amount appears |
+| 6 | Search and assign JV Partner | Contact search, partner linked |
+| 7 | Click Save | Changes persisted, diffs logged to activity |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### DISPO-003: Buyer Assignment
+**Prerequisites**: Deal detail page, Dispo tab, at least one company with linked contacts
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Search for buyer company | Debounced search returns companies |
+| 2 | Select a company | Company's linked contacts load in dropdown |
+| 3 | Select a buyer contact | Contact assigned to deal |
+| 4 | Verify buyer shows in header | Buyer contact visible |
+| 5 | Click remove on assigned buyer | Buyer removed from deal |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 28. Deal Employee & Vendor Tests
+
+### EMP-D-001: Assign Employee to Deal
+**Prerequisites**: Deal detail page, Employee tab active, team has multiple members
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Select team member from dropdown | Dropdown excludes already-assigned members |
+| 2 | Enter role | Text input accepts role description |
+| 3 | Click Add | Employee appears in list with avatar, name, role |
+| 4 | Verify activity logged | Activity feed shows assignment |
+| 5 | Verify header employee count updates | Avatar stack in header reflects new count |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### EMP-D-002: Remove Employee from Deal
+**Prerequisites**: Deal has at least one assigned employee
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click delete button on employee row | Confirmation dialog appears |
+| 2 | Confirm deletion | Employee removed from list |
+| 3 | Verify header count updates | Avatar stack decreases |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### EMP-D-003: Assign Vendor to Deal
+**Prerequisites**: Deal detail page, Employee tab active, contacts exist
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Type in vendor search field | Debounced search (300ms) returns matching contacts |
+| 2 | Select a contact | Contact shown as selected |
+| 3 | Enter vendor role | Text input accepts role |
+| 4 | Click Add | Vendor appears in list with icon, name, role |
+| 5 | Verify header vendor count updates | Vendor count in header reflects change |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### EMP-D-004: Remove Vendor from Deal
+**Prerequisites**: Deal has at least one assigned vendor
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click delete button on vendor row | Confirmation dialog appears |
+| 2 | Confirm deletion | Vendor removed from list |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 29. Deal Financial Tests
+
+### FIN-001: Financial Summary Display
+**Prerequisites**: Deal with contract price and projected sale price set
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Financial tab | 9 metric cards displayed in grid |
+| 2 | Verify calculations | Contract Price, Projected Sale Price, Gross Profit, etc. |
+| 3 | Verify color coding | Green for profit, red for loss, gray for neutral |
+| 4 | Verify JV Fee card appears only for JV deals | Conditional display |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### FIN-002: Expense List CRUD
+**Prerequisites**: Deal detail page, Financial tab active
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click "Add Expense" | Dialog opens with category, amount, date, description, notes |
+| 2 | Select category from 8 options | Dropdown works (marketing, inspection, etc.) |
+| 3 | Enter amount (required) | Currency field accepts input |
+| 4 | Click Add | Expense appears in table with color-coded category badge |
+| 5 | Verify total row updates | Total expenses recalculated |
+| 6 | Click edit on an expense | Edit dialog pre-filled with current values |
+| 7 | Update and save | Expense updated in table |
+| 8 | Click delete on an expense | Confirmation dialog, expense removed |
+| 9 | Verify financial summary updates | Gross After Expenses and Net Profit recalculate |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### FIN-003: Commission Breakdown
+**Prerequisites**: Deal with assigned employees, contract price and sale price set
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Verify employee list with commission column | Table shows each employee with editable % input |
+| 2 | Enter commission percentage for an employee | % field accepts decimal input |
+| 3 | Verify calculated commission amount | Dollar amount = grossAfterExpenses * percentage / 100 |
+| 4 | Verify Total Commissions row | Sum of all employee commissions |
+| 5 | Verify Estimated Net Profit row | Gross after expenses minus total commissions |
+| 6 | Click Save | Commission percentages persisted |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### FIN-004: Actual Results (Closed Deal)
+**Prerequisites**: Deal with status "Closed" or "Funded", actual closing price set
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Financial tab | Actual Results section visible (green-tinted card) |
+| 2 | Verify actual figures | Actual Close Price, Revenue, Gross Profit, Net Profit displayed |
+| 3 | Verify Estimated vs Actual comparison | Shows over/under estimate amount |
+| 4 | Verify section hidden for non-closed deals | ActualResults not rendered for active deals |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 30. Deal Sidebar Tests
+
+### SIDE-001: Deal Checklist
+**Prerequisites**: Deal with checklist items
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Open Checklist tab in sidebar | Progress bar and checklist items visible |
+| 2 | Toggle a checklist item | Checkbox updates optimistically, item shows strikethrough and completed date |
+| 3 | Verify TPT progress bar updates | Percentage recalculates in sidebar and header |
+| 4 | Uncheck an item | Item reverts to unchecked, progress decreases |
+| 5 | Verify activity logged | Toggle action recorded in activity feed |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### SIDE-002: Activity Feed
+**Prerequisites**: Deal with prior activity (changes, comments, etc.)
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Open Activity tab in sidebar | Chronological feed of activity entries |
+| 2 | Verify entry format | Avatar, user name, relative time, activity icon, content |
+| 3 | Scroll through entries | Entries load, "Load more" button appears after 20 items |
+| 4 | Click "Load more" | Additional entries load |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### SIDE-003: Deal Comments with @Mentions
+**Prerequisites**: Deal detail page, team has multiple members
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Open Comments tab in sidebar | Chat-style feed, oldest first |
+| 2 | Type a comment and press Cmd/Ctrl+Enter | Comment posted, auto-scrolls to bottom |
+| 3 | Type "@" in comment box | Team member autocomplete dropdown appears |
+| 4 | Navigate dropdown with arrow keys | Selection highlights move |
+| 5 | Press Enter/Tab to select member | @mention inserted in comment |
+| 6 | Post comment with @mention | @mention displayed in teal color |
+| 7 | Verify tagged_user_ids stored | Mentioned user IDs saved with comment |
+| 8 | Hover over own comment, click trash icon | Confirmation dialog, then comment deleted |
+| 9 | Press Escape during @mention | Autocomplete dismisses |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### SIDE-004: Deal Notes
+**Prerequisites**: Deal detail page loaded
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Open Notes tab in sidebar | Notes list (newest first) |
+| 2 | Type a note and press Cmd/Ctrl+Enter | Note posted, appears at top |
+| 3 | Verify no @mention support | Typing @ does not trigger autocomplete |
+| 4 | Delete own note | Confirmation dialog, note removed |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
 ## Test Summary
 
 | Category | Total Tests | Passed | Failed |
@@ -2570,7 +3079,13 @@ Before running tests, ensure:
 | 22. Commission Rules | 10 | | |
 | 23. My Pay & Time Dashboard | 6 | | |
 | 24. Team Performance Dashboard | 5 | | |
-| **TOTAL** | **151** | | |
+| 25. Whiteboard Pipeline | 6 | | |
+| 26. Deal Detail | 8 | | |
+| 27. Deal Disposition & Showings | 3 | | |
+| 28. Deal Employee & Vendor | 4 | | |
+| 29. Deal Financial | 4 | | |
+| 30. Deal Sidebar | 4 | | |
+| **TOTAL** | **180** | | |
 
 ---
 

@@ -193,7 +193,40 @@ ted-sysops/
 │   │   │           ├── DecisionNode.tsx
 │   │   │           └── DataCollectionNode.tsx
 │   │   │
-│   │   └── deals/              # Deal components (placeholder)
+│   │   └── deals/              # Deal management (31 files)
+│   │       ├── CreateDealModal.tsx
+│   │       ├── DealCard.tsx
+│   │       ├── DealFactsSection.tsx
+│   │       ├── DealFilters.tsx
+│   │       ├── DealFormFields.tsx        # Shared form field components
+│   │       ├── DealHeader.tsx
+│   │       ├── DealInfoTab.tsx
+│   │       ├── DealKanbanView.tsx
+│   │       ├── DealListView.tsx
+│   │       ├── DealSidebar.tsx
+│   │       ├── DealTabs.tsx
+│   │       ├── CloseSection.tsx
+│   │       ├── ContractFactsSection.tsx
+│   │       ├── PropertyFactsSection.tsx
+│   │       ├── TitleStatusStepper.tsx
+│   │       ├── WhiteboardMetricCards.tsx
+│   │       ├── sidebar/
+│   │       │   ├── DealActivityFeed.tsx
+│   │       │   ├── DealChecklist.tsx
+│   │       │   ├── DealComments.tsx       # @mention support
+│   │       │   └── DealNotes.tsx
+│   │       └── tabs/
+│   │           ├── ActualResults.tsx
+│   │           ├── BuyerAssignment.tsx
+│   │           ├── CommissionBreakdown.tsx
+│   │           ├── DispoTab.tsx
+│   │           ├── DispositionDetails.tsx
+│   │           ├── EmployeeTab.tsx
+│   │           ├── ExpenseList.tsx
+│   │           ├── FinancialSummary.tsx
+│   │           ├── FinancialTab.tsx
+│   │           ├── JVDealConfig.tsx
+│   │           └── ShowingsList.tsx
 │   │
 │   ├── pages/
 │   │   ├── Home.tsx
@@ -209,7 +242,8 @@ ted-sysops/
 │   │   ├── MyDashboard.tsx
 │   │   ├── PayTime.tsx
 │   │   ├── TeamDashboard.tsx
-│   │   ├── Whiteboard.tsx
+│   │   ├── Whiteboard.tsx              # Deal pipeline (kanban + list views)
+│   │   ├── DealDetailPage.tsx          # Full deal detail with tabs + sidebar
 │   │   ├── ContactHub.tsx             # Tabbed hub: Contacts | Companies
 │   │   ├── ContactDetailPage.tsx      # Full contact detail + activity log
 │   │   ├── Employees.tsx
@@ -250,7 +284,8 @@ ted-sysops/
 │   │   ├── usePermissions.ts           # Permission checking
 │   │   ├── useContactStore.ts          # Contact CRUD + list state (Zustand)
 │   │   ├── useCompanyStore.ts          # Company CRUD + list state (Zustand)
-│   │   └── useCustomFields.ts          # Custom field value read/write
+│   │   ├── useCustomFields.ts          # Custom field value read/write
+│   │   └── useDealStore.ts            # Deal pipeline state (Zustand)
 │   │
 │   ├── lib/
 │   │   ├── supabase.ts                 # Supabase client init
@@ -265,6 +300,7 @@ ted-sysops/
 │   │   ├── customFieldValueService.ts  # Custom field value operations
 │   │   ├── activityLogService.ts       # Activity log CRUD
 │   │   ├── automatorService.ts         # Automator CRUD + publish/archive
+│   │   ├── dealService.ts             # Deal CRUD, fact tables, expenses, showings, etc.
 │   │   └── utils.ts                    # Utility functions
 │   │
 │   ├── types/
@@ -282,7 +318,8 @@ ted-sysops/
 │   │   ├── type-system.types.ts        # Type templates, team types, custom field defs
 │   │   ├── custom-fields.types.ts      # Custom field values, form types
 │   │   ├── activity.types.ts           # Activity log entries, DTOs
-│   │   └── automator.types.ts          # Automator nodes, edges, definitions
+│   │   ├── automator.types.ts          # Automator nodes, edges, definitions
+│   │   └── deal.types.ts              # Deal enums, interfaces, DTOs
 │   │
 │   ├── stores/
 │   │   └── automatorBuilderStore.ts    # Zustand store for builder canvas state
@@ -308,7 +345,12 @@ ted-sysops/
 │       ├── 010_type_templates.sql        # Type template system, custom fields
 │       ├── 011_custom_field_values.sql   # Custom field value storage
 │       ├── 012_activity_log.sql          # Activity log system
-│       └── 013_automators.sql            # Automator definitions
+│       ├── 013_automators.sql            # Automator definitions
+│       ├── 020_deals.sql                # Deal enums + deals table + activity_logs FK
+│       ├── 021_deal_fact_tables.sql     # 4 fact tables (contract, property, deal, disposition)
+│       ├── 022_deal_many_tables.sql     # 7 child tables (employees, vendors, expenses, etc.)
+│       ├── 023_deal_rls.sql             # RLS policies for all 12 deal tables
+│       └── 024_deal_employee_commission.sql  # Commission percentage on deal_employees
 │
 └── Configuration Files
     ├── package.json
@@ -344,6 +386,14 @@ activity_type: 'comment' | 'created' | 'updated' | 'deleted' | 'status_change'
 
 -- Activity entity type
 activity_entity_type: 'contact' | 'company' | 'deal'
+
+-- Deal enums (migration 020)
+deal_status: 'active' | 'for_sale' | 'pending_sale' | 'closed' | 'funded' | 'on_hold' | 'canceled'
+deal_type: 'wholesale' | 'listing' | 'novation' | 'purchase'
+purchase_type: 'cash' | 'financing' | 'subject_to' | 'owner_finance' | 'hard_money'
+title_status: 'not_ordered' | 'ordered' | 'in_progress' | 'clear' | 'issues' | 'ready_to_close'
+expense_category: 'marketing' | 'inspection' | 'title_escrow' | 'legal' | 'hoa' | 'earnest_money' | 'contractor' | 'other'
+jv_type: 'fixed' | 'percentage'
 ```
 
 ### Core Tables
@@ -728,6 +778,63 @@ Workflow definitions stored as JSONB.
 **Unique**: (team_id, name)
 **RLS**: Team members SELECT; team admins INSERT/UPDATE/DELETE.
 
+### Deal Tables
+
+#### deals
+Core deal record scoped to a team. Soft-deletable.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| team_id | UUID | FK → teams |
+| address | TEXT | NOT NULL |
+| city | TEXT | |
+| state | TEXT | |
+| zip | TEXT | |
+| county | TEXT | |
+| deal_type | deal_type | NOT NULL |
+| status | deal_status | DEFAULT 'active' |
+| owner_id | UUID | FK → users, NOT NULL |
+| transaction_coordinator_id | UUID | FK → users |
+| seller_contact_id | UUID | FK → contacts |
+| buyer_contact_id | UUID | FK → contacts |
+| contract_date | DATE | |
+| closing_date | DATE | |
+| contract_price | DECIMAL(12,2) | |
+| custom_fields | JSONB | |
+| notes | TEXT | |
+| deleted_at | TIMESTAMPTZ | Soft delete |
+| created_by | UUID | FK → users |
+| created_at / updated_at | TIMESTAMPTZ | |
+
+**Indexes**: team_id, team+status, owner_id, seller/buyer contact, closing_date, full-text GIN on address, GIN on custom_fields.
+**RLS**: Team members SELECT/INSERT/UPDATE; team admins DELETE.
+
+#### Fact Tables (1:1 with deals, keyed by deal_id)
+
+| Table | Key Fields |
+|-------|------------|
+| deal_contract_facts | contract prices, dates (contract, DD start/end, closing, extended), earnest money (amount, held_by, date) |
+| deal_property_facts | property type/condition, bed/bath/sqft/year, lot size, parcel, legal desc, ARV, repair cost, mortgage/liens, foreclosure info |
+| deal_facts | lead source, title status/company/dates, POA, purchase type, reason for selling |
+| deal_disposition | projected/actual sale prices, listing info, JV config (type, amount, percentage, partner), assignment fee |
+
+All fact tables have `custom_fields JSONB` and `updated_at` triggers. Upserted on `deal_id` conflict.
+
+#### Child Tables (1:many with deals)
+
+| Table | Purpose | Key Fields |
+|-------|---------|------------|
+| deal_employees | Team member assignments | user_id, role, commission_percentage. UNIQUE(deal_id, user_id) |
+| deal_vendors | External vendor assignments | contact_id OR company_id (exactly one), role |
+| deal_expenses | Cost tracking | category (enum), amount, expense_date, description |
+| deal_showings | Property showings | showing_datetime, duration/buffer minutes, buyer/vendor contacts, status |
+| deal_checklist_items | TPT checklist | item_key, label, is_checked, date_completed, price, sort_order |
+| deal_comments | Team discussion | user_id, content, tagged_user_ids (UUID[]) for @mentions |
+| deal_notes | Private notes | user_id, content |
+
+**RLS**: All child tables inherit access via parent deal's team_id. Comments/notes have owner-scoped UPDATE/DELETE.
+
 ### Entity Relationship Diagram
 
 ```
@@ -788,7 +895,20 @@ Workflow definitions stored as JSONB.
 │       │   (per contact/company)   (per team type)
 │       │
 │       └── activity_logs
-│           (polymorphic: contact | company)
+│           (polymorphic: contact | company | deal)
+│
+│  ┌──────────┐
+│  │  deals   │──┬── deal_contract_facts (1:1)
+│  │ (team_id)│  ├── deal_property_facts (1:1)
+│  │          │  ├── deal_facts (1:1)
+│  │  owner→  │  ├── deal_disposition (1:1)
+│  │  seller→ │  ├── deal_employees (1:N, → users)
+│  │  buyer→  │  ├── deal_vendors (1:N, → contacts/companies)
+│  │  TC→     │  ├── deal_expenses (1:N)
+│  └──────────┘  ├── deal_showings (1:N)
+│                ├── deal_checklist_items (1:N)
+│                ├── deal_comments (1:N, → users)
+│                └── deal_notes (1:N, → users)
 └──────────────────────────────────────────────────────────────────
 ```
 
@@ -1121,19 +1241,23 @@ The ContactHub uses a master-detail pattern with two entry points:
 | Activity Logging | Inline activity feed with comments on contacts/companies | activityLogService.ts |
 | Settings Redesign | SettingsHomePage (card-grid), TeamSettingsLayout, TeamSettingsSidebar, SettingsCard | settingsConfig.ts |
 | Contact Methods | ContactMethodsInput (polymorphic: personal, company, relationship) | contactMethodHelpers.ts |
+| Whiteboard Pipeline | WhiteboardMetricCards, DealFilters, DealKanbanView (drag-to-change-status), DealListView, CreateDealModal | dealService.ts, useDealStore.ts |
+| Deal Detail | DealDetailPage (pinned header + two-panel layout), DealHeader (status/owner/save/delete), DealTabs (6 tabs), DealSidebar (4 tabs) | dealService.ts |
+| Deal Info Tab | DealInfoTab orchestrating ContractFactsSection, PropertyFactsSection, DealFactsSection (with TitleStatusStepper), CloseSection | dealService.ts (fact table upserts) |
+| Deal Disposition | DispoTab with ShowingsList (CRUD + contact search), DispositionDetails (JV config), BuyerAssignment (company→contact lookup) | dealService.ts |
+| Deal Employees | EmployeeTab with team member assignment, vendor assignment (contact search), role management | dealService.ts |
+| Deal Financials | FinancialTab with FinancialSummary (9 metric cards), ExpenseList (CRUD), CommissionBreakdown (per-employee %), ActualResults (closed deals) | dealService.ts |
+| Deal Sidebar | DealChecklist (TPT progress), DealActivityFeed (paginated), DealComments (@mention autocomplete), DealNotes | dealService.ts, activityLogService.ts |
 
 ### Placeholder / Not Yet Implemented
 
 | Section | Status | Notes |
 |---------|--------|-------|
-| Deals | Placeholder | Core deal management |
-| Whiteboard | Placeholder | Kanban/pipeline view |
 | Transactions | Placeholder | Transaction tracking |
 | Automators | Partially implemented | Builder UI complete (draft/publish/archive); execution engine not yet built |
 | Pay Time | Placeholder | Commission tracking |
 | Calendar | Placeholder | Scheduling |
 | Reports | Placeholder | Analytics |
-| Employees | Placeholder | Employee management |
 
 ---
 
