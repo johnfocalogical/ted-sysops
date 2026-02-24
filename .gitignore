@@ -36,3 +36,7 @@ coverage
 
 # Vite
 vite.config.ts.timestamp-*
+
+# Ralph (autonomous agent logs and session state)
+.ralph/logs/
+.ralph/docs/generated/

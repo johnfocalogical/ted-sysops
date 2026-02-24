@@ -897,6 +897,28 @@ Before running tests, ensure:
 
 ---
 
+### ADMIN-009: Type Template Management
+**Prerequisites**: Superadmin
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Admin > Type Templates | Type Templates page loads |
+| 2 | View three tabs | Contact Types, Company Types, Employee Types tabs with count badges |
+| 3 | Click Employee Types tab | Employee type templates listed |
+| 4 | Click "Create Template" | Create dialog opens with name, description, icon, color, auto-install fields |
+| 5 | Fill form and create | Template created, appears in list |
+| 6 | Click edit on non-system template | Edit dialog opens with pre-filled values |
+| 7 | Save changes | Template updated |
+| 8 | Click delete on non-system template | Confirmation dialog warns about team impact |
+| 9 | Confirm deletion | Template removed |
+| 10 | Verify system templates | System templates show lock badge, no edit/delete actions |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
 ## 10. Theme & UI Tests
 
 ### UI-001: Light Mode Display
@@ -1750,6 +1772,776 @@ Before running tests, ensure:
 
 ---
 
+## 18. Employee Directory Tests
+
+### EMP-001: View Employee List
+**Prerequisites**: Team member with employees access, team has employees
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Employees section | Employee Sentinel page loads |
+| 2 | Click "Directory" tab | Directory tab activates |
+| 3 | View employee table | Table shows name, job title, department, types, status, phone, email, roles |
+| 4 | Verify status badges | Active (teal), Inactive (gray with 50% opacity row) |
+| 5 | Verify pagination | "Showing X to Y of Z employees" with Previous/Next controls |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### EMP-002: Search Employees
+**Prerequisites**: Multiple employees exist
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Type in search box | List filters after debounce (300ms) |
+| 2 | Search by employee name | Matching employees shown |
+| 3 | Search by email | Matching employees shown |
+| 4 | Clear search | Full list restored, pagination resets to page 1 |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### EMP-003: Filter by Department
+**Prerequisites**: Employees assigned to different departments
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click department filter dropdown | Active departments listed plus "All Departments" |
+| 2 | Select a department | Only employees in that department shown |
+| 3 | Filter badge shows "1" | Active filter indicator present |
+| 4 | Select "All Departments" | Filter cleared, full list restored |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### EMP-004: Filter by Status
+**Prerequisites**: Both active and inactive employees exist
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click status filter dropdown | "All", "Active", "Inactive" options shown |
+| 2 | Select "Active" | Only active employees shown |
+| 3 | Select "Inactive" | Only inactive employees shown (rows at 50% opacity) |
+| 4 | Select "All" | Filter cleared, all employees shown |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### EMP-005: Filter by Employee Type
+**Prerequisites**: Employees with different employee types assigned
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click employee type filter dropdown | Team employee types listed plus "All Types" |
+| 2 | Select a type | Only employees with that type shown |
+| 3 | Select "All Types" | Filter cleared, full list restored |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### EMP-006: View Employee Detail Drawer
+**Prerequisites**: At least one employee exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click on employee row in directory | Detail drawer (sheet) opens from right |
+| 2 | View header section | Avatar, name, status badge, department badge, type badges, job title |
+| 3 | View contact info card | Primary phone, primary email, account email shown |
+| 4 | View profile card | Hire date, roles (color-coded pills), permission level |
+| 5 | View emergency contact (if populated) | Name, relationship, phone shown |
+| 6 | View notes preview | Notes truncated to 150 chars |
+| 7 | View activity preview | Recent changes shown (max 10 items) |
+| 8 | Click "View Full Profile" | Navigates to full employee detail page |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### EMP-007: View Employee Full Detail Page
+**Prerequisites**: Employee exists with profile data
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to employee detail page | Two-column layout loads |
+| 2 | Left column shows employee info | Name, status, department, types, job title, contact methods, account, profile details, emergency contact, notes |
+| 3 | Right column shows activity feed | Activity entries with timestamps and user attribution |
+| 4 | Commission rules section visible | Shows effective commission rules (if any) |
+| 5 | Footer shows created/updated dates | Timestamps displayed |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### EMP-008: Edit Employee Profile
+**Prerequisites**: Admin user, or non-admin viewing own profile
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Open employee detail page | Detail page loads |
+| 2 | Click "Edit Profile" button | Form mode activates with "Edit Employee Profile" heading |
+| 3 | Edit fields (job title, department, status, etc.) | Fields are editable |
+| 4 | Click "Save Profile" | Success toast, changes persist on reload |
+| 5 | Click "Cancel Editing" | Returns to view mode without saving |
+| 6 | Verify activity log | Profile changes logged with before/after values |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 19. Employee Profile Form Tests
+
+### PROF-001: Edit Job Information
+**Prerequisites**: Admin or self-edit, employee detail page in edit mode
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Edit Job Title | Text input accepts value |
+| 2 | Select Department from dropdown | All team departments shown, selection works |
+| 3 | Set Hire Date | Date picker works |
+| 4 | Change Status (Active/Inactive) | Required dropdown, selection works |
+| 5 | Save changes | Success toast, all fields persist on reload |
+| 6 | Verify activity log | Each changed field logged separately with before/after values |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### PROF-002: Assign Employee Types
+**Prerequisites**: Team has employee types configured, employee in edit mode
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Find Employee Types section in form | Type checkboxes displayed with badges (icon + color) |
+| 2 | Check one or more types | Checkboxes toggle on |
+| 3 | Uncheck a type | Checkbox toggles off |
+| 4 | Save changes | Types updated, badges appear in detail view |
+| 5 | Verify activity log | Type assignments/unassignments logged with type names |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### PROF-003: Edit Contact Methods
+**Prerequisites**: Employee in edit mode
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Find contact methods section | ContactMethodsInput component visible |
+| 2 | Add a phone contact method | Method type, value, and label fields shown |
+| 3 | Add an email contact method | Additional row added |
+| 4 | Mark one as "Primary" | Primary indicator set |
+| 5 | Remove a contact method | Row removed |
+| 6 | Save changes | Methods persist on reload |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### PROF-004: Edit Emergency Contact
+**Prerequisites**: Employee in edit mode
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Find emergency contact section | Name, phone, relationship fields visible |
+| 2 | Enter contact name | Field accepts input |
+| 3 | Enter phone number | Field accepts input |
+| 4 | Enter relationship | Field accepts input |
+| 5 | Save changes | Emergency contact shown in detail view with clickable phone |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### PROF-005: View-Only Access
+**Prerequisites**: Non-admin user viewing another employee's profile
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to another employee's detail page | Page loads in view mode |
+| 2 | Look for "Edit Profile" button | Button NOT visible |
+| 3 | All content is read-only | No edit controls shown |
+| 4 | Navigate to own profile | "Edit Profile" button IS visible |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 20. Department Settings Tests
+
+### DEPT-001: View Department List
+**Prerequisites**: Team admin, navigate to Settings > Departments
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Settings > Departments | Departments page loads |
+| 2 | View department list | Each department shows badge (icon + color + name), status, employee count |
+| 3 | Count badge in header | Shows "X department(s) configured" |
+| 4 | Inactive departments | Show "Inactive" badge |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### DEPT-002: Create Department
+**Prerequisites**: Team admin
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click "Add Department" | Create dialog opens |
+| 2 | Enter department name (required) | Field accepts input |
+| 3 | Enter description (optional) | Textarea accepts input |
+| 4 | Select icon from picker | Icon selected |
+| 5 | Select color from picker | Color selected |
+| 6 | Preview badge updates in real time | Badge preview reflects current form state |
+| 7 | Click "Create" | Department created, appears in list |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### DEPT-003: Edit Department
+**Prerequisites**: Team admin, department exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click edit (pencil) on a department | Edit dialog opens with pre-filled values |
+| 2 | Change name, description, icon, or color | Fields update |
+| 3 | Toggle active/inactive via switch in list | Status changes |
+| 4 | Save changes | Success toast, list updates |
+| 5 | Verify name uniqueness | Duplicate name shows error |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### DEPT-004: Delete Department (No Employees)
+**Prerequisites**: Team admin, department with 0 employees assigned
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Find department with 0 employees | Employee count badge shows "0 employee(s)" |
+| 2 | Click delete (trash) button | Confirmation dialog appears |
+| 3 | Confirm deletion | Department removed from list |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### DEPT-005: Cannot Delete Department with Employees
+**Prerequisites**: Team admin, department with employees assigned
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Find department with employees | Employee count > 0 |
+| 2 | Click delete button | Dialog shows reason: "Department has X employees assigned" |
+| 3 | Delete button disabled or not shown | Cannot proceed with deletion |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 21. Employee Types Settings Tests
+
+### ETYPE-001: View Employee Type List
+**Prerequisites**: Team admin, navigate to Settings > Employee Types
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Settings > Employee Types | Employee Types page loads |
+| 2 | View type list | Types shown with badge (icon + color + name), status, usage count |
+| 3 | Count in header | Shows "X type(s) configured" |
+| 4 | Each type has actions | Toggle switch, edit, manage fields, delete buttons visible |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### ETYPE-002: Create Employee Type
+**Prerequisites**: Team admin
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click "Create Type" | TypeCreationWizard opens |
+| 2 | Enter type name | Field accepts input |
+| 3 | Enter description | Field accepts input |
+| 4 | Select icon and color | Pickers work |
+| 5 | Click "Create" | New employee type appears in list |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### ETYPE-003: Edit Employee Type
+**Prerequisites**: Team admin, employee type exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click edit (pencil) on a type | TypeFormModal opens with pre-filled values |
+| 2 | Change name, description, icon, or color | Fields update |
+| 3 | Toggle active/inactive via switch | Status changes |
+| 4 | Save changes | Success toast, list updates |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### ETYPE-004: Delete Employee Type
+**Prerequisites**: Team admin, employee type exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Find type with 0 usage count | Type visible |
+| 2 | Click delete (trash) button | Confirmation dialog |
+| 3 | Confirm deletion | Type removed from list |
+| 4 | Attempt to delete type with usage > 0 | Error or delete disabled |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### ETYPE-005: Manage Custom Fields for Employee Type
+**Prerequisites**: Team admin, employee type exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click "Manage Fields" on a type | CustomFieldDefinitionManager opens |
+| 2 | Add a new field definition | Field creation form works |
+| 3 | Edit existing field | Field edit works |
+| 4 | Delete a field | Field removed |
+| 5 | Verify fields appear on employee profiles with that type | Custom fields shown in detail view |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 22. Commission Rules Tests
+
+### COMM-001: View Role Commission Rules
+**Prerequisites**: Team admin, role exists with commission rules
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Settings > Team Roles | Roles list loads |
+| 2 | Click role dropdown > "Commission Rules" | RoleCommissionRulesSection expands below role |
+| 3 | View rule cards | Each card shows name, calculation type badge (teal), summary text |
+| 4 | Active/inactive toggle visible | Switch shown per rule |
+| 5 | Priority badge shown (if > 0) | Badge displayed |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMM-002: Create Flat Fee Commission Rule
+**Prerequisites**: Team admin, role exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Expand commission rules for a role | Section visible |
+| 2 | Click "+ Add Rule" | RoleCommissionRuleFormModal opens |
+| 3 | Enter rule name | Required field accepts input |
+| 4 | Select calculation type "Flat Fee" | Amount field appears |
+| 5 | Enter amount (e.g., $500) | Number field accepts value > 0 |
+| 6 | Optionally set minimum deal profit | Number field accepts value |
+| 7 | Set priority and notes | Optional fields work |
+| 8 | Click Save | Rule created, card appears with "Flat Fee" badge and summary |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMM-003: Create Percentage Commission Rule
+**Prerequisites**: Team admin, role exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click "+ Add Rule" on a role | Form modal opens |
+| 2 | Select "Percentage of Gross Profit" | Percentage and cap fields appear |
+| 3 | Enter percentage (e.g., 3%) | Validates 0-100 range |
+| 4 | Optionally set cap amount | Number field works |
+| 5 | Click Save | Rule created with summary "3% of gross profit" |
+| 6 | Repeat with "Percentage of Net Profit" | Same flow, "net profit" in summary |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMM-004: Create Tiered Commission Rule
+**Prerequisites**: Team admin, role exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click "+ Add Rule" on a role | Form modal opens |
+| 2 | Select "Tiered" calculation type | Profit basis and tier bracket fields appear |
+| 3 | Select profit basis (gross/net) | Dropdown works |
+| 4 | Add tier: threshold $0, percentage 2% | First tier row added |
+| 5 | Click "+ Add Tier" | Second tier row appears |
+| 6 | Add tier: threshold $50,000, percentage 4% | Values entered |
+| 7 | Click Save | Rule created with tiered summary |
+| 8 | Verify tier thresholds must be increasing | Validation prevents decreasing thresholds |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMM-005: Edit Role Commission Rule
+**Prerequisites**: Team admin, role has commission rule
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click edit (pencil) on a rule card | Form modal opens pre-filled |
+| 2 | Change name or configuration | Fields update |
+| 3 | Click Save | Rule updated, card refreshes |
+| 4 | Verify employees inheriting this rule see updated values | Effective commissions reflect change |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMM-006: Delete Role Commission Rule
+**Prerequisites**: Team admin, role has commission rule
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click delete (trash) on a rule card | Confirmation dialog appears |
+| 2 | Warning mentions impact on employees | Message: "affects all employees who inherit via this role" |
+| 3 | Confirm deletion | Rule removed from list |
+| 4 | Verify employees no longer see this rule | Rule disappears from effective commissions |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMM-007: Toggle Role Commission Rule Active/Inactive
+**Prerequisites**: Team admin, role has commission rule
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Find active commission rule | Active toggle is ON |
+| 2 | Toggle switch OFF | Rule card shows "Inactive" badge, opacity reduced |
+| 3 | Toggle switch ON | Rule reactivated, badge removed |
+| 4 | Verify employee view reflects toggle | Inactive rules shown dimmed in effective commissions |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMM-008: View Effective Commissions on Employee
+**Prerequisites**: Employee assigned to role(s) with commission rules
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Open employee detail page | Detail page loads |
+| 2 | Find "Effective Commission Rules" section | Section visible with DollarSign icon |
+| 3 | Rules grouped into "From Roles" and "Custom Rules" | Sections labeled |
+| 4 | Role rules show source badge | Shield icon + role name |
+| 5 | Each card shows: name, type badge (teal), summary | Properly formatted |
+| 6 | Override button visible on role rules (admin only) | Button present |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMM-009: Create Employee Override with Expiration
+**Prerequisites**: Admin, employee inherits role commission rule
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click "Override" on a role-inherited rule | CommissionOverrideFormModal opens pre-filled with role rule values |
+| 2 | Modify configuration (e.g., change percentage) | Fields editable |
+| 3 | Set expiration using preset (e.g., "90 days") | Date auto-calculates |
+| 4 | Click Save | Override created |
+| 5 | Rule card updates | Shows "Override (Role Name)" badge (amber) + "Expires [date]" badge (purple) |
+| 6 | Summary reflects overridden values | New configuration displayed |
+| 7 | Only this employee affected | Other employees with same role still see original |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMM-010: Create Custom Employee Commission Rule
+**Prerequisites**: Admin, employee detail page
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click "+ Add Custom Rule" | CommissionRuleFormModal opens (blank) |
+| 2 | Enter rule name | Required field |
+| 3 | Select calculation type | Dynamic config fields appear |
+| 4 | Set effective date (required) | Date picker works |
+| 5 | Optionally set end date | Date picker, must be >= effective date |
+| 6 | Configure rule details | Fields validated per calculation type |
+| 7 | Click Save | Rule created under "Custom Rules" section |
+| 8 | Card shows "Custom" badge | No role association |
+| 9 | Rule only applies to this employee | Not shared with other employees |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 23. My Pay & Time Dashboard Tests
+
+### PAY-001: View Pay & Time Page
+**Prerequisites**: Logged-in employee with employee profile
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to My Pay & Time | Page loads with title "My Pay & Time" |
+| 2 | Summary cards visible | 4 cards: Total Earned, Pending Commissions, Deals Closed, Average Commission |
+| 3 | Tab navigation visible | Commission Rules, Earnings, Activity tabs |
+| 4 | Commission Rules tab active by default | Commission rules content displayed |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### PAY-002: Summary Cards Display
+**Prerequisites**: Pay & Time page loaded
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | View Total Earned (YTD) card | Shows $0.00 with "No deals closed yet" (green accent, left border) |
+| 2 | View Pending Commissions card | Shows $0.00 with "No pending deals" (amber accent) |
+| 3 | View Deals Closed (YTD) card | Shows 0 with "No deals closed yet" (teal accent) |
+| 4 | View Average Commission card | Shows $0.00 with "No data yet" (muted accent) |
+| 5 | Responsive grid layout | 1 col mobile, 2 cols tablet, 4 cols desktop |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### PAY-003: Commission Rules Tab
+**Prerequisites**: Employee with role-based and/or custom commission rules
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click Commission Rules tab | EffectiveCommissionsSection loads |
+| 2 | "From Roles" section shows inherited rules | Role rules with shield badge |
+| 3 | "Custom Rules" section shows custom rules | Custom rules with "Custom" badge |
+| 4 | Override badges shown where applicable | Amber "Override" badge with expiration |
+| 5 | Inactive rules shown at reduced opacity | Dimmed display |
+| 6 | Non-admin cannot see Add/Override buttons | Management controls hidden |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### PAY-004: Admin Employee Selector
+**Prerequisites**: Admin user, team has multiple employees
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | View Pay & Time page as admin | Employee selector dropdown visible in header |
+| 2 | Click dropdown | List of all employees (active + inactive) with names and job titles |
+| 3 | Select a different employee | Page reloads with selected employee's data |
+| 4 | Purple "Admin View" banner appears | Banner: "Viewing [Name]'s Pay & Time dashboard (Admin View)" |
+| 5 | Commission rules show selected employee's rules | Data reflects selected employee |
+| 6 | Admin can manage rules for selected employee | Add/Override buttons visible |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### PAY-005: Activity Tab with Filters
+**Prerequisites**: Employee with activity history
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click Activity tab | Activity feed loads with filter bar |
+| 2 | Filter by category (All, Comments, Profile Changes, Commission, Permissions) | Feed filters correctly |
+| 3 | Set date range (From/To) | Feed filtered to date range |
+| 4 | Add a comment | Comment appears in feed with user attribution |
+| 5 | Click Export button | CSV file downloads with filtered activity |
+| 6 | Click "Load More" (if available) | Additional entries loaded (20 per batch) |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### PAY-006: No Profile State
+**Prerequisites**: User account without employee profile
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to My Pay & Time | Error state displayed |
+| 2 | UserX icon visible | Icon shown |
+| 3 | Message displayed | "Your account doesn't have an employee profile yet" |
+| 4 | Instruction shown | "Contact your team admin to set up your employee record" |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 24. Team Performance Dashboard Tests
+
+### PERF-001: View Overview Tab with Metric Cards
+**Prerequisites**: Team member with employees access
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Employees section | Employee Sentinel page loads |
+| 2 | Overview tab active by default | TeamOverviewTab displayed |
+| 3 | View 6 metric cards | Total Team Members, Commissions Paid, Pending Liability, Avg Deals, Revenue Generated, Avg Commission |
+| 4 | Total Team Members shows live count | Actual count + "X active" subtitle |
+| 5 | Financial cards show $0 placeholders | "Awaiting deal integration" subtitles |
+| 6 | Cards have colored left borders | Visual distinction per card |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### PERF-002: Filter by Period
+**Prerequisites**: Overview tab visible
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Find period selector dropdown | Default: "Year to Date" |
+| 2 | Select "This Month" | Selection changes |
+| 3 | Select "This Quarter" | Selection changes |
+| 4 | Select "Last Year" | Selection changes |
+| 5 | Select "All Time" | Selection changes |
+| 6 | Note: Financial data not yet connected | Placeholder values remain until deal integration |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### PERF-003: Filter by Department
+**Prerequisites**: Overview tab visible, departments configured
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Find department selector dropdown | Default: "All Departments" |
+| 2 | Select a specific department | Department breakdown filters to selected department |
+| 3 | Unassigned row hidden when department selected | Only selected department shown |
+| 4 | Select "All Departments" | Full breakdown restored |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### PERF-004: Department Breakdown Display
+**Prerequisites**: Overview tab visible, departments with employees
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | View Department Metrics card | Card with Building2 icon |
+| 2 | Each department row shows | Colored dot, name, employee count, percentage, progress bar |
+| 3 | Progress bars proportional | Widths relative to max department count |
+| 4 | "Unassigned" row visible | Shows employees without department assignment |
+| 5 | Revenue column shows placeholder | "—" with italic text |
+| 6 | Footer note visible | "Revenue and commission data available after deal integration" |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### PERF-005: Placeholder Sections Display
+**Prerequisites**: Overview tab visible
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Scroll below Department Breakdown | Three placeholder sections visible |
+| 2 | Employee Leaderboard placeholder | Trophy icon, "Coming Soon" message, 3 skeleton rows |
+| 3 | Employee Comparison placeholder | GitCompareArrows icon, "Coming Soon" message |
+| 4 | Workload Distribution placeholder | PieChart icon, "Coming Soon" message |
+| 5 | All placeholders explain future functionality | Descriptive text about deal integration requirement |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
 ## Test Summary
 
 | Category | Total Tests | Passed | Failed |
@@ -1762,7 +2554,7 @@ Before running tests, ensure:
 | 6. Role System | 7 | | |
 | 7. Organization Owners | 8 | | |
 | 8. Permission Levels | 4 | | |
-| 9. Superadmin | 8 | | |
+| 9. Superadmin | 9 | | |
 | 10. Theme & UI | 5 | | |
 | 11. Contact Management | 8 | | |
 | 12. Company Management | 7 | | |
@@ -1771,7 +2563,14 @@ Before running tests, ensure:
 | 15. Activity Log | 5 | | |
 | 16. Team Settings Navigation | 5 | | |
 | 17. Automator Builder | 8 | | |
-| **TOTAL** | **106** | | |
+| 18. Employee Directory | 8 | | |
+| 19. Employee Profile Form | 5 | | |
+| 20. Department Settings | 5 | | |
+| 21. Employee Types Settings | 5 | | |
+| 22. Commission Rules | 10 | | |
+| 23. My Pay & Time Dashboard | 6 | | |
+| 24. Team Performance Dashboard | 5 | | |
+| **TOTAL** | **151** | | |
 
 ---
 
@@ -1795,4 +2594,4 @@ _________________________________
 
 ---
 
-*Last updated: January 2026*
+*Last updated: February 2026*

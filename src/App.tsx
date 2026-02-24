@@ -48,6 +48,7 @@ import { EmployeeDetailPage } from '@/pages/EmployeeDetailPage'
 import { Transactions } from '@/pages/Transactions'
 import { CalendarPage } from '@/pages/CalendarPage'
 import { Reports } from '@/pages/Reports'
+import { DealDetailPage } from '@/pages/DealDetailPage'
 // Team settings pages
 import { SettingsHomePage } from '@/pages/settings/SettingsHomePage'
 import { TeamMembersPage } from '@/pages/settings/TeamMembersPage'
@@ -156,6 +157,11 @@ function App() {
           <Route path="whiteboard" element={
             <SectionAccessGuard section="whiteboard">
               <Whiteboard />
+            </SectionAccessGuard>
+          } />
+          <Route path="deals/:dealId" element={
+            <SectionAccessGuard section="whiteboard">
+              <DealDetailPage />
             </SectionAccessGuard>
           } />
           <Route path="contacts" element={

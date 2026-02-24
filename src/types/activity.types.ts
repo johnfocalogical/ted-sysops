@@ -51,6 +51,7 @@ export interface CreateActivityLogDTO {
   contact_id?: string
   company_id?: string
   employee_profile_id?: string
+  deal_id?: string
   entity_type: ActivityEntityType
   activity_type: ActivityType
   content?: string

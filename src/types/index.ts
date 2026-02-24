@@ -174,3 +174,58 @@ export type {
 } from './commission.types'
 
 export { CALCULATION_TYPE_LABELS } from './commission.types'
+
+// Deal types
+export type {
+  DealStatus,
+  DealType,
+  PurchaseType,
+  TitleStatus,
+  ExpenseCategory,
+  JVType,
+  Deal,
+  DealContractFacts,
+  DealPropertyFacts,
+  DealFacts,
+  DealDisposition,
+  DealEmployee,
+  DealVendor,
+  DealExpense,
+  DealShowing,
+  DealChecklistItem,
+  DealComment,
+  DealNote,
+  DealEmployeeWithUser,
+  DealVendorWithDetails,
+  DealCommentWithUser,
+  DealNoteWithUser,
+  DealListItem,
+  DealWithDetails,
+  CreateDealDTO,
+  UpdateDealDTO,
+  UpsertDealContractFactsDTO,
+  UpsertDealPropertyFactsDTO,
+  UpsertDealFactsDTO,
+  UpsertDealDispositionDTO,
+  CreateDealExpenseDTO,
+  UpdateDealExpenseDTO,
+  CreateDealShowingDTO,
+  UpdateDealShowingDTO,
+  CreateDealChecklistItemDTO,
+  UpdateDealChecklistItemDTO,
+  CreateDealCommentDTO,
+  CreateDealNoteDTO,
+  CreateDealEmployeeDTO,
+  UpdateDealEmployeeDTO,
+  CreateDealVendorDTO,
+  UpdateDealVendorDTO,
+} from './deal.types'
+
+export {
+  DEAL_STATUS_LABELS,
+  DEAL_TYPE_LABELS,
+  PURCHASE_TYPE_LABELS,
+  TITLE_STATUS_LABELS,
+  EXPENSE_CATEGORY_LABELS,
+  JV_TYPE_LABELS,
+} from './deal.types'

@@ -56,6 +56,8 @@ export async function getActivityLogsForEntity(
     query = query.eq('company_id', entityId)
   } else if (entityType === 'employee') {
     query = query.eq('employee_profile_id', entityId)
+  } else if (entityType === 'deal') {
+    query = query.eq('deal_id', entityId)
   }
 
   // Activity type filter
@@ -155,6 +157,8 @@ export async function createActivityLog(
     insertData.company_id = dto.company_id
   } else if (dto.entity_type === 'employee' && dto.employee_profile_id) {
     insertData.employee_profile_id = dto.employee_profile_id
+  } else if (dto.entity_type === 'deal' && dto.deal_id) {
+    insertData.deal_id = dto.deal_id
   }
 
   const { data, error } = await supabase
