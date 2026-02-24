@@ -177,23 +177,37 @@ ted-sysops/
 │   │   │   ├── CompanyTypeBadge.tsx
 │   │   │   └── CompanyTypeFilter.tsx
 │   │   │
-│   │   ├── automators/         # Automator workflow builder (12 files)
-│   │   │   ├── AutomatorList.tsx
+│   │   ├── automators/         # Automator workflow builder + execution (~28 files)
+│   │   │   ├── AutomatorList.tsx          # List with tree view, dependency badges
 │   │   │   ├── AutomatorFormModal.tsx
 │   │   │   ├── DeleteAutomatorDialog.tsx
 │   │   │   └── builder/
 │   │   │       ├── NodePalette.tsx
-│   │   │       ├── AutomatorToolbar.tsx
-│   │   │       ├── ConfigurationPanel.tsx
+│   │   │       ├── AutomatorToolbar.tsx       # Breadcrumb nav for parent→child
+│   │   │       ├── ConfigurationPanel.tsx     # Node config + backend actions editor
 │   │   │       ├── AutomatorCanvas.tsx
+│   │   │       ├── actions/                   # Backend action editor components (~12 files)
+│   │   │       │   ├── ActionEditor.tsx           # Action list manager (add/remove/reorder)
+│   │   │       │   ├── ActionTypeSelector.tsx     # Action type dropdown
+│   │   │       │   ├── ValueSourcePicker.tsx      # Static/field-ref/today value resolver
+│   │   │       │   ├── SetDealFieldAction.tsx
+│   │   │       │   ├── SetDateFieldAction.tsx
+│   │   │       │   ├── CheckChecklistItemAction.tsx
+│   │   │       │   ├── AddExpenseAction.tsx
+│   │   │       │   ├── AddVendorAction.tsx
+│   │   │       │   ├── AddEmployeeAction.tsx
+│   │   │       │   ├── CreateShowingAction.tsx
+│   │   │       │   ├── UpdateDealStatusAction.tsx
+│   │   │       │   └── TriggerAutomatorAction.tsx # Link/create child automators
 │   │   │       └── nodes/
 │   │   │           ├── nodeStyles.ts
 │   │   │           ├── StartNode.tsx
 │   │   │           ├── EndNode.tsx
 │   │   │           ├── DecisionNode.tsx
-│   │   │           └── DataCollectionNode.tsx
+│   │   │           ├── DataCollectionNode.tsx
+│   │   │           └── TriggerBadge.tsx       # Purple badge for trigger_automator actions
 │   │   │
-│   │   └── deals/              # Deal management (31 files)
+│   │   └── deals/              # Deal management (~38 files)
 │   │       ├── CreateDealModal.tsx
 │   │       ├── DealCard.tsx
 │   │       ├── DealFactsSection.tsx
@@ -210,10 +224,18 @@ ted-sysops/
 │   │       ├── PropertyFactsSection.tsx
 │   │       ├── TitleStatusStepper.tsx
 │   │       ├── WhiteboardMetricCards.tsx
+│   │       ├── action-tab/                # Automator execution on deals (~7 files)
+│   │       │   ├── ActionTab.tsx              # Instance list + flow map + step interaction
+│   │       │   ├── InstanceList.tsx           # Table of instances with status/progress
+│   │       │   ├── StepInteractionPanel.tsx   # Current node UI (forms, decisions)
+│   │       │   ├── FlowMap.tsx                # React Flow visualization of progress
+│   │       │   ├── FlowMapNode.tsx            # Custom node renderer for flow map
+│   │       │   ├── StepHistory.tsx            # Chronological step audit log
+│   │       │   └── StartAutomatorDialog.tsx   # Published automator selector + start
 │   │       ├── sidebar/
 │   │       │   ├── DealActivityFeed.tsx
-│   │       │   ├── DealChecklist.tsx
-│   │       │   ├── DealComments.tsx       # @mention support
+│   │       │   ├── DealChecklist.tsx       # Enhanced with checked_by_source badges
+│   │       │   ├── DealComments.tsx        # @mention support
 │   │       │   └── DealNotes.tsx
 │   │       └── tabs/
 │   │           ├── ActualResults.tsx
@@ -299,7 +321,8 @@ ted-sysops/
 │   │   ├── typeTemplateService.ts      # Superadmin type template CRUD
 │   │   ├── customFieldValueService.ts  # Custom field value operations
 │   │   ├── activityLogService.ts       # Activity log CRUD
-│   │   ├── automatorService.ts         # Automator CRUD + publish/archive
+│   │   ├── automatorService.ts         # Automator CRUD + publish/archive + parent refs
+│   │   ├── automatorInstanceService.ts # Instance lifecycle, step execution, realtime, TPT
 │   │   ├── dealService.ts             # Deal CRUD, fact tables, expenses, showings, etc.
 │   │   └── utils.ts                    # Utility functions
 │   │
@@ -350,7 +373,11 @@ ted-sysops/
 │       ├── 021_deal_fact_tables.sql     # 4 fact tables (contract, property, deal, disposition)
 │       ├── 022_deal_many_tables.sql     # 7 child tables (employees, vendors, expenses, etc.)
 │       ├── 023_deal_rls.sql             # RLS policies for all 12 deal tables
-│       └── 024_deal_employee_commission.sql  # Commission percentage on deal_employees
+│       ├── 024_deal_employee_commission.sql  # Commission percentage on deal_employees
+│       ├── 025_automator_instances.sql  # Instance + step tables, start/execute RPCs
+│       ├── 026_automator_parent_ids.sql # parent_automator_ids[] on automators
+│       ├── 027_execute_automator_step.sql # Step execution with 9 backend action types
+│       └── 028_checklist_checked_by_source.sql # checked_by_source JSONB on checklist items
 │
 └── Configuration Files
     ├── package.json
@@ -771,12 +798,74 @@ Workflow definitions stored as JSONB.
 | version | INTEGER | Incremented on publish |
 | created_by | UUID | FK → users |
 | updated_by | UUID | FK → users |
+| parent_automator_ids | UUID[] | Denormalized parent refs (migration 026) |
 | published_at | TIMESTAMPTZ | |
 | created_at | TIMESTAMPTZ | |
 | updated_at | TIMESTAMPTZ | |
 
 **Unique**: (team_id, name)
 **RLS**: Team members SELECT; team admins INSERT/UPDATE/DELETE.
+
+#### automator_instances
+Active or completed workflow executions on deals. Snapshots the automator definition at start time so in-flight instances are unaffected by definition edits.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| team_id | UUID | FK → teams |
+| deal_id | UUID | FK → deals |
+| automator_id | UUID | FK → automators |
+| definition_snapshot | JSONB | Frozen copy of definition at start |
+| status | TEXT | 'running', 'completed', 'canceled' |
+| current_node_id | TEXT | Node the user is currently on |
+| parent_instance_id | UUID | FK → automator_instances (for child automators) |
+| parent_step_node_id | TEXT | Which parent step triggered this child |
+| started_by | UUID | FK → users |
+| completed_at | TIMESTAMPTZ | |
+| canceled_at | TIMESTAMPTZ | |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
+
+**Indexes**: deal_id, deal_id + status, parent_instance_id
+**RLS**: Team members SELECT/INSERT/UPDATE; team admins DELETE (cancel).
+
+#### automator_instance_steps
+Immutable audit log of completed steps within an instance. No UPDATE/DELETE policies — steps are write-once for compliance.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| instance_id | UUID | FK → automator_instances |
+| node_id | TEXT | Which node was completed |
+| node_type | TEXT | start, end, decision, data_collection |
+| branch_taken | TEXT | For decision nodes: "Yes" or "No" |
+| user_response | JSONB | Form data from data collection nodes |
+| actions_executed | JSONB | Results of backend action execution |
+| completed_by | UUID | FK → users |
+| completed_at | TIMESTAMPTZ | |
+| created_at | TIMESTAMPTZ | |
+
+**Indexes**: instance_id, instance_id + created_at
+**RLS**: Team members SELECT/INSERT only (immutable — no UPDATE/DELETE).
+
+#### Postgres RPC Functions (SECURITY DEFINER)
+
+| Function | Purpose |
+|----------|---------|
+| `start_automator_instance(team_id, deal_id, automator_id, user_id)` | Validates published status, creates instance with definition snapshot, auto-completes start node, returns first interactive node |
+| `execute_automator_step(instance_id, node_id, user_response, branch_taken, user_id)` | Records step, executes backend actions (9 types), resolves next node, auto-completes end nodes |
+| `resolve_value_source(value_source_json, user_response_json)` | Helper: resolves static values, field references, or `today` at execution time |
+
+**Backend Action Types** (executed within `execute_automator_step`):
+1. `set_deal_field` — Update any deal field or related fact table
+2. `set_date_field` — Set date fields with smart parsing
+3. `check_checklist_item` — Auto-check deal checklist items with source tracking
+4. `add_expense` — Create deal expenses from collected data
+5. `add_vendor` — Link vendor contacts to deals
+6. `add_employee` — Assign employees to deals
+7. `create_showing` — Schedule property showings
+8. `update_deal_status` — Change deal pipeline status
+9. `trigger_automator` — Start a child automator on the same deal
 
 ### Deal Tables
 
@@ -829,7 +918,7 @@ All fact tables have `custom_fields JSONB` and `updated_at` triggers. Upserted o
 | deal_vendors | External vendor assignments | contact_id OR company_id (exactly one), role |
 | deal_expenses | Cost tracking | category (enum), amount, expense_date, description |
 | deal_showings | Property showings | showing_datetime, duration/buffer minutes, buyer/vendor contacts, status |
-| deal_checklist_items | TPT checklist | item_key, label, is_checked, date_completed, price, sort_order |
+| deal_checklist_items | TPT checklist | item_key, label, is_checked, date_completed, price, sort_order, checked_by_source (JSONB: manual/automator attribution) |
 | deal_comments | Team discussion | user_id, content, tagged_user_ids (UUID[]) for @mentions |
 | deal_notes | Private notes | user_id, content |
 
@@ -875,7 +964,14 @@ All fact tables have `custom_fields JSONB` and `updated_at` triggers. Upserted o
       ┌────────────┐                                               │
       │ automators │                                               │
       │ (JSONB def)│                                               │
-      └────────────┘                                               │
+      └──────┬─────┘                                               │
+             │                                                     │
+             ▼                                                     │
+      ┌───────────────────────┐                                    │
+      │ automator_instances   │──── automator_instance_steps (1:N) │
+      │ (deal_id, snapshot,   │     (immutable audit log)          │
+      │  parent_instance_id)  │                                    │
+      └───────────────────────┘                                    │
                                                                    │
 ┌────── team-scoped data ──────────────────────────────────────────┤
 │                                                                   │
@@ -975,6 +1071,8 @@ All bypass RLS for authorization checks:
 | custom_field_values | via parent entity (team member) | team member OR superadmin | team member OR superadmin | team member OR superadmin |
 | activity_logs | team member OR superadmin | team member | own entry OR team admin | own entry OR team admin |
 | automators | team member OR superadmin | team admin OR superadmin | team admin OR superadmin | team admin OR superadmin |
+| automator_instances | team member | team member | team member | team admin |
+| automator_instance_steps | team member | team member | — (immutable) | — (immutable) |
 
 ### Frontend Guards
 
@@ -1085,7 +1183,7 @@ function mergeRolePermissions(roles: TeamRole[]): RolePermissions {
 - `useNavigation` - Mobile menu state
 - `useContactStore` - Contact list, search, type filtering, pagination, selection
 - `useCompanyStore` - Company list, search, type filtering, pagination, selection
-- `automatorBuilderStore` - Canvas state: nodes, edges, viewport, selected node, dirty flag
+- `automatorBuilderStore` - Canvas state: nodes, edges, viewport, selected node, dirty flag, breadcrumb stack (parent→child navigation)
 
 **React Context:**
 - `useAuth` - Authentication state, login/signup operations
@@ -1125,7 +1223,8 @@ export async function addUserToTeam(
 - `typeTemplateService.ts` - Superadmin type template management
 - `customFieldValueService.ts` - Custom field value read/write with typed columns
 - `activityLogService.ts` - Activity log CRUD, paginated queries
-- `automatorService.ts` - Automator CRUD + publish/unpublish/duplicate/archive
+- `automatorService.ts` - Automator CRUD + publish/unpublish/duplicate/archive + parent ref management
+- `automatorInstanceService.ts` - Instance lifecycle (start/execute/cancel), step execution via RPC, realtime subscriptions, TPT calculation
 
 ### Form Pattern
 
@@ -1190,10 +1289,20 @@ Team settings use a dedicated layout with sidebar navigation, separate from the 
 
 **Automator Builder** (full-page, not nested in TeamSettingsLayout):
 - 3-panel layout: NodePalette (left), AutomatorCanvas (center), ConfigurationPanel (right)
-- AutomatorToolbar at the top with save/publish/status controls
-- State managed by `automatorBuilderStore` (Zustand)
+- AutomatorToolbar at the top with save/publish/status controls + breadcrumb navigation for parent→child drill-down
+- State managed by `automatorBuilderStore` (Zustand) with breadcrumb stack
 - Node types: Start, End, Decision, DataCollection
 - Status lifecycle: draft → published → archived
+- **Backend Actions**: ConfigurationPanel includes action editor for each node — supports 9 action types with value source resolution (static, field reference, today)
+- **Parent-Child Automators**: `trigger_automator` action links automators; toolbar supports breadcrumb navigation through parent→child chain; TriggerBadge shown on nodes with trigger actions
+- **Automator List**: Tree view with completeness checks (warns if child automators not published), dependency badges ("Triggers" / "Triggered by")
+
+**Automator Execution** (within Deal Detail → Action Tab):
+- **Instance Model**: Each run snapshots the definition at start, tracks current_node_id, supports parent→child instances
+- **Step Execution**: Transactional via `execute_automator_step` RPC — records step, runs backend actions, resolves next node
+- **Action Tab UI**: Flow map visualization (React Flow), step interaction panel (forms/decisions), step history, instance list with filters
+- **Realtime**: Subscribes to automator_instances for live status updates across users
+- **TPT Integration**: Aggregates progress across all active instances for the deal header progress bar
 
 ### Type System Pattern
 
@@ -1247,15 +1356,16 @@ The ContactHub uses a master-detail pattern with two entry points:
 | Deal Disposition | DispoTab with ShowingsList (CRUD + contact search), DispositionDetails (JV config), BuyerAssignment (company→contact lookup) | dealService.ts |
 | Deal Employees | EmployeeTab with team member assignment, vendor assignment (contact search), role management | dealService.ts |
 | Deal Financials | FinancialTab with FinancialSummary (9 metric cards), ExpenseList (CRUD), CommissionBreakdown (per-employee %), ActualResults (closed deals) | dealService.ts |
-| Deal Sidebar | DealChecklist (TPT progress), DealActivityFeed (paginated), DealComments (@mention autocomplete), DealNotes | dealService.ts, activityLogService.ts |
+| Deal Sidebar | DealChecklist (TPT progress + automator source badges), DealActivityFeed (paginated), DealComments (@mention autocomplete), DealNotes | dealService.ts, activityLogService.ts |
+| Automator Builder | AutomatorList (tree view + dependency badges), AutomatorBuilder (3-panel), ConfigurationPanel (node config + 9 backend action types), ActionEditor, ValueSourcePicker, TriggerBadge | automatorService.ts |
+| Automator Execution | ActionTab (flow map + instance list + step interaction), StartAutomatorDialog, StepHistory, FlowMap, InstanceList | automatorInstanceService.ts |
+| Automator Instance Engine | start_automator_instance(), execute_automator_step() RPCs with definition snapshots, immutable step audit log, 9 backend action types, parent-child cascading | Postgres RPC functions |
 
 ### Placeholder / Not Yet Implemented
 
 | Section | Status | Notes |
 |---------|--------|-------|
 | Transactions | Placeholder | Transaction tracking |
-| Automators | Partially implemented | Builder UI complete (draft/publish/archive); execution engine not yet built |
-| Pay Time | Placeholder | Commission tracking |
 | Calendar | Placeholder | Scheduling |
 | Reports | Placeholder | Analytics |
 
@@ -1423,6 +1533,13 @@ When writing epics, reference these existing implementations:
 | Activity logging | `activityLogService.ts` + ContactDetailPage activity feed |
 | Zustand data store (list + CRUD) | `useContactStore.ts` (search, filters, pagination) |
 | Visual workflow builder | `AutomatorBuilderPage.tsx` + `automatorBuilderStore.ts` |
+| Workflow execution engine | `automatorInstanceService.ts` + `execute_automator_step()` RPC |
+| Immutable audit log pattern | `automator_instance_steps` (no UPDATE/DELETE RLS) |
+| Definition snapshot pattern | `automator_instances.definition_snapshot` (frozen copy at start) |
+| Backend action system | `builder/actions/` components + `execute_automator_step()` action execution |
+| Parent-child entity relationships | `automators.parent_automator_ids[]` + `automator_instances.parent_instance_id` |
+| Realtime subscriptions for live UI | `automatorInstanceService.subscribeToInstanceUpdates()` |
+| Deal tab with embedded React Flow | `action-tab/ActionTab.tsx` + `FlowMap.tsx` |
 | Settings config-driven layout | `settingsConfig.ts` + `TeamSettingsLayout.tsx` |
 | Polymorphic table (owner check) | `contact_methods`, `custom_field_values`, `activity_logs` |
 
@@ -1447,12 +1564,17 @@ When writing epics, reference these existing implementations:
 | Contact types | `src/types/contact.types.ts` |
 | Company types | `src/types/company.types.ts` |
 | Automator types | `src/types/automator.types.ts` |
+| Automator instance service | `src/lib/automatorInstanceService.ts` |
 | Settings config | `src/config/settingsConfig.ts` |
 | Builder store | `src/stores/automatorBuilderStore.ts` |
+| Action tab (deal execution) | `src/components/deals/action-tab/ActionTab.tsx` |
+| Action editors (builder) | `src/components/automators/builder/actions/` |
 | ContactHub page | `src/pages/ContactHub.tsx` |
 | Contact schema | `supabase/migrations/009_contacts_companies.sql` |
 | Type templates schema | `supabase/migrations/010_type_templates.sql` |
 | Automator schema | `supabase/migrations/013_automators.sql` |
+| Instance/step schema + RPCs | `supabase/migrations/025-027_automator_instances.sql` |
+| Checklist source tracking | `supabase/migrations/028_checklist_checked_by_source.sql` |
 
 ### Commands
 
@@ -1475,4 +1597,4 @@ npx shadcn-ui@latest add [component]  # Add shadcn component
 
 ---
 
-*Last updated: January 2026*
+*Last updated: February 2026*

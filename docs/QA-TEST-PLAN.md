@@ -1772,6 +1772,401 @@ Before running tests, ensure:
 
 ---
 
+### AUTO-009: Configure Backend Actions on Node
+**Prerequisites**: Automator builder open, Decision or Data Collection node on canvas
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Select a Data Collection node | ConfigurationPanel shows node properties |
+| 2 | Find "Backend Actions" section | Action editor visible below node config |
+| 3 | Click "Add Action" | Action type selector dropdown appears |
+| 4 | Select "Set Deal Field" | SetDealFieldAction config form appears |
+| 5 | Configure field name and value source (static) | Fields accept input |
+| 6 | Add another action "Check Checklist Item" | Second action appears in list |
+| 7 | Drag to reorder actions | Actions reorder correctly |
+| 8 | Delete an action | Action removed from list |
+| 9 | Save automator | Actions persisted in definition |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### AUTO-010: Configure Branch-Specific Actions on Decision Node
+**Prerequisites**: Builder open, Decision node on canvas
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Select a Decision node | ConfigurationPanel shows decision config |
+| 2 | Find "Yes Branch Actions" section | Branch-specific action editors visible |
+| 3 | Add action to "Yes" branch | Action appears under Yes branch |
+| 4 | Find "No Branch Actions" section | Separate section for No branch |
+| 5 | Add different action to "No" branch | Action appears under No branch |
+| 6 | Save automator | Branch actions persisted in definition |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### AUTO-011: Value Source Picker
+**Prerequisites**: Builder open, node with action configured
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Open a Set Deal Field action | Value source picker visible |
+| 2 | Select "Static Value" | Text input appears for entering value |
+| 3 | Switch to "Field Reference" | Dropdown lists data collection fields from workflow |
+| 4 | Select a field | Field ID stored as value source |
+| 5 | Switch to "Today" (for date actions) | "Today" option selects current date function |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### AUTO-012: Trigger Automator Action
+**Prerequisites**: Builder open, at least one other published automator exists
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Add "Trigger Automator" action to a node | TriggerAutomatorAction config appears |
+| 2 | Select a published automator from dropdown | Automator linked |
+| 3 | Save | Purple TriggerBadge appears on the node in canvas |
+| 4 | Verify parent-child relationship | parent_automator_ids updated on child automator |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### AUTO-013: Parent-Child Automator Navigation in Builder
+**Prerequisites**: Automator with trigger_automator action linking to a child automator
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Open parent automator in builder | Toolbar shows automator name |
+| 2 | Click on child automator link (from trigger action) | Builder navigates to child automator |
+| 3 | Verify breadcrumb shows parent → child | Breadcrumb navigation visible in toolbar |
+| 4 | Click parent in breadcrumb | Builder navigates back to parent automator |
+| 5 | Verify builder state restores | Parent's nodes, edges, viewport restored |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### AUTO-014: Automator List - Tree View and Dependencies
+**Prerequisites**: At least two automators with parent-child relationship
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Settings > Automators | List page loads |
+| 2 | Toggle to Tree view mode | Automators shown in parent→child hierarchy |
+| 3 | Verify dependency badges | "Triggers" and "Triggered by" badges visible |
+| 4 | Check completeness indicator | Warning shown if child automator not published |
+| 5 | Toggle to Flat view mode | All automators shown in flat list |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 17b. Automator Instance Execution Tests
+
+### INST-001: Start Automator Instance on Deal
+**Prerequisites**: Deal exists, at least one published automator, deal detail page open
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to deal detail page | Page loads with Action tab visible |
+| 2 | Click Action tab | ActionTab loads with "Start Automator" button |
+| 3 | Click "Start Automator" | StartAutomatorDialog opens |
+| 4 | Verify only published automators shown | Draft/archived automators not listed |
+| 5 | Select an automator | Automator highlighted |
+| 6 | Click "Start" | Instance created, dialog closes, flow map shows first interactive node |
+| 7 | Verify instance appears in instance list | Status shows "Running" |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### INST-002: Execute Data Collection Step
+**Prerequisites**: Running instance on a deal, current node is Data Collection type
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | View current node in step interaction panel | Data collection form renders with configured fields |
+| 2 | Fill in required fields | Form validation works (required fields enforced) |
+| 3 | Fill in optional fields | Fields accept input |
+| 4 | Click "Submit" / advance | Step recorded, actions execute, next node presented |
+| 5 | Verify step history updates | Previous step shows in step history with responses |
+| 6 | Verify flow map highlights next node | Visual progress updated |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### INST-003: Execute Decision Step
+**Prerequisites**: Running instance, current node is Decision type
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | View current node in step interaction panel | Decision question displayed with Yes/No options |
+| 2 | Click "Yes" | Step recorded with branch_taken = "Yes" |
+| 3 | Verify correct branch followed | Next node matches "Yes" edge target |
+| 4 | Verify branch-specific actions executed | Actions for "Yes" branch run (not "No" branch actions) |
+| 5 | Verify step history shows branch choice | "Yes" recorded in step log |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### INST-004: Instance Auto-Completion at End Node
+**Prerequisites**: Running instance, one step away from End node
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Complete the step before End node | Step recorded |
+| 2 | End node auto-completes | Instance status changes to "Completed" |
+| 3 | Verify completed_at timestamp set | Timestamp visible in instance list |
+| 4 | Verify flow map shows completed state | All nodes shown as completed |
+| 5 | Verify end outcome recorded | Success/failure/cancelled outcome stored |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### INST-005: Cancel Running Instance
+**Prerequisites**: Admin user, running instance on a deal
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Find running instance in instance list | Instance visible with "Running" status |
+| 2 | Click cancel action | Confirmation dialog appears |
+| 3 | Confirm cancellation | Instance status changes to "Canceled" |
+| 4 | Verify canceled_at timestamp set | Timestamp visible |
+| 5 | Verify instance no longer shows as active | Moved to canceled filter |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### INST-006: Backend Action Execution - Set Deal Field
+**Prerequisites**: Running instance with set_deal_field action configured
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Complete step that triggers set_deal_field action | Step executes |
+| 2 | Verify deal field updated | Navigate to deal info, field has new value |
+| 3 | Verify action logged in step | actions_executed JSONB shows success |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### INST-007: Backend Action Execution - Check Checklist Item
+**Prerequisites**: Running instance with check_checklist_item action, deal has matching checklist item
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Complete step that triggers check_checklist_item | Step executes |
+| 2 | Navigate to deal sidebar > Checklist | Checklist tab visible |
+| 3 | Verify item auto-checked | Item shows as checked |
+| 4 | Verify "Checked by [Automator Name]" badge | Purple/different styling indicates automator source |
+| 5 | Verify checked_by_source metadata | Source shows automator name, instance_id, step_node_id |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### INST-008: Backend Action Execution - Trigger Child Automator
+**Prerequisites**: Running instance with trigger_automator action linking to a published child automator
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Complete step that triggers trigger_automator action | Step executes |
+| 2 | Verify child instance created | New instance appears in instance list |
+| 3 | Verify child instance links to parent | parent_instance_id set on child |
+| 4 | Verify child instance is "Running" | Status shows Running |
+| 5 | Verify child is on same deal | deal_id matches parent |
+| 6 | Complete child instance | Child completes independently |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### INST-009: Backend Action Error Handling
+**Prerequisites**: Running instance with an action that may fail (e.g., invalid field name)
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Complete step with action that errors | Step still completes successfully |
+| 2 | Verify action error logged | actions_executed shows error for failed action |
+| 3 | Verify other actions still ran | Subsequent actions in list were not skipped |
+| 4 | Verify instance continues | Can proceed to next step |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### INST-010: Flow Map Visualization
+**Prerequisites**: Running instance with multiple completed steps
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Open Action tab on deal | Flow map visible |
+| 2 | Verify completed nodes styled differently | Completed steps have distinct visual treatment |
+| 3 | Verify current node highlighted | Active node is visually prominent |
+| 4 | Verify future nodes shown | Remaining workflow visible but dimmed |
+| 5 | Click a completed node | Step details panel shows responses and action results |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### INST-011: Step History
+**Prerequisites**: Instance with multiple completed steps
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | View step history panel | Chronological list of completed steps |
+| 2 | Verify each entry shows node type, timestamp, user | Properly formatted |
+| 3 | Verify data collection steps show user responses | Form data displayed |
+| 4 | Verify decision steps show branch taken | "Yes" or "No" displayed |
+| 5 | Verify action results shown | Executed actions with success/failure status |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### INST-012: Instance List with Filters
+**Prerequisites**: Deal with multiple instances in different statuses
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | View instance list on Action tab | All instances for deal shown |
+| 2 | Verify columns | Automator name, status badge, progress |
+| 3 | Filter by "Running" | Only running instances shown |
+| 4 | Filter by "Completed" | Only completed instances shown |
+| 5 | Filter by "Canceled" | Only canceled instances shown |
+| 6 | Click an instance | Details panel opens with step history |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### INST-013: Realtime Instance Updates
+**Prerequisites**: Two browser windows on same deal, one user starts an automator
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | User A starts an automator on deal | Instance created |
+| 2 | User B sees new instance appear | Instance list updates in real-time |
+| 3 | User A completes a step | Step recorded |
+| 4 | User B sees instance progress update | Status/progress reflects latest state |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### INST-014: Definition Snapshot Immutability
+**Prerequisites**: Running instance on a deal
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Note the current automator definition | Definition recorded |
+| 2 | Edit the automator in builder (add/remove nodes) | Definition changed |
+| 3 | Save and publish updated automator | New version published |
+| 4 | Return to running instance on deal | Instance still works with original definition |
+| 5 | Complete remaining steps | Steps follow original snapshot, not new definition |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### INST-015: TPT Progress with Automator Instances
+**Prerequisites**: Deal with active automator instances
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | View deal header | TPT progress bar visible |
+| 2 | Verify TPT includes automator progress | Progress aggregates checklist + instance completion |
+| 3 | Complete a step in an instance | TPT percentage increases |
+| 4 | Complete all instances | TPT reflects full completion |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### INST-016: Cannot Start Unpublished Automator
+**Prerequisites**: Deal exists, only draft automators available
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Open Action tab on deal | Tab loads |
+| 2 | Click "Start Automator" | Dialog opens |
+| 3 | Verify draft automators not listed | Only published automators shown |
+| 4 | If no published automators | Empty state or disabled start button |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### INST-017: Automator Instance Permissions
+**Prerequisites**: Team with admin and member users
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | As member, start an instance | Instance created (members can start) |
+| 2 | As member, execute steps | Steps recorded (members can execute) |
+| 3 | As member, try to cancel instance | Cannot cancel (admin only) |
+| 4 | As admin, cancel instance | Instance canceled successfully |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
 ## 18. Employee Directory Tests
 
 ### EMP-001: View Employee List
@@ -3071,7 +3466,8 @@ Before running tests, ensure:
 | 14. Custom Fields | 6 | | |
 | 15. Activity Log | 5 | | |
 | 16. Team Settings Navigation | 5 | | |
-| 17. Automator Builder | 8 | | |
+| 17. Automator Builder | 14 | | |
+| 17b. Automator Instance Execution | 17 | | |
 | 18. Employee Directory | 8 | | |
 | 19. Employee Profile Form | 5 | | |
 | 20. Department Settings | 5 | | |
@@ -3085,7 +3481,7 @@ Before running tests, ensure:
 | 28. Deal Employee & Vendor | 4 | | |
 | 29. Deal Financial | 4 | | |
 | 30. Deal Sidebar | 4 | | |
-| **TOTAL** | **180** | | |
+| **TOTAL** | **211** | | |
 
 ---
 
