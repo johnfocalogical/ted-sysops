@@ -83,6 +83,7 @@ export function BuilderEdge({
             transform: `translate(-50%, -50%) translate(${labelX}px, ${buttonY}px)`,
             opacity: hovered ? 1 : 0,
             transition: 'opacity 150ms ease',
+            pointerEvents: 'all',
             padding: '8px',
           }}
           onMouseEnter={() => setHovered(true)}
