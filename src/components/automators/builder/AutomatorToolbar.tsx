@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Save, Loader2, CheckCircle, Play, Pause } from 'lucide-react'
+import { ArrowLeft, Save, Loader2, CheckCircle, Play, Pause, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useAutomatorBuilderStore } from '@/stores/automatorBuilderStore'
@@ -22,16 +22,76 @@ export function AutomatorToolbar() {
     setIsDirty,
     getDefinition,
     setAutomator,
+    breadcrumbStack,
+    popBreadcrumb,
   } = useAutomatorBuilderStore()
 
-  const handleBack = () => {
-    if (isDirty) {
-      const confirmed = window.confirm(
-        'You have unsaved changes. Are you sure you want to leave?'
-      )
-      if (!confirmed) return
+  const handleBack = async () => {
+    // Auto-save if there are unsaved changes
+    if (isDirty && automator && user) {
+      setIsSaving(true)
+      try {
+        const definition = getDefinition()
+        await saveAutomatorDefinition(automator.id, definition, user.id)
+        setIsDirty(false)
+      } catch {
+        // If save fails, ask user whether to discard
+        const confirmed = window.confirm(
+          'Failed to save changes. Leave anyway and discard changes?'
+        )
+        if (!confirmed) {
+          setIsSaving(false)
+          return
+        }
+      } finally {
+        setIsSaving(false)
+      }
     }
+
+    // If we have breadcrumbs, go back to parent automator
+    if (breadcrumbStack.length > 0) {
+      const parent = popBreadcrumb()
+      if (parent) {
+        navigate(
+          `/org/${orgId}/team/${teamId}/settings/automators/${parent.automatorId}`
+        )
+        return
+      }
+    }
+
     navigate(`/org/${orgId}/team/${teamId}/settings/automators`)
+  }
+
+  const handleBreadcrumbClick = async (index: number) => {
+    // Auto-save if there are unsaved changes
+    if (isDirty && automator && user) {
+      setIsSaving(true)
+      try {
+        const definition = getDefinition()
+        await saveAutomatorDefinition(automator.id, definition, user.id)
+        setIsDirty(false)
+      } catch {
+        const confirmed = window.confirm(
+          'Failed to save changes. Leave anyway and discard changes?'
+        )
+        if (!confirmed) {
+          setIsSaving(false)
+          return
+        }
+      } finally {
+        setIsSaving(false)
+      }
+    }
+
+    // Pop all breadcrumbs after the clicked index
+    const entry = breadcrumbStack[index]
+    const { breadcrumbStack: currentStack } = useAutomatorBuilderStore.getState()
+    const newStack = currentStack.slice(0, index)
+    useAutomatorBuilderStore.setState({ breadcrumbStack: newStack })
+
+    navigate(
+      `/org/${orgId}/team/${teamId}/settings/automators/${entry.automatorId}`
+    )
   }
 
   const handleSave = async () => {
@@ -83,13 +143,29 @@ export function AutomatorToolbar() {
 
   return (
     <div className="flex items-center justify-between px-4 py-3 border-b bg-card">
-      {/* Left side - Back button and title */}
+      {/* Left side - Back button, breadcrumbs, and title */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="sm" onClick={handleBack}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
+          {breadcrumbStack.length > 0 ? 'Parent' : 'Back'}
         </Button>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          {/* Breadcrumb trail */}
+          {breadcrumbStack.map((entry, index) => (
+            <div key={entry.automatorId} className="flex items-center gap-2">
+              <button
+                type="button"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors truncate max-w-[150px]"
+                onClick={() => handleBreadcrumbClick(index)}
+                title={entry.automatorName}
+              >
+                {entry.automatorName}
+              </button>
+              <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
+            </div>
+          ))}
+
+          {/* Current automator name */}
           <h1 className="text-lg font-semibold">{automator.name}</h1>
           <Badge
             variant={automator.status === 'published' ? 'default' : 'secondary'}

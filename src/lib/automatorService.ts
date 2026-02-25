@@ -5,7 +5,6 @@ import type {
   CreateAutomatorDTO,
   UpdateAutomatorDTO,
   AutomatorDefinition,
-  DEFAULT_AUTOMATOR_DEFINITION,
 } from '@/types/automator.types'
 
 /**
@@ -222,4 +221,136 @@ export async function isAutomatorNameUnique(
 
   if (error) throw error
   return count === 0
+}
+
+// ============================================================================
+// Parent-Child Reference Management
+// ============================================================================
+
+/**
+ * Add a parent reference to a child automator's parent_automator_ids array.
+ */
+export async function addParentReference(
+  childAutomatorId: string,
+  parentAutomatorId: string
+): Promise<void> {
+  if (!supabase) throw new Error('Supabase not configured')
+
+  const child = await getAutomator(childAutomatorId)
+  if (!child) throw new Error('Child automator not found')
+
+  const existingParents = child.parent_automator_ids ?? []
+  if (existingParents.includes(parentAutomatorId)) return // Already linked
+
+  const { error } = await supabase
+    .from('automators')
+    .update({
+      parent_automator_ids: [...existingParents, parentAutomatorId],
+    })
+    .eq('id', childAutomatorId)
+
+  if (error) throw error
+}
+
+/**
+ * Remove a parent reference from a child automator's parent_automator_ids array.
+ */
+export async function removeParentReference(
+  childAutomatorId: string,
+  parentAutomatorId: string
+): Promise<void> {
+  if (!supabase) throw new Error('Supabase not configured')
+
+  const child = await getAutomator(childAutomatorId)
+  if (!child) throw new Error('Child automator not found')
+
+  const existingParents = child.parent_automator_ids ?? []
+  const updated = existingParents.filter((id) => id !== parentAutomatorId)
+
+  const { error } = await supabase
+    .from('automators')
+    .update({
+      parent_automator_ids: updated,
+    })
+    .eq('id', childAutomatorId)
+
+  if (error) throw error
+}
+
+/**
+ * Create a scaffold child automator with Start + End nodes.
+ * Sets parent_automator_ids to reference the parent.
+ */
+export async function createChildAutomator(
+  teamId: string,
+  name: string,
+  description: string | undefined,
+  parentAutomatorId: string,
+  userId: string
+): Promise<Automator> {
+  const scaffoldDefinition: AutomatorDefinition = {
+    nodes: [
+      {
+        id: 'node_start',
+        type: 'start',
+        position: { x: 250, y: 50 },
+        data: { type: 'start', label: 'Start', description: 'Workflow entry point' },
+      },
+      {
+        id: 'node_end',
+        type: 'end',
+        position: { x: 250, y: 300 },
+        data: { type: 'end', label: 'End', description: 'Workflow exit point', outcome: 'success' },
+      },
+    ],
+    edges: [
+      {
+        id: 'edge_start_end',
+        source: 'node_start',
+        target: 'node_end',
+        type: 'smoothstep',
+      },
+    ],
+    viewport: { x: 0, y: 0, zoom: 1 },
+  }
+
+  if (!supabase) throw new Error('Supabase not configured')
+
+  const { data, error } = await supabase
+    .from('automators')
+    .insert({
+      team_id: teamId,
+      name,
+      description: description || null,
+      definition: scaffoldDefinition,
+      status: 'draft',
+      version: 1,
+      created_by: userId,
+      updated_by: userId,
+      parent_automator_ids: [parentAutomatorId],
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+/**
+ * Get published automators for a team (lightweight, for dropdowns).
+ */
+export async function getPublishedAutomatorsForTeam(
+  teamId: string
+): Promise<Array<{ id: string; name: string; status: string }>> {
+  if (!supabase) throw new Error('Supabase not configured')
+
+  const { data, error } = await supabase
+    .from('automators')
+    .select('id, name, status')
+    .eq('team_id', teamId)
+    .neq('status', 'archived')
+    .order('name', { ascending: true })
+
+  if (error) throw error
+  return data || []
 }

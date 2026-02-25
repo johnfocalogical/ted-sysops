@@ -264,6 +264,14 @@ export interface DealShowing {
   updated_at: string
 }
 
+export interface CheckedBySource {
+  source: 'manual' | 'automator'
+  user_id?: string
+  automator_name?: string
+  instance_id?: string
+  step_node_id?: string
+}
+
 export interface DealChecklistItem {
   id: string
   deal_id: string
@@ -274,6 +282,7 @@ export interface DealChecklistItem {
   price: number | null
   sort_order: number
   process_instance_id: string | null
+  checked_by_source: CheckedBySource | null
   notes: string | null
   created_at: string
   updated_at: string

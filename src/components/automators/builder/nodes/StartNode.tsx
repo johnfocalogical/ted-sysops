@@ -1,12 +1,12 @@
 import { memo } from 'react'
-import { Handle, Position } from 'reactflow'
 import type { NodeProps } from 'reactflow'
 import { Play } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { NODE_COLORS, NODE_BASE_STYLES, HANDLE_STYLES } from './nodeStyles'
+import { NODE_COLORS, NODE_BASE_STYLES } from './nodeStyles'
+import { SourceHandleWithAdd } from './SourceHandleWithAdd'
 import type { StartNodeData } from '@/types/automator.types'
 
-export const StartNode = memo(({ data, selected }: NodeProps<StartNodeData>) => {
+export const StartNode = memo(({ id, data, selected }: NodeProps<StartNodeData>) => {
   const colors = NODE_COLORS.start
 
   return (
@@ -30,13 +30,8 @@ export const StartNode = memo(({ data, selected }: NodeProps<StartNodeData>) => 
         </div>
       )}
 
-      {/* Output Handle */}
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="default"
-        className={cn(HANDLE_STYLES.base, colors.handle)}
-      />
+      {/* Output Handle with [+] */}
+      <SourceHandleWithAdd nodeId={id} handleColor={colors.handle} />
     </div>
   )
 })

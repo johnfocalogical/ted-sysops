@@ -11,6 +11,7 @@ import { DealInfoTab } from './DealInfoTab'
 import { EmployeeTab } from './tabs/EmployeeTab'
 import { DispoTab } from './tabs/DispoTab'
 import { FinancialTab } from './tabs/FinancialTab'
+import { ActionTab } from './action-tab'
 import type { DealWithDetails } from '@/types/deal.types'
 
 interface DealTabsProps {
@@ -94,10 +95,14 @@ export function DealTabs({ deal, activeTab, onTabChange, onDealUpdated, onAssign
           )}
         </TabsContent>
         <TabsContent value="action" className="mt-0">
-          <PlaceholderTab
-            title="Action"
-            description="Automator execution, deal actions, and process management coming in Epic 4."
-          />
+          {deal ? (
+            <ActionTab dealId={deal.id} teamId={deal.team_id} />
+          ) : (
+            <PlaceholderTab
+              title="Action"
+              description="Loading deal data..."
+            />
+          )}
         </TabsContent>
         <TabsContent value="employee" className="mt-0">
           {deal ? (

@@ -8,6 +8,7 @@ import { DealTabs } from '@/components/deals/DealTabs'
 import { DealSidebar } from '@/components/deals/DealSidebar'
 import { getDealById, updateDeal, deleteDeal, getDealEmployees, getDealVendors } from '@/lib/dealService'
 import { getTeamMembersForMentions } from '@/lib/activityLogService'
+import { getDealTPT, subscribeToInstanceUpdates } from '@/lib/automatorInstanceService'
 import { toast } from 'sonner'
 import type { DealWithDetails, DealStatus, UpdateDealDTO, DealEmployeeWithUser, DealVendorWithDetails } from '@/types/deal.types'
 
@@ -33,7 +34,8 @@ export function DealDetailPage() {
   // Tab state
   const [activeMainTab, setActiveMainTab] = useState('deal-info')
   const [activeSidebarTab, setActiveSidebarTab] = useState('checklist')
-  const [tptProgress, setTptProgress] = useState(0)
+  const [checklistTpt, setChecklistTpt] = useState(0)
+  const [automatorTpt, setAutomatorTpt] = useState<number | null>(null)
 
   // Employee/vendor state for header display
   const [employees, setEmployees] = useState<DealEmployeeWithUser[]>([])
@@ -86,6 +88,28 @@ export function DealDetailPage() {
       .then(setVendors)
       .catch((err) => console.error('Error refreshing vendors:', err))
   }, [dealId])
+
+  // Load automator TPT and subscribe to instance updates
+  useEffect(() => {
+    if (!dealId) return
+
+    const loadAutomatorTpt = () => {
+      getDealTPT(dealId)
+        .then((tpt) => setAutomatorTpt(tpt > 0 ? tpt : null))
+        .catch((err) => console.error('Error loading automator TPT:', err))
+    }
+
+    loadAutomatorTpt()
+
+    const unsubscribe = subscribeToInstanceUpdates(dealId, () => {
+      loadAutomatorTpt()
+    })
+
+    return unsubscribe
+  }, [dealId])
+
+  // Combined TPT: prefer automator TPT when instances exist, else checklist TPT
+  const tptProgress = automatorTpt ?? checklistTpt
 
   // Load team members
   useEffect(() => {
@@ -280,7 +304,7 @@ export function DealDetailPage() {
             dealId={deal.id}
             activeTab={activeSidebarTab}
             onTabChange={setActiveSidebarTab}
-            onTptChange={setTptProgress}
+            onTptChange={setChecklistTpt}
           />
         </div>
       </div>

@@ -1,9 +1,10 @@
 import { memo } from 'react'
 import { Handle, Position } from 'reactflow'
 import type { NodeProps } from 'reactflow'
-import { StopCircle, CheckCircle, XCircle, Ban } from 'lucide-react'
+import { CheckCircle, XCircle, Ban } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { NODE_COLORS, NODE_BASE_STYLES, HANDLE_STYLES } from './nodeStyles'
+import { TriggerBadge } from './TriggerBadge'
 import type { EndNodeData } from '@/types/automator.types'
 
 const outcomeConfig = {
@@ -67,6 +68,9 @@ export const EndNode = memo(({ data, selected }: NodeProps<EndNodeData>) => {
           {data.description || `Outcome: ${config.label}`}
         </p>
       </div>
+
+      {/* Trigger automator badge */}
+      <TriggerBadge actions={data.actions} />
     </div>
   )
 })

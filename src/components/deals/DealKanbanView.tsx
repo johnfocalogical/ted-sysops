@@ -2,7 +2,7 @@ import { useState } from 'react'
 import {
   DndContext,
   DragOverlay,
-  closestCorner,
+  closestCorners,
   PointerSensor,
   useSensor,
   useSensors,
@@ -163,7 +163,7 @@ export function DealKanbanView({
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorner}
+      collisionDetection={closestCorners}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >

@@ -27,6 +27,12 @@ export const NODE_COLORS = {
     icon: 'text-primary',
     handle: 'bg-primary',
   },
+  wait: {
+    bg: 'bg-amber-500/10',
+    border: 'border-amber-500',
+    icon: 'text-amber-500',
+    handle: 'bg-amber-500',
+  },
 } as const
 
 export const NODE_BASE_STYLES = {

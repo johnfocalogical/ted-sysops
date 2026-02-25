@@ -1,4 +1,4 @@
-import { Play, StopCircle, HelpCircle, FileInput } from 'lucide-react'
+import { Play, StopCircle, HelpCircle, Zap, Clock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { AutomatorNodeType } from '@/types/automator.types'
 
@@ -34,10 +34,17 @@ const nodeTypes: NodeTypeConfig[] = [
   },
   {
     type: 'dataCollection',
-    label: 'Collect Data',
-    description: 'User input',
-    icon: FileInput,
+    label: 'Action',
+    description: 'Input & backend actions',
+    icon: Zap,
     color: 'text-primary bg-primary/10 border-primary/30',
+  },
+  {
+    type: 'wait',
+    label: 'Wait',
+    description: 'Time delay',
+    icon: Clock,
+    color: 'text-amber-500 bg-amber-500/10 border-amber-500/30',
   },
 ]
 
