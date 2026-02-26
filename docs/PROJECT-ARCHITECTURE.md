@@ -65,6 +65,7 @@ The application uses a futuristic military aesthetic:
 | Tailwind CSS | 3.4.19 | Utility-first styling |
 | Lucide React | 0.562.0 | Icon library |
 | next-themes | 0.4.6 | Dark/light theme management |
+| date-fns | 4.1.0 | Date utilities |
 
 ### State & Forms
 | Technology | Version | Purpose |
@@ -177,7 +178,7 @@ ted-sysops/
 │   │   │   ├── CompanyTypeBadge.tsx
 │   │   │   └── CompanyTypeFilter.tsx
 │   │   │
-│   │   ├── automators/         # Automator workflow builder + execution (~28 files)
+│   │   ├── automators/         # Automator workflow builder + execution (~30 files)
 │   │   │   ├── AutomatorList.tsx          # List with tree view, dependency badges
 │   │   │   ├── AutomatorFormModal.tsx
 │   │   │   ├── DeleteAutomatorDialog.tsx
@@ -186,6 +187,7 @@ ted-sysops/
 │   │   │       ├── AutomatorToolbar.tsx       # Breadcrumb nav for parent→child
 │   │   │       ├── ConfigurationPanel.tsx     # Node config + backend actions editor
 │   │   │       ├── AutomatorCanvas.tsx
+│   │   │       ├── QuickAddMenu.tsx           # [+] button context menu
 │   │   │       ├── actions/                   # Backend action editor components (~12 files)
 │   │   │       │   ├── ActionEditor.tsx           # Action list manager (add/remove/reorder)
 │   │   │       │   ├── ActionTypeSelector.tsx     # Action type dropdown
@@ -199,13 +201,72 @@ ted-sysops/
 │   │   │       │   ├── CreateShowingAction.tsx
 │   │   │       │   ├── UpdateDealStatusAction.tsx
 │   │   │       │   └── TriggerAutomatorAction.tsx # Link/create child automators
+│   │   │       ├── edges/
+│   │   │       │   └── BuilderEdge.tsx        # Custom edge with inline [+] button
 │   │   │       └── nodes/
 │   │   │           ├── nodeStyles.ts
 │   │   │           ├── StartNode.tsx
 │   │   │           ├── EndNode.tsx
 │   │   │           ├── DecisionNode.tsx
 │   │   │           ├── DataCollectionNode.tsx
-│   │   │           └── TriggerBadge.tsx       # Purple badge for trigger_automator actions
+│   │   │           ├── WaitNode.tsx            # Time-based delay node
+│   │   │           ├── TriggerBadge.tsx        # Purple badge for trigger_automator actions
+│   │   │           └── SourceHandleWithAdd.tsx # Inline edge [+] buttons
+│   │   │
+│   │   ├── dashboard/            # Dashboard widgets (10 files)
+│   │   │   ├── PipelineMetricCards.tsx     # Status count cards (7-col grid)
+│   │   │   ├── FinancialSummaryCards.tsx   # Revenue, commission, expense cards
+│   │   │   ├── DeadlinesList.tsx           # Upcoming deadlines with day-range tabs
+│   │   │   ├── StaleDealsList.tsx          # Deals with no recent activity
+│   │   │   ├── AutomatorStepsWaiting.tsx   # Automator steps waiting for user input
+│   │   │   ├── RecentActivityFeed.tsx      # Paginated activity feed
+│   │   │   ├── RecentlyClosedList.tsx      # Recently closed deals table
+│   │   │   ├── TeamWorkloadTable.tsx       # Per-member deal distribution (sortable)
+│   │   │   └── PeriodToggle.tsx            # MTD / QTD / YTD toggle
+│   │   │
+│   │   ├── employees/            # Employee management (16 files)
+│   │   │   ├── EmployeeList.tsx           # Directory table with search/filters/pagination
+│   │   │   ├── EmployeeDetailDrawer.tsx   # Right-side sheet drawer
+│   │   │   ├── EmployeeSummaryPanel.tsx   # Quick-view summary in drawer
+│   │   │   ├── EmployeeProfileForm.tsx    # Edit form (RHF + Zod)
+│   │   │   ├── EmployeeStatusBadge.tsx
+│   │   │   ├── EmployeeStatusFilter.tsx
+│   │   │   ├── EmployeeTypeBadge.tsx
+│   │   │   ├── EmployeeTypeFilter.tsx
+│   │   │   ├── DepartmentBadge.tsx
+│   │   │   ├── DepartmentFilter.tsx
+│   │   │   └── dashboard/                 # Employee Sentinel overview (8 files)
+│   │   │       ├── TeamOverviewTab.tsx
+│   │   │       ├── TeamMetricCards.tsx
+│   │   │       ├── DepartmentBreakdown.tsx
+│   │   │       ├── OverviewFilterBar.tsx
+│   │   │       └── [placeholders: Leaderboard, Comparison, Workload]
+│   │   │
+│   │   ├── pay-time/             # Pay & Time components (4 files)
+│   │   │   ├── PayTimeSummaryCards.tsx     # Earnings summary cards
+│   │   │   ├── CommissionRulesTab.tsx      # Commission rules wrapper
+│   │   │   ├── EarningsTab.tsx            # Earnings history (placeholder)
+│   │   │   └── AdminEmployeeSelector.tsx  # Admin view other employees
+│   │   │
+│   │   ├── commissions/          # Commission rule system (8 files)
+│   │   │   ├── CommissionRulesSection.tsx          # Employee-level rule CRUD
+│   │   │   ├── CommissionRuleCard.tsx              # Rule display card
+│   │   │   ├── CommissionRuleFormModal.tsx         # Create/edit rule (5 calc types)
+│   │   │   ├── CommissionOverrideFormModal.tsx     # Override role rule for employee
+│   │   │   ├── EffectiveCommissionsSection.tsx     # Resolved rules (role + override + custom)
+│   │   │   ├── RoleCommissionRulesSection.tsx      # Role-level rule CRUD
+│   │   │   ├── RoleCommissionRuleCard.tsx          # Role rule display
+│   │   │   └── RoleCommissionRuleFormModal.tsx     # Create/edit role rule
+│   │   │
+│   │   ├── transactions/         # Transaction Guardian (1 file)
+│   │   │   └── TaskCard.tsx               # Waiting automator task card
+│   │   │
+│   │   ├── activity/             # Activity feed components (5 files)
+│   │   │   ├── ActivityCard.tsx           # Full activity feed with comments
+│   │   │   ├── ActivityTimeline.tsx
+│   │   │   ├── ActivityItem.tsx
+│   │   │   ├── ActivityExportButton.tsx   # Export to CSV
+│   │   │   └── CommentInput.tsx
 │   │   │
 │   │   └── deals/              # Deal management (~38 files)
 │   │       ├── CreateDealModal.tsx
@@ -224,12 +285,13 @@ ted-sysops/
 │   │       ├── PropertyFactsSection.tsx
 │   │       ├── TitleStatusStepper.tsx
 │   │       ├── WhiteboardMetricCards.tsx
-│   │       ├── action-tab/                # Automator execution on deals (~7 files)
+│   │       ├── action-tab/                # Automator execution on deals (~8 files)
 │   │       │   ├── ActionTab.tsx              # Instance list + flow map + step interaction
 │   │       │   ├── InstanceList.tsx           # Table of instances with status/progress
 │   │       │   ├── StepInteractionPanel.tsx   # Current node UI (forms, decisions)
 │   │       │   ├── FlowMap.tsx                # React Flow visualization of progress
 │   │       │   ├── FlowMapNode.tsx            # Custom node renderer for flow map
+│   │       │   ├── FlowMapInstanceSelector.tsx # Instance selector for flow map
 │   │       │   ├── StepHistory.tsx            # Chronological step audit log
 │   │       │   └── StartAutomatorDialog.tsx   # Published automator selector + start
 │   │       ├── sidebar/
@@ -261,29 +323,32 @@ ted-sysops/
 │   │   ├── ThemeTest.tsx
 │   │   │
 │   │   ├── Inbox.tsx                   # App sections
-│   │   ├── MyDashboard.tsx
-│   │   ├── PayTime.tsx
-│   │   ├── TeamDashboard.tsx
+│   │   ├── MyDashboard.tsx            # Personal "Mission Control" dashboard
+│   │   ├── TeamDashboard.tsx          # Team-wide pipeline & metrics
 │   │   ├── Whiteboard.tsx              # Deal pipeline (kanban + list views)
 │   │   ├── DealDetailPage.tsx          # Full deal detail with tabs + sidebar
 │   │   ├── ContactHub.tsx             # Tabbed hub: Contacts | Companies
 │   │   ├── ContactDetailPage.tsx      # Full contact detail + activity log
-│   │   ├── Employees.tsx
-│   │   ├── Transactions.tsx
+│   │   ├── Employees.tsx              # Employee Sentinel (overview + directory)
+│   │   ├── EmployeeDetailPage.tsx     # Full employee profile + activity log
+│   │   ├── PayTime.tsx                # Pay & Time (commissions + earnings)
+│   │   ├── Transactions.tsx           # Transaction Guardian (waiting tasks)
 │   │   ├── CalendarPage.tsx
 │   │   ├── Reports.tsx
 │   │   ├── SettingsPage.tsx           # Legacy (redirects to settings home)
 │   │   │
-│   │   ├── settings/                  # Team settings pages (7 files)
+│   │   ├── settings/                  # Team settings pages (9 files)
 │   │   │   ├── SettingsHomePage.tsx           # Card-grid settings index
 │   │   │   ├── TeamMembersPage.tsx           # Members/invites/join links
 │   │   │   ├── RolesPage.tsx                 # Role management
 │   │   │   ├── ContactTypesPage.tsx          # Contact type management
 │   │   │   ├── CompanyTypesPage.tsx          # Company type management
+│   │   │   ├── DepartmentsPage.tsx           # Department management
+│   │   │   ├── EmployeeTypesPage.tsx         # Employee type management
 │   │   │   ├── AutomatorsPage.tsx            # Automator list/CRUD
 │   │   │   └── AutomatorBuilderPage.tsx      # Visual workflow builder (full-page)
 │   │   │
-│   │   ├── admin/                      # Superadmin pages (8 files)
+│   │   ├── admin/                      # Superadmin pages (9 files)
 │   │   │   ├── AdminDashboard.tsx
 │   │   │   ├── AdminUsers.tsx
 │   │   │   ├── AdminUserDetails.tsx
@@ -291,7 +356,8 @@ ted-sysops/
 │   │   │   ├── AdminOrgDetails.tsx
 │   │   │   ├── AdminTeams.tsx
 │   │   │   ├── AdminTeamDetails.tsx
-│   │   │   └── AdminRoleTemplates.tsx
+│   │   │   ├── AdminRoleTemplates.tsx
+│   │   │   └── AdminTypeTemplates.tsx        # Contact/Company/Employee type templates
 │   │   │
 │   │   └── org-settings/               # Org owner pages (3 files)
 │   │       ├── OrgGeneralSettings.tsx
@@ -306,6 +372,9 @@ ted-sysops/
 │   │   ├── usePermissions.ts           # Permission checking
 │   │   ├── useContactStore.ts          # Contact CRUD + list state (Zustand)
 │   │   ├── useCompanyStore.ts          # Company CRUD + list state (Zustand)
+│   │   ├── useEmployeeStore.ts         # Employee directory state (Zustand)
+│   │   ├── useDashboardStore.ts        # Dashboard metrics state (Zustand)
+│   │   ├── useCurrentEmployeeProfile.ts # Current user's employee profile
 │   │   ├── useCustomFields.ts          # Custom field value read/write
 │   │   └── useDealStore.ts            # Deal pipeline state (Zustand)
 │   │
@@ -317,13 +386,23 @@ ted-sysops/
 │   │   ├── contactService.ts           # Contact CRUD operations
 │   │   ├── companyService.ts           # Company CRUD operations
 │   │   ├── contactMethodHelpers.ts     # Polymorphic contact method utilities
-│   │   ├── teamTypeService.ts          # Team contact/company type management
+│   │   ├── teamTypeService.ts          # Team contact/company/employee type management
 │   │   ├── typeTemplateService.ts      # Superadmin type template CRUD
 │   │   ├── customFieldValueService.ts  # Custom field value operations
 │   │   ├── activityLogService.ts       # Activity log CRUD
+│   │   ├── activityExportUtils.ts      # Export activity to CSV
 │   │   ├── automatorService.ts         # Automator CRUD + publish/archive + parent refs
 │   │   ├── automatorInstanceService.ts # Instance lifecycle, step execution, realtime, TPT
 │   │   ├── dealService.ts             # Deal CRUD, fact tables, expenses, showings, etc.
+│   │   ├── dashboardService.ts        # Dashboard RPC calls (8 Postgres functions)
+│   │   ├── employeeService.ts         # Employee profile CRUD + directory queries
+│   │   ├── employeeExportUtils.ts     # Export employees to CSV
+│   │   ├── employeeActivityHelpers.ts # Employee activity tracking
+│   │   ├── commissionRuleService.ts   # Employee commission rule CRUD + validation
+│   │   ├── roleCommissionRuleService.ts # Role commission rule CRUD
+│   │   ├── effectiveCommissionService.ts # Resolve effective commissions (role + override)
+│   │   ├── departmentService.ts       # Department CRUD
+│   │   ├── decisionNodeUtils.ts       # Automator decision node logic
 │   │   └── utils.ts                    # Utility functions
 │   │
 │   ├── types/
@@ -338,6 +417,10 @@ ted-sysops/
 │   │   ├── invitation.types.ts
 │   │   ├── contact.types.ts            # Contact, ContactMethod, DTOs
 │   │   ├── company.types.ts            # Company, CompanyType, DTOs
+│   │   ├── employee.types.ts           # Employee profiles, directory, DTOs
+│   │   ├── commission.types.ts         # Commission rules, calculation types
+│   │   ├── role-commission.types.ts    # Role commissions, effective commissions
+│   │   ├── dashboard.types.ts          # Dashboard pipeline, financials, deadlines
 │   │   ├── type-system.types.ts        # Type templates, team types, custom field defs
 │   │   ├── custom-fields.types.ts      # Custom field values, form types
 │   │   ├── activity.types.ts           # Activity log entries, DTOs
@@ -377,7 +460,9 @@ ted-sysops/
 │       ├── 025_automator_instances.sql  # Instance + step tables, start/execute RPCs
 │       ├── 026_automator_parent_ids.sql # parent_automator_ids[] on automators
 │       ├── 027_execute_automator_step.sql # Step execution with 9 backend action types
-│       └── 028_checklist_checked_by_source.sql # checked_by_source JSONB on checklist items
+│       ├── 028_checklist_checked_by_source.sql # checked_by_source JSONB on checklist items
+│       ├── 029_wait_node_support.sql   # Wait node: wait_show_at, wait_due_at on instances
+│       └── 030_dashboard_functions.sql # 8 dashboard RPC functions + _dashboard_jv_fee helper
 │
 └── Configuration Files
     ├── package.json
@@ -782,6 +867,109 @@ Universal activity tracking (polymorphic).
 
 **RLS**: Team members SELECT/INSERT; own entries or team admin UPDATE/DELETE.
 
+### Employee & Commission Tables
+
+#### employee_profiles
+1:1 with team_members. Auto-created when team_member is added.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| team_member_id | UUID | FK → team_members, UNIQUE |
+| team_id | UUID | FK → teams |
+| job_title | TEXT | |
+| department_id | UUID | FK → team_departments |
+| hire_date | DATE | |
+| status | TEXT | 'active' or 'inactive', default 'active' |
+| emergency_contact_name | TEXT | |
+| emergency_contact_phone | TEXT | |
+| emergency_contact_relationship | TEXT | |
+| notes | TEXT | |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
+
+**Auto-created** via trigger `create_employee_profile_on_team_member()` when team_members row is inserted.
+
+#### team_departments
+Department definitions per team.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| team_id | UUID | FK → teams |
+| name | TEXT | NOT NULL |
+| description | TEXT | |
+| icon | TEXT | Lucide icon name |
+| color | TEXT | Tailwind color key |
+| is_active | BOOLEAN | Default TRUE |
+| sort_order | INTEGER | |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
+
+**Unique**: (team_id, name)
+**Auto-populated** with 6 default departments (Operations, Sales, Acquisitions, Finance, Marketing, Administration) via trigger when team is created.
+
+#### employee_type_templates / team_employee_types
+Same template → team-copy pattern as contact/company types.
+
+**Default Employee Types**: Full-Time, Part-Time, Contractor, 1099 Independent
+
+#### employee_type_assignments (Junction)
+Many-to-many: employees to their team employee types.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| employee_profile_id | UUID | FK → employee_profiles |
+| team_employee_type_id | UUID | FK → team_employee_types |
+| created_at | TIMESTAMPTZ | |
+
+**Unique**: (employee_profile_id, team_employee_type_id)
+
+#### commission_rules
+Employee-level commission rule definitions.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| employee_profile_id | UUID | FK → employee_profiles |
+| team_id | UUID | FK → teams |
+| name | TEXT | NOT NULL |
+| calculation_type | TEXT | flat_fee, percentage_gross, percentage_net, tiered, role_based |
+| configuration | JSONB | Type-specific config (amount, percentage, tiers, etc.) |
+| is_active | BOOLEAN | Default TRUE |
+| effective_date | DATE | |
+| end_date | DATE | |
+| priority | INTEGER | Default 0 |
+| role_commission_rule_id | UUID | FK → role_commission_rules (if override) |
+| expires_at | TIMESTAMPTZ | For time-limited overrides |
+| notes | TEXT | |
+| created_by | UUID | FK → users |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
+
+#### role_commission_rules
+Commission rules attached to team roles (inherited by employees with that role).
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| role_id | UUID | FK → team_roles |
+| team_id | UUID | FK → teams |
+| name | TEXT | NOT NULL |
+| calculation_type | TEXT | Same enum as commission_rules |
+| configuration | JSONB | Type-specific config |
+| is_active | BOOLEAN | Default TRUE |
+| priority | INTEGER | Default 0 |
+| notes | TEXT | |
+| created_by | UUID | FK → users |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
+
+**Commission Hierarchy**: Role rules → Employee overrides → Employee custom rules. Resolved by `effectiveCommissionService.ts`.
+
+**Default Role Commission Rules**: Deal Manager gets 3% of gross profit; Transaction Coordinator gets $500 flat fee.
+
 ### Automator Tables
 
 #### automators
@@ -853,8 +1041,24 @@ Immutable audit log of completed steps within an instance. No UPDATE/DELETE poli
 | Function | Purpose |
 |----------|---------|
 | `start_automator_instance(team_id, deal_id, automator_id, user_id)` | Validates published status, creates instance with definition snapshot, auto-completes start node, returns first interactive node |
-| `execute_automator_step(instance_id, node_id, user_response, branch_taken, user_id)` | Records step, executes backend actions (9 types), resolves next node, auto-completes end nodes |
+| `execute_automator_step(instance_id, node_id, user_response, branch_taken, user_id)` | Records step, executes backend actions (9 types), resolves next node, auto-completes end nodes, handles wait nodes |
 | `resolve_value_source(value_source_json, user_response_json)` | Helper: resolves static values, field references, or `today` at execution time |
+
+**Wait Node Support** (migration 029): Adds `wait_show_at` and `wait_due_at` TIMESTAMPTZ columns to `automator_instances`. When execution reaches a wait node, timestamps are calculated from the node's `showAfter` and `dueIn` settings and the instance pauses until the wait node is manually completed.
+
+#### Dashboard RPC Functions (SECURITY DEFINER)
+
+| Function | Purpose |
+|----------|---------|
+| `dashboard_my_deadlines(team_id, user_id, days_ahead)` | User's upcoming DD expirations, closing dates, extended closing dates |
+| `dashboard_my_pipeline(team_id, user_id)` | Deal counts and projected/actual profit by status for user's deals |
+| `dashboard_my_financials(team_id, user_id)` | Pipeline value, closed revenue MTD/QTD, commissions, expenses |
+| `dashboard_stale_deals(team_id, user_id, stale_days)` | Active deals with no activity_logs in N days |
+| `dashboard_team_pipeline(team_id, period)` | Team-wide deal counts and financials by status |
+| `dashboard_team_workload(team_id)` | Per-member deal counts and pipeline value |
+| `dashboard_team_financials(team_id, period)` | Team aggregate: pipeline, revenue, expenses, net profit |
+| `dashboard_recently_closed(team_id, days)` | Recently closed/funded deals with net profit calculation |
+| `_dashboard_jv_fee(deal_id, sale_price)` | Helper: calculates JV fee based on disposition config |
 
 **Backend Action Types** (executed within `execute_automator_step`):
 1. `set_deal_field` — Update any deal field or related fact table
@@ -1073,6 +1277,13 @@ All bypass RLS for authorization checks:
 | automators | team member OR superadmin | team admin OR superadmin | team admin OR superadmin | team admin OR superadmin |
 | automator_instances | team member | team member | team member | team admin |
 | automator_instance_steps | team member | team member | — (immutable) | — (immutable) |
+| employee_profiles | team member OR superadmin | auto-created by trigger | admin OR own profile | admin OR superadmin |
+| team_departments | team member OR superadmin | team admin OR superadmin | team admin OR superadmin | team admin OR superadmin |
+| employee_type_templates | everyone | superadmin | superadmin | superadmin |
+| team_employee_types | team member OR superadmin | team admin OR superadmin | team admin OR superadmin | team admin OR superadmin |
+| employee_type_assignments | team member OR superadmin | admin OR self-assign | admin OR self | admin OR superadmin |
+| commission_rules | team member OR superadmin | team admin OR superadmin | team admin OR superadmin | team admin OR superadmin |
+| role_commission_rules | team member OR superadmin | team admin OR superadmin | team admin OR superadmin | team admin OR superadmin |
 
 ### Frontend Guards
 
@@ -1159,17 +1370,25 @@ function mergeRolePermissions(roles: TeamRole[]): RolePermissions {
 │   └── /members
 │
 └── /org/:orgId/team/:teamId/* (TeamAccessGuard)
-    ├── /dashboard, /inbox, /pay-time
-    ├── /team, /whiteboard
+    ├── /dashboard                          # MyDashboard (personal Mission Control)
+    ├── /inbox                              # Pending invitations
+    ├── /whiteboard                         # Deal pipeline (kanban + list views)
+    ├── /deals/:dealId                      # DealDetailPage (full detail + sidebar)
     ├── /contacts                           # ContactHub (tabbed: Contacts | Companies)
     ├── /contacts/:contactId                # ContactDetailPage (full detail + activity)
-    ├── /employees, /transactions
-    ├── /calendar, /reports
+    ├── /employees                          # Employee Sentinel (overview + directory)
+    ├── /employees/:employeeId              # EmployeeDetailPage (profile + activity)
+    ├── /pay-time                           # Pay & Time (commissions + earnings)
+    ├── /transactions                       # Transaction Guardian (waiting tasks)
+    ├── /team                               # TeamDashboard (team-wide metrics)
+    ├── /calendar, /reports                 # Coming Soon placeholders
     ├── /settings                           # SettingsHomePage (card-grid index)
     │   ├── /team-members                   # TeamMembersPage
     │   ├── /roles                          # RolesPage
     │   ├── /contact-types                  # ContactTypesPage
     │   ├── /company-types                  # CompanyTypesPage
+    │   ├── /departments                    # DepartmentsPage
+    │   ├── /employee-types                 # EmployeeTypesPage
     │   ├── /automators                     # AutomatorsPage (list/CRUD)
     │   └── /automators/:automatorId        # AutomatorBuilderPage (full-page)
     └── /access-denied
@@ -1183,6 +1402,9 @@ function mergeRolePermissions(roles: TeamRole[]): RolePermissions {
 - `useNavigation` - Mobile menu state
 - `useContactStore` - Contact list, search, type filtering, pagination, selection
 - `useCompanyStore` - Company list, search, type filtering, pagination, selection
+- `useEmployeeStore` - Employee directory, search, department/status/type filtering, pagination
+- `useDealStore` - Deal pipeline state (list, filters, kanban)
+- `useDashboardStore` - Dashboard data for My Dashboard and Team Dashboard (deadlines, pipeline, financials, stale deals, workload, recently closed) with per-section loading states
 - `automatorBuilderStore` - Canvas state: nodes, edges, viewport, selected node, dirty flag, breadcrumb stack (parent→child navigation)
 
 **React Context:**
@@ -1190,6 +1412,8 @@ function mergeRolePermissions(roles: TeamRole[]): RolePermissions {
 
 **Custom Hooks:**
 - `useCustomFields` - Reads and saves custom field values for contacts/companies
+- `useCurrentEmployeeProfile` - Current user's employee profile from team context
+- `usePermissions` - Section permission helpers (canView, canEdit)
 
 **Local State:**
 - Form data, modal visibility, loading states
@@ -1219,12 +1443,18 @@ export async function addUserToTeam(
 - `contactService.ts` - Contact CRUD, type assignments, search, pagination
 - `companyService.ts` - Company CRUD, type assignments, contact linking, POC
 - `contactMethodHelpers.ts` - Polymorphic contact method utilities
-- `teamTypeService.ts` - Team-level contact/company type CRUD + custom field definitions
-- `typeTemplateService.ts` - Superadmin type template management
+- `teamTypeService.ts` - Team-level contact/company/employee type CRUD + custom field definitions
+- `typeTemplateService.ts` - Superadmin type template management (contact, company, employee)
 - `customFieldValueService.ts` - Custom field value read/write with typed columns
 - `activityLogService.ts` - Activity log CRUD, paginated queries
 - `automatorService.ts` - Automator CRUD + publish/unpublish/duplicate/archive + parent ref management
 - `automatorInstanceService.ts` - Instance lifecycle (start/execute/cancel), step execution via RPC, realtime subscriptions, TPT calculation
+- `dashboardService.ts` - Dashboard RPC calls (8 Postgres functions for My/Team Dashboard)
+- `employeeService.ts` - Employee profile CRUD, directory queries with search/filter/pagination
+- `commissionRuleService.ts` - Employee commission rule CRUD + validation (5 calculation types)
+- `roleCommissionRuleService.ts` - Role-level commission rule CRUD
+- `effectiveCommissionService.ts` - Resolve effective commissions (merges role rules, overrides, custom rules)
+- `departmentService.ts` - Department CRUD
 
 ### Form Pattern
 
@@ -1277,7 +1507,7 @@ Team settings use a dedicated layout with sidebar navigation, separate from the 
 
 **Settings Config** (`src/config/settingsConfig.ts`):
 - `SETTINGS_CATEGORIES` array defines categories and items as typed data
-- 3 categories: **General** (team-members, roles), **Contact Hub** (contact-types, company-types), **Automation** (automators)
+- 4 categories: **General** (team-members, roles), **Contact Hub** (contact-types, company-types), **Employees** (departments, employee-types), **Automation** (automators)
 - `ALL_SETTINGS_ITEMS` flat array for search functionality
 - Each item has: id, label, icon, description, route
 
@@ -1291,7 +1521,7 @@ Team settings use a dedicated layout with sidebar navigation, separate from the 
 - 3-panel layout: NodePalette (left), AutomatorCanvas (center), ConfigurationPanel (right)
 - AutomatorToolbar at the top with save/publish/status controls + breadcrumb navigation for parent→child drill-down
 - State managed by `automatorBuilderStore` (Zustand) with breadcrumb stack
-- Node types: Start, End, Decision, DataCollection
+- Node types: Start, End, Decision, DataCollection, Wait
 - Status lifecycle: draft → published → archived
 - **Backend Actions**: ConfigurationPanel includes action editor for each node — supports 9 action types with value source resolution (static, field reference, today)
 - **Parent-Child Automators**: `trigger_automator` action links automators; toolbar supports breadcrumb navigation through parent→child chain; TriggerBadge shown on nodes with trigger actions
@@ -1360,14 +1590,28 @@ The ContactHub uses a master-detail pattern with two entry points:
 | Automator Builder | AutomatorList (tree view + dependency badges), AutomatorBuilder (3-panel), ConfigurationPanel (node config + 9 backend action types), ActionEditor, ValueSourcePicker, TriggerBadge | automatorService.ts |
 | Automator Execution | ActionTab (flow map + instance list + step interaction), StartAutomatorDialog, StepHistory, FlowMap, InstanceList | automatorInstanceService.ts |
 | Automator Instance Engine | start_automator_instance(), execute_automator_step() RPCs with definition snapshots, immutable step audit log, 9 backend action types, parent-child cascading | Postgres RPC functions |
+| Wait Node | WaitNode builder component, wait_show_at/wait_due_at on instances, auto-pause on wait nodes | execute_automator_step() RPC (migration 029) |
+| Employee System | Employees page (overview + directory), EmployeeDetailPage, EmployeeProfileForm, EmployeeList with search/filters/pagination, EmployeeSummaryPanel drawer | employeeService.ts |
+| Departments | DepartmentsPage settings, DepartmentBadge, DepartmentFilter, auto-created defaults | departmentService.ts |
+| Employee Types | EmployeeTypesPage settings, type templates (Full-Time, Part-Time, Contractor, 1099), type assignments | teamTypeService.ts |
+| Commission Rules | CommissionRulesSection, CommissionRuleCard, CommissionRuleFormModal (5 calculation types: flat_fee, percentage_gross, percentage_net, tiered, role_based) | commissionRuleService.ts |
+| Role Commission Rules | RoleCommissionRulesSection, RoleCommissionRuleCard, RoleCommissionRuleFormModal, default rules per role | roleCommissionRuleService.ts |
+| Effective Commissions | EffectiveCommissionsSection (merges role rules + employee overrides + custom rules), CommissionOverrideFormModal with expiration | effectiveCommissionService.ts |
+| Pay & Time | PayTime page with summary cards, commission rules tab, admin employee selector, earnings tab (placeholder) | commissionRuleService.ts, effectiveCommissionService.ts |
+| Transaction Guardian | Transactions page with Active/Scheduled/Overdue tabs, TaskCard component showing waiting automator steps across deals | automatorInstanceService.ts |
+| My Dashboard | MyDashboard "Mission Control" with deadlines (7/14/30d toggle), automator steps waiting, stale deals, pipeline metric cards, financial summary (MTD/QTD), recent activity feed | dashboardService.ts, useDashboardStore.ts |
+| Team Dashboard | TeamDashboard with pipeline overview (MTD/QTD/YTD toggle), team workload table (permission-gated), team financials, recently closed list, team activity feed | dashboardService.ts, useDashboardStore.ts |
+| Dashboard Data Layer | 8 Postgres RPC functions for server-side aggregation, Zustand store with per-section loading, dashboardService wrapping RPC calls | Postgres functions (migration 030) |
+| Admin Type Templates | AdminTypeTemplates page with Contact/Company/Employee type template management | typeTemplateService.ts |
 
 ### Placeholder / Not Yet Implemented
 
 | Section | Status | Notes |
 |---------|--------|-------|
-| Transactions | Placeholder | Transaction tracking |
 | Calendar | Placeholder | Scheduling |
 | Reports | Placeholder | Analytics |
+| Earnings History | Placeholder | Pay & Time earnings tab |
+| Employee Leaderboard | Placeholder | Employee dashboard leaderboard |
 
 ---
 
@@ -1542,6 +1786,12 @@ When writing epics, reference these existing implementations:
 | Deal tab with embedded React Flow | `action-tab/ActionTab.tsx` + `FlowMap.tsx` |
 | Settings config-driven layout | `settingsConfig.ts` + `TeamSettingsLayout.tsx` |
 | Polymorphic table (owner check) | `contact_methods`, `custom_field_values`, `activity_logs` |
+| Dashboard with server-side aggregation | `dashboardService.ts` + `useDashboardStore.ts` + Postgres RPC functions |
+| Employee profile system (1:1 auto-create) | `employee_profiles` + `create_employee_profile_on_team_member()` trigger |
+| Commission rule hierarchy (role → override → custom) | `effectiveCommissionService.ts` + `EffectiveCommissionsSection.tsx` |
+| Employee directory with multi-filter | `EmployeeList.tsx` + `useEmployeeStore.ts` (search + department + status + type filters) |
+| Wait/scheduling node in workflow | `WaitNode.tsx` + `wait_show_at`/`wait_due_at` on `automator_instances` |
+| Transaction monitoring (cross-deal tasks) | `Transactions.tsx` + `TaskCard.tsx` (queries automator_instances team-wide) |
 
 ---
 
@@ -1575,6 +1825,21 @@ When writing epics, reference these existing implementations:
 | Automator schema | `supabase/migrations/013_automators.sql` |
 | Instance/step schema + RPCs | `supabase/migrations/025-027_automator_instances.sql` |
 | Checklist source tracking | `supabase/migrations/028_checklist_checked_by_source.sql` |
+| Wait node support | `supabase/migrations/029_wait_node_support.sql` |
+| Dashboard functions | `supabase/migrations/030_dashboard_functions.sql` |
+| Employee profiles schema | `supabase/migrations/014_employee_profiles.sql` |
+| Commission rules schema | `supabase/migrations/015_commission_rules.sql` |
+| Department/employee types | `supabase/migrations/016_department_employee_types.sql` |
+| Role commission rules | `supabase/migrations/019_role_commission_restructure.sql` |
+| Dashboard service | `src/lib/dashboardService.ts` |
+| Dashboard store | `src/hooks/useDashboardStore.ts` |
+| Dashboard types | `src/types/dashboard.types.ts` |
+| Employee service | `src/lib/employeeService.ts` |
+| Employee store | `src/hooks/useEmployeeStore.ts` |
+| Commission rule service | `src/lib/commissionRuleService.ts` |
+| Effective commissions | `src/lib/effectiveCommissionService.ts` |
+| My Dashboard page | `src/pages/MyDashboard.tsx` |
+| Team Dashboard page | `src/pages/TeamDashboard.tsx` |
 
 ### Commands
 

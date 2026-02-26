@@ -3446,6 +3446,347 @@ Before running tests, ensure:
 
 ---
 
+## 31. My Dashboard (Mission Control) Tests
+
+### DASH-001: Dashboard Page Load
+**Prerequisites**: Logged-in user with deals
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Dashboard (or login) | MyDashboard loads with "Mission Control" title and user's name |
+| 2 | Verify 4 sections load | Attention Needed, My Pipeline, My Financials, Recent Activity |
+| 3 | Each section has independent loading | Sections show skeletons individually, render as data arrives |
+| 4 | No console errors | Clean load |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### DASH-002: Deadlines Section
+**Prerequisites**: Deals with upcoming closing dates, DD expirations, or extended closing dates
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | View Deadlines section | "Deadlines This Week" header with count badge |
+| 2 | Verify deadline rows | Each row shows: clickable address, deadline type badge, date, days remaining, status badge |
+| 3 | Verify color coding | Red for ≤3 days, amber for ≤7 days, gray for >7 days |
+| 4 | Click 14d button | Header changes to "Next 2 Weeks", more deadlines may appear |
+| 5 | Click 30d button | Header changes to "Next 30 Days" |
+| 6 | Click a deal address | Navigates to deal detail page |
+| 7 | Verify empty state | "No upcoming deadlines — you're clear." with green checkmark |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### DASH-003: Automator Steps Waiting
+**Prerequisites**: Running automator instances where user is owner/TC on the deal
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | View "Waiting For You" section | Purple Zap icon, count badge |
+| 2 | Each waiting step shows | Deal address, automator name, current step label, relative time |
+| 3 | Click "Continue" button | Navigates to deal detail Action tab |
+| 4 | Click deal address | Navigates to deal detail |
+| 5 | Verify empty state | "No steps waiting — all caught up." with purple checkmark |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### DASH-004: Stale Deals Section
+**Prerequisites**: Deals with no activity_logs entries in 7+ days (active/for_sale/pending_sale status)
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | View "Needs Attention" section | Amber alert icon, count badge |
+| 2 | Each stale deal shows | Address (clickable), status badge, days since activity, owner name |
+| 3 | Verify color coding | Red for ≥14 days, amber for ≥7 days |
+| 4 | Click deal address | Navigates to deal detail |
+| 5 | Verify empty state | "All deals have recent activity." with green checkmark |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### DASH-005: Pipeline Metric Cards
+**Prerequisites**: User has deals in various statuses
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | View pipeline cards | 7 cards: Active, For Sale, Pending Sale, Closed, Funded, On Hold, Canceled |
+| 2 | Each card shows | Status label, deal count (large bold), projected/actual profit |
+| 3 | Cards have colored left borders | Teal for active, green for closed/funded, amber for on hold, red for canceled |
+| 4 | Profit color-coded | Green for positive, red for negative, gray for zero |
+| 5 | Click a card | Navigates to Whiteboard filtered by that status |
+| 6 | Responsive layout | 2 cols mobile → 3 cols tablet → 7 cols desktop |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### DASH-006: Financial Summary Cards
+**Prerequisites**: User has deals with pricing data
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | View financial cards | 4 cards: Pipeline Value, Closed Revenue, My Commissions, Total Expenses |
+| 2 | Closed Revenue card has MTD/QTD toggle | Inline toggle buttons |
+| 3 | Click QTD | Revenue updates to quarterly total |
+| 4 | Pipeline Value shows teal accent | Dollar amount formatted |
+| 5 | Expenses show red accent | Dollar amount formatted |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### DASH-007: Recent Activity Feed
+**Prerequisites**: User's deals have activity entries
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | View Recent Activity section | Timeline-style feed, 15 entries max |
+| 2 | Each entry shows | User avatar, name, relative time, activity icon, deal address (clickable), description |
+| 3 | Click deal address | Navigates to deal detail |
+| 4 | Click "Load more" | Additional entries load |
+| 5 | Verify empty state | "No recent activity." |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### DASH-008: Empty Dashboard (Zero Deals)
+**Prerequisites**: User with zero deals
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Dashboard | Page loads without errors |
+| 2 | Deadlines section | "No upcoming deadlines — you're clear." |
+| 3 | Pipeline cards | All show 0 count with $0 profit |
+| 4 | Financial cards | All show $0 |
+| 5 | Activity feed | "No recent activity." |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 32. Team Dashboard Tests
+
+### TEAM-D-001: Team Dashboard Page Load
+**Prerequisites**: User with team section access
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Team Dashboard | Page loads with "Team Overview" title |
+| 2 | PeriodToggle visible in header | MTD / QTD / YTD buttons |
+| 3 | Verify 5 sections load | Pipeline, Workload (or permission message), Financials, Recently Closed, Activity |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### TEAM-D-002: Pipeline Overview with Period Toggle
+**Prerequisites**: Team has deals in various statuses including closed
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | View pipeline cards | Same 7-status layout as My Dashboard plus Canceled |
+| 2 | Click QTD toggle | Closed/Funded counts and profits update to quarter scope |
+| 3 | Click YTD toggle | Closed/Funded counts update to year scope |
+| 4 | Click MTD toggle | Returns to month scope |
+| 5 | Cards clickable | Navigate to Whiteboard filtered by status |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### TEAM-D-003: Team Workload Table (Full Access)
+**Prerequisites**: Team admin or user with full access to team section
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | View Team Workload section | Table visible with team member rows |
+| 2 | Columns shown | Team Member, Active, For Sale, Pending, Closed (MTD), Pipeline Value |
+| 3 | Click column header | Rows sort by that column |
+| 4 | Click same header again | Sort direction toggles |
+| 5 | Default sort | By active count descending (busiest first) |
+| 6 | Member with 0 active deals | Row has amber highlight |
+| 7 | Member with 10+ active deals | Row has red highlight |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### TEAM-D-004: Team Workload Hidden (View Access)
+**Prerequisites**: User with view-only access to team section
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Team Dashboard | Page loads |
+| 2 | Workload table NOT visible | Table replaced with card |
+| 3 | Lock icon and message shown | "Contact your team admin for workload details." |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### TEAM-D-005: Team Financials
+**Prerequisites**: Team has deals with pricing data
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | View Team Financials section | 4 cards: Pipeline Value, Closed Revenue, Total Expenses, Net Profit |
+| 2 | Period toggle affects financials | Changing MTD/QTD/YTD updates revenue, expenses, net profit |
+| 3 | Net Profit color-coded | Green for positive, red for negative |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### TEAM-D-006: Recently Closed List
+**Prerequisites**: Team has deals closed in last 30 days
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | View Recently Closed section | Trophy icon, "(Last 30 days)" subtitle |
+| 2 | Table columns | Deal (clickable), Closed Date, Sale Price, Net Profit, Owner |
+| 3 | Net Profit color-coded | Green for positive, red for negative |
+| 4 | Click deal address | Navigates to deal detail |
+| 5 | Deals older than 30 days | NOT shown |
+| 6 | Empty state | "No deals closed in the last 30 days." |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### TEAM-D-007: Team Activity Feed
+**Prerequisites**: Team has recent deal activity
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | View Team Activity section | Activity feed with entries across all team deals |
+| 2 | Shows up to 25 entries | Limit is higher than My Dashboard (15) |
+| 3 | Each entry shows user, deal, and action | Same format as My Dashboard feed |
+| 4 | Click deal address | Navigates to deal detail |
+| 5 | "Load more" for pagination | Additional entries load |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 33. Transaction Guardian Tests
+
+### TXN-001: Transaction Guardian Page Load
+**Prerequisites**: User with transactions section access
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Transactions | Page loads with "Transaction Guardian" title |
+| 2 | Three tabs visible | Active, Scheduled, Overdue |
+| 3 | Refresh button visible | Refresh icon in header |
+| 4 | Active tab is default | Active tasks shown |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### TXN-002: Active Tasks Tab
+**Prerequisites**: Running automator instances with waiting steps
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | View Active tab | Task cards displayed |
+| 2 | Each card shows | Deal address, automator name, next step label, timing info |
+| 3 | Status badge shows "Active" | Primary-colored badge |
+| 4 | Click "Go to Deal" | Navigates to deal detail page |
+| 5 | Empty state | "No active tasks — all automators are up to date." |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### TXN-003: Scheduled Tasks Tab
+**Prerequisites**: Automator instances with wait nodes and future wait_show_at dates
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click Scheduled tab | Scheduled tasks displayed |
+| 2 | Each card shows | Deal, automator, "Show in X hours/days", optional due time |
+| 3 | Status badge shows "Scheduled" | Amber-colored badge |
+| 4 | Empty state | "No scheduled tasks." |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### TXN-004: Overdue Tasks Tab
+**Prerequisites**: Automator instances with wait_due_at in the past
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click Overdue tab | Overdue tasks displayed |
+| 2 | Each card shows | Deal, automator, overdue indicator (alert triangle) |
+| 3 | Status badge shows "Overdue" | Red-colored badge |
+| 4 | Empty state | "No overdue tasks — everything is on schedule." |
+| 5 | Verify overdue count in tab badge | Count shown on Overdue tab |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### TXN-005: Refresh Tasks
+**Prerequisites**: Transaction Guardian page loaded
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click Refresh button | Loading spinner appears |
+| 2 | Tasks re-fetched from server | Updated data displayed |
+| 3 | Tab counts update | Badges reflect latest counts |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
 ## Test Summary
 
 | Category | Total Tests | Passed | Failed |
@@ -3481,7 +3822,10 @@ Before running tests, ensure:
 | 28. Deal Employee & Vendor | 4 | | |
 | 29. Deal Financial | 4 | | |
 | 30. Deal Sidebar | 4 | | |
-| **TOTAL** | **211** | | |
+| 31. My Dashboard (Mission Control) | 8 | | |
+| 32. Team Dashboard | 7 | | |
+| 33. Transaction Guardian | 5 | | |
+| **TOTAL** | **231** | | |
 
 ---
 
