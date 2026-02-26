@@ -4036,6 +4036,500 @@ Before running tests, ensure:
 
 ---
 
+## 35. TED Comms — Messaging Foundation
+
+### COMMS-001: Comms Page Load & Layout
+**Prerequisites**: Logged in user with comms permission
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click "Comms" in sidebar navigation | CommsPage loads with two-panel layout |
+| 2 | Left panel shows conversation list | ConversationList visible (~320px width) |
+| 3 | Right panel shows empty state | "Select a conversation or start a new one" message |
+| 4 | Verify Comms nav item has MessageSquare icon | Icon renders correctly |
+| 5 | Verify Comms positioned between Whiteboard and Contact Hub | Correct nav ordering |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMMS-002: Create Direct Message
+**Prerequisites**: At least 2 team members
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click "New Conversation" button (Plus icon) | NewConversationModal opens |
+| 2 | Select "Direct Message" type | DM mode activated |
+| 3 | Search for a team member | Filtered results with avatar + name |
+| 4 | Select a team member | Participant selected |
+| 5 | Click create | DM created, conversation selected in list |
+| 6 | Repeat steps 1-4 with same member | Navigates to existing DM (no duplicate) |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMMS-003: Create Group Conversation
+**Prerequisites**: At least 3 team members
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Open New Conversation modal | Modal opens |
+| 2 | Select "Group" type | Group mode with multi-select |
+| 3 | Select 2+ team members | Participants listed |
+| 4 | Enter optional group name | Name field accepts input |
+| 5 | Click create | Group created, shows in conversation list |
+| 6 | Verify group shows stacked avatars | Multiple avatar display |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMMS-004: Send and Receive Messages
+**Prerequisites**: Active conversation selected
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Type a message in composer | Text appears in textarea |
+| 2 | Press Enter | Message sent, appears in message view |
+| 3 | Verify own message styling | Subtle bg-primary/5 or right-aligned |
+| 4 | Verify sender name + timestamp | Displayed correctly |
+| 5 | Press Shift+Enter | New line inserted (not sent) |
+| 6 | Send multi-line message | Line breaks preserved in display |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMMS-005: Real-Time Message Delivery
+**Prerequisites**: Two browser sessions in same conversation
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | User A sends a message | Message appears instantly for User A |
+| 2 | Check User B's session | Message appears in real-time without refresh |
+| 3 | User B replies | Reply appears instantly for both users |
+| 4 | User A views different conversation | User B's new message updates conversation list preview |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMMS-006: Unread Indicators & Read State
+**Prerequisites**: Multiple conversations with unread messages
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Receive messages while viewing different conversation | Unread conversation shows bold text + blue dot |
+| 2 | Check Comms nav item | Badge shows total unread count |
+| 3 | Click on unread conversation | Messages load, unread indicator clears |
+| 4 | Navigate away and back | Conversation no longer shows unread |
+| 5 | Count badge > 1 for multiple unreads | Numeric badge displayed |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMMS-007: Edit and Delete Messages
+**Prerequisites**: Active conversation with own sent messages
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Hover over own recent message | Action menu appears (edit, delete) |
+| 2 | Click edit | Message content becomes editable |
+| 3 | Modify text and save | Message updated, "(edited)" indicator shown |
+| 4 | Click delete on own message | Confirmation prompt |
+| 5 | Confirm delete | Message replaced with "[This message was deleted]" tombstone |
+| 6 | Hover over other user's message | No edit/delete actions available |
+| 7 | Check old message (past time window) | Edit/delete actions disabled or hidden |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMMS-008: Message Infinite Scroll & History
+**Prerequisites**: Conversation with 50+ messages
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Open conversation | Most recent messages loaded, auto-scrolled to bottom |
+| 2 | Scroll up to top | Loading spinner appears, older messages load |
+| 3 | Continue scrolling up | More messages load (cursor-based pagination) |
+| 4 | Date separators visible | "Today", "Yesterday", or date headers between different days |
+| 5 | Receive new message while scrolled up | "New messages" indicator or auto-scroll behavior |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMMS-009: Message Grouping by Sender
+**Prerequisites**: Consecutive messages from same sender within 2 minutes
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Send 3 messages quickly | First shows avatar + name, subsequent messages grouped |
+| 2 | Wait > 2 minutes, send another | New message group with avatar + name |
+| 3 | Different user sends between | Groups broken by different sender |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMMS-010: @Mention Autocomplete
+**Prerequisites**: Active conversation with team members
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Type "@" in composer | Autocomplete dropdown appears |
+| 2 | Type partial name after "@" | List filters to matching members |
+| 3 | Use arrow keys to navigate | Selection highlights |
+| 4 | Press Enter or click to select | @mention inserted into message text |
+| 5 | Send message with @mention | Mention displays in sent message |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMMS-011: Conversation Search & Filters
+**Prerequisites**: Multiple conversations of different types
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Type in conversation list search | Conversations filtered by name/participant |
+| 2 | Click "DMs" type filter | Only DMs shown |
+| 3 | Click "Groups" type filter | Only groups shown |
+| 4 | Click "Channels" type filter | Only channels shown |
+| 5 | Click "All" | All conversations restored |
+| 6 | Use message search | Results show matching messages with context |
+| 7 | Click a search result | Navigates to message in its conversation |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMMS-012: Mute & Conversation Settings
+**Prerequisites**: Active conversation
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click gear icon in conversation header | ConversationSettings popover opens |
+| 2 | Toggle "Mute" on | Muted icon (BellOff) appears in conversation list |
+| 3 | Receive messages in muted conversation | No increment to global unread badge |
+| 4 | Unmute conversation | Normal notification behavior restored |
+| 5 | Click "Leave Conversation" (for groups) | Removed from conversation, no longer in list |
+| 6 | Rename a group conversation | Name updates in list and header |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 36. TED Comms — Deal Integration
+
+### COMMS-013: Deal Chat Sidebar Tab
+**Prerequisites**: Deal detail page open
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Open deal detail sidebar | 5 tabs visible: Checklist, Activity, Comments, Notes, Chat |
+| 2 | Click "Chat" tab | DealChat component loads |
+| 3 | First access creates conversation | Deal-linked conversation auto-created |
+| 4 | Send a message | Message appears in deal chat |
+| 5 | Check conversation in Comms hub | Same conversation visible with deal link |
+| 6 | Click "Open in Comms" | Navigates to full Comms hub with conversation selected |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMMS-014: Deal Chat Real-Time in Sidebar
+**Prerequisites**: Two users viewing same deal
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | User A sends message in deal chat | Message appears for User A |
+| 2 | Check User B's deal chat tab | Message appears in real-time |
+| 3 | Check Chat tab badge when on different tab | Unread badge shows on Chat tab trigger |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMMS-015: Deal Reference Cards in Messages
+**Prerequisites**: Active conversation
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Use deal reference picker in composer | Deal search popover opens |
+| 2 | Search and select a deal | Deal reference added to message |
+| 3 | Send message with deal reference | DealReferenceCard renders inline |
+| 4 | Card shows address, status badge, deal type, profit | All fields display correctly |
+| 5 | Click the deal card | Navigates to deal detail page |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMMS-016: Deal Link Management
+**Prerequisites**: Group conversation
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Open DealLinkManager in conversation header | Link manager visible |
+| 2 | Click "+ Link Deal" | Deal search popover opens |
+| 3 | Search and select a deal | Deal linked, badge/pill appears in header |
+| 4 | Verify system message | "User linked deal {address}" posted |
+| 5 | Click X on linked deal badge | Confirmation prompt, then unlinked |
+| 6 | Check deal's Chat tab | Conversation appears in linked deal's chat |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 37. TED Comms — Channels
+
+### COMMS-017: Default General Channel
+**Prerequisites**: Team with Comms access
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Comms for first time | Default "General" channel auto-created |
+| 2 | General channel shows in conversation list | "#General" with hash prefix |
+| 3 | All team members are participants | Everyone can see and send |
+| 4 | Try to archive General channel | Cannot archive default channel |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMMS-018: Channel Management (Admin)
+**Prerequisites**: Team admin role
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Open channel management | ChannelManagement interface loads |
+| 2 | Create new channel with name + description | Channel created, appears in list with "#" prefix |
+| 3 | Edit channel name/description | Updates reflected |
+| 4 | Archive a non-default channel | Channel hidden from list, messages preserved |
+| 5 | Non-admin user tries to create channel | Option not available |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 38. TED Comms — File Attachments
+
+### COMMS-019: Upload and View Attachments
+**Prerequisites**: Active conversation
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click Paperclip button in composer | File picker opens |
+| 2 | Select an image file (< 10MB) | Thumbnail preview shown in composer |
+| 3 | Select a PDF file | File icon + name shown in composer |
+| 4 | Click X on pending attachment | Attachment removed before send |
+| 5 | Send message with attachments | Attachments display inline in message |
+| 6 | Image renders as inline preview | Clickable for full size |
+| 7 | PDF renders as file icon + name + size | Click to download/open |
+| 8 | Try file > 10MB | Validation error shown |
+| 9 | Try > 5 files | Limit enforced with user-friendly message |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 39. TED Comms — Rich Context
+
+### COMMS-020: Contact & Financial Reference Cards
+**Prerequisites**: Active conversation, existing contacts and deals with financials
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Send message with contact reference | ContactReferenceCard renders (name, type, contact method) |
+| 2 | Click contact card | Navigates to contact detail in Contact Hub |
+| 3 | Send message with financial reference | FinancialReferenceCard renders (label, amount, color-coded) |
+| 4 | Profit figures show in text-success | Green color applied |
+| 5 | Expense figures show in text-destructive | Red color applied |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMMS-021: Deal Snapshot Card
+**Prerequisites**: Active conversation, deal with financial data and checklist
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Share deal snapshot in message | DealSnapshotCard renders |
+| 2 | Card shows address, status, financial summary | Multi-line detail visible |
+| 3 | Checklist progress bar visible | Percentage accurate |
+| 4 | Assigned employees shown as avatars | Correct employees |
+| 5 | "Snapshot from..." timestamp shown | Capture time displayed |
+| 6 | Click snapshot card | Navigates to deal detail |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 40. TED Comms — Automator Integration
+
+### COMMS-022: SendMessage Automator Action
+**Prerequisites**: Published automator with send_message action
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Open automator builder | Builder loads |
+| 2 | Add action → Communication → Send Message | SendMessageAction editor appears |
+| 3 | Select target "Deal Chat" | Deal chat option selected |
+| 4 | Enter message content with field references | Template preview shown |
+| 5 | Toggle "Include Deal Link" checkbox | Option toggled |
+| 6 | Save and publish automator | Automator saved |
+| 7 | Run automator on a deal | Message posted to deal chat |
+| 8 | Message shows automator name as sender | Purple accent, Zap/Bot icon |
+| 9 | Message visually distinct from human messages | System/automator styling applied |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMMS-023: MessageConfirmation Node
+**Prerequisites**: Published automator with message_confirmation node
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Open automator builder | Builder loads |
+| 2 | Add MessageConfirmation node from palette | Node appears on canvas |
+| 3 | Configure prompt, assignee, and timeout | Settings saved |
+| 4 | Run automator, reach confirmation node | Prompt message posted to deal chat |
+| 5 | Message includes "Confirm" button | Button renders inline |
+| 6 | Click Confirm button | Automator advances to next node |
+| 7 | Follow-up message posted | "Confirmed by {user} at {time}" |
+| 8 | Wrong assignee sees disabled button | Cannot confirm |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMMS-024: Deal Event Broadcasting
+**Prerequisites**: Team with Comms Automation settings enabled, deal with linked conversation
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Settings → Comms Automation | CommsAutomationSettings page loads |
+| 2 | Enable "Status Changes" toggle | Setting saved |
+| 3 | Change a deal's status | System message posted to deal's linked conversation |
+| 4 | Message shows status change text | "Deal status changed to {status} by {user}" |
+| 5 | Enable financial events with $200 threshold | Setting saved |
+| 6 | Add expense < $200 | No broadcast message |
+| 7 | Add expense > $200 | System message posted with expense details |
+| 8 | System messages render as compact/muted | Visually distinct from human messages |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+## 41. TED Comms — Permissions & Theme
+
+### COMMS-025: Comms Permission Control
+**Prerequisites**: Users with different permission levels
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | User with comms: 'full' | Can see Comms nav, send messages, create conversations |
+| 2 | User with comms: 'view' | Can see Comms nav, read messages, but composer disabled |
+| 3 | User with comms: none/no access | Comms nav item hidden, route blocked |
+| 4 | Team viewer on deal Chat tab | Can read deal chat, composer disabled |
+| 5 | Team admin | Can create/manage channels, moderate messages |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMMS-026: Comms Theme (Light & Dark)
+**Prerequisites**: CommsPage loaded
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | View Comms in light mode | Clean white panels, dark text, teal accents |
+| 2 | Switch to dark mode | Dark panels, light text, proper contrast |
+| 3 | Message bubbles readable in both | Own/other messages distinct |
+| 4 | System messages muted in both | Compact, centered, visible but unobtrusive |
+| 5 | Automator messages show purple accent in both | Purple border/badge adapts |
+| 6 | Deal reference cards readable in both | Status colors, text contrast |
+| 7 | Conversation list unread indicators visible in both | Bold text + badges visible |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### COMMS-027: Comms Responsive Layout (Mobile)
+**Prerequisites**: Mobile viewport (< 768px)
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Load Comms on mobile | Conversation list shown full width |
+| 2 | Select a conversation | Message view replaces list, back button shown |
+| 3 | Click back button | Returns to conversation list |
+| 4 | Composer works on mobile | Textarea, send button functional |
+| 5 | Deal reference cards don't overflow | Cards fit mobile width |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
 ## Test Summary
 
 | Category | Total Tests | Passed | Failed |
@@ -4075,7 +4569,14 @@ Before running tests, ensure:
 | 32. Team Dashboard | 7 | | |
 | 33. Transaction Guardian | 5 | | |
 | 34. Calendar | 14 | | |
-| **TOTAL** | **245** | | |
+| 35. Comms — Messaging Foundation | 12 | | |
+| 36. Comms — Deal Integration | 4 | | |
+| 37. Comms — Channels | 2 | | |
+| 38. Comms — File Attachments | 1 | | |
+| 39. Comms — Rich Context | 2 | | |
+| 40. Comms — Automator Integration | 3 | | |
+| 41. Comms — Permissions & Theme | 3 | | |
+| **TOTAL** | **272** | | |
 
 ---
 

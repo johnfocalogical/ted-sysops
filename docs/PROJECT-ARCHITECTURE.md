@@ -128,7 +128,8 @@ ted-sysops/
 │   │   │   ├── TypeFormModal.tsx
 │   │   │   ├── TypeCreationWizard.tsx
 │   │   │   ├── CustomFieldDefinitionManager.tsx
-│   │   │   └── CustomFieldDefinitionFormModal.tsx
+│   │   │   ├── CustomFieldDefinitionFormModal.tsx
+│   │   │   └── CommsAutomationSettings.tsx      # Comms event broadcast toggles + thresholds
 │   │   │
 │   │   ├── shared/             # Cross-app reusable components (23 files)
 │   │   │   ├── ProtectedRoute.tsx              # Auth guard
@@ -201,7 +202,8 @@ ted-sysops/
 │   │   │       │   ├── AddEmployeeAction.tsx
 │   │   │       │   ├── CreateShowingAction.tsx
 │   │   │       │   ├── UpdateDealStatusAction.tsx
-│   │   │       │   └── TriggerAutomatorAction.tsx # Link/create child automators
+│   │   │       │   ├── TriggerAutomatorAction.tsx # Link/create child automators
+│   │   │       │   └── SendMessageAction.tsx      # Send message to conversation (10th action)
 │   │   │       ├── edges/
 │   │   │       │   └── BuilderEdge.tsx        # Custom edge with inline [+] button
 │   │   │       └── nodes/
@@ -211,6 +213,7 @@ ted-sysops/
 │   │   │           ├── DecisionNode.tsx
 │   │   │           ├── DataCollectionNode.tsx
 │   │   │           ├── WaitNode.tsx            # Time-based delay node
+│   │   │           ├── MessageConfirmationNode.tsx # Chat-based confirmation node
 │   │   │           ├── TriggerBadge.tsx        # Purple badge for trigger_automator actions
 │   │   │           └── SourceHandleWithAdd.tsx # Inline edge [+] buttons
 │   │   │
@@ -267,6 +270,24 @@ ted-sysops/
 │   │   │   ├── EventPopover.tsx          # Click-triggered deal event summary popover
 │   │   │   └── calendarStyles.css        # FullCalendar Space Force theme overrides
 │   │   │
+│   │   ├── comms/                 # Internal messaging system (16 files)
+│   │   │   ├── ConversationList.tsx       # Sidebar list with filtering, search, unread badges
+│   │   │   ├── ConversationListItem.tsx   # Individual conversation preview row
+│   │   │   ├── NewConversationModal.tsx   # Create DM, group, or channel modal
+│   │   │   ├── MessageView.tsx            # Main message display with realtime + infinite scroll
+│   │   │   ├── MessageBubble.tsx          # Individual message (user/system/automator) with metadata
+│   │   │   ├── MessageComposer.tsx        # Text input with file attachments + auto-resize
+│   │   │   ├── MessageSearch.tsx          # Full-text search across accessible conversations
+│   │   │   ├── MessageAttachment.tsx      # File display with download/preview support
+│   │   │   ├── ConversationSettings.tsx   # Mute, rename, leave, manage participants
+│   │   │   ├── ChannelManagement.tsx      # Team channel CRUD (create, edit, archive)
+│   │   │   ├── DealLinkManager.tsx        # Link/unlink deals to conversations
+│   │   │   ├── DealReferenceCard.tsx      # Inline deal card (address, status, profit)
+│   │   │   ├── DealSnapshotCard.tsx       # Rich deal summary card (financials, checklist, employees)
+│   │   │   ├── ContactReferenceCard.tsx   # Inline contact/company reference card
+│   │   │   ├── FinancialReferenceCard.tsx # Inline financial figure card (profit, expenses)
+│   │   │   └── ConfirmationButton.tsx     # Automator workflow confirmation button in chat
+│   │   │
 │   │   ├── transactions/         # Transaction Guardian (1 file)
 │   │   │   └── TaskCard.tsx               # Waiting automator task card
 │   │   │
@@ -307,7 +328,8 @@ ted-sysops/
 │   │       │   ├── DealActivityFeed.tsx
 │   │       │   ├── DealChecklist.tsx       # Enhanced with checked_by_source badges
 │   │       │   ├── DealComments.tsx        # @mention support
-│   │       │   └── DealNotes.tsx
+│   │       │   ├── DealNotes.tsx
+│   │       │   └── DealChat.tsx            # Inline deal-linked messaging (5th sidebar tab)
 │   │       └── tabs/
 │   │           ├── ActualResults.tsx
 │   │           ├── BuyerAssignment.tsx
@@ -343,6 +365,7 @@ ted-sysops/
 │   │   ├── PayTime.tsx                # Pay & Time (commissions + earnings)
 │   │   ├── Transactions.tsx           # Transaction Guardian (waiting tasks)
 │   │   ├── CalendarPage.tsx
+│   │   ├── CommsPage.tsx              # Two-panel messaging hub (conversation list + message view)
 │   │   ├── Reports.tsx
 │   │   ├── SettingsPage.tsx           # Legacy (redirects to settings home)
 │   │   │
@@ -355,7 +378,8 @@ ted-sysops/
 │   │   │   ├── DepartmentsPage.tsx           # Department management
 │   │   │   ├── EmployeeTypesPage.tsx         # Employee type management
 │   │   │   ├── AutomatorsPage.tsx            # Automator list/CRUD
-│   │   │   └── AutomatorBuilderPage.tsx      # Visual workflow builder (full-page)
+│   │   │   ├── AutomatorBuilderPage.tsx      # Visual workflow builder (full-page)
+│   │   │   └── CommsAutomationPage.tsx       # Comms event broadcasting settings
 │   │   │
 │   │   ├── admin/                      # Superadmin pages (9 files)
 │   │   │   ├── AdminDashboard.tsx
@@ -384,6 +408,7 @@ ted-sysops/
 │   │   ├── useEmployeeStore.ts         # Employee directory state (Zustand)
 │   │   ├── useDashboardStore.ts        # Dashboard metrics state (Zustand)
 │   │   ├── useCalendarStore.ts         # Calendar state: view, scope, filters, event cache (Zustand)
+│   │   ├── useCommsStore.ts           # Comms state: conversations, messages, unread counts, realtime (Zustand)
 │   │   ├── useCurrentEmployeeProfile.ts # Current user's employee profile
 │   │   ├── useCustomFields.ts          # Custom field value read/write
 │   │   └── useDealStore.ts            # Deal pipeline state (Zustand)
@@ -406,6 +431,10 @@ ted-sysops/
 │   │   ├── dealService.ts             # Deal CRUD, fact tables, expenses, showings, etc.
 │   │   ├── calendarService.ts         # Calendar RPC call + event transformation to FullCalendar format
 │   │   ├── calendarConstants.ts       # Event color mappings, event type definitions
+│   │   ├── commsService.ts            # Comms CRUD: conversations, messages, read state, realtime, search, channels
+│   │   ├── commsConstants.ts          # System message templates, pagination sizes, config constants
+│   │   ├── commsStorageService.ts     # File upload/download via Supabase Storage (comms-attachments bucket)
+│   │   ├── commsEventBroadcaster.ts   # Deal event broadcasting to conversations (6 event types)
 │   │   ├── dashboardService.ts        # Dashboard RPC calls (8 Postgres functions)
 │   │   ├── employeeService.ts         # Employee profile CRUD + directory queries
 │   │   ├── employeeExportUtils.ts     # Export employees to CSV
@@ -434,6 +463,7 @@ ted-sysops/
 │   │   ├── role-commission.types.ts    # Role commissions, effective commissions
 │   │   ├── dashboard.types.ts          # Dashboard pipeline, financials, deadlines
 │   │   ├── calendar.types.ts           # CalendarEventRow, CalendarView, CalendarScope, DateRange
+│   │   ├── comms.types.ts             # Conversation, Message, MessageMetadata, DealReference, etc.
 │   │   ├── type-system.types.ts        # Type templates, team types, custom field defs
 │   │   ├── custom-fields.types.ts      # Custom field values, form types
 │   │   ├── activity.types.ts           # Activity log entries, DTOs
@@ -476,7 +506,8 @@ ted-sysops/
 │       ├── 028_checklist_checked_by_source.sql # checked_by_source JSONB on checklist items
 │       ├── 029_wait_node_support.sql   # Wait node: wait_show_at, wait_due_at on instances
 │       ├── 030_dashboard_functions.sql # 8 dashboard RPC functions + _dashboard_jv_fee helper
-│       └── 031_calendar_events_view.sql # deal_calendar_events view + get_calendar_events() RPC
+│       ├── 031_calendar_events_view.sql # deal_calendar_events view + get_calendar_events() RPC
+│       └── 032_comms_tables.sql        # Comms tables (conversations, participants, messages, deal links, attachments) + RLS + Realtime + RPCs
 │
 └── Configuration Files
     ├── package.json
@@ -520,6 +551,10 @@ purchase_type: 'cash' | 'financing' | 'subject_to' | 'owner_finance' | 'hard_mon
 title_status: 'not_ordered' | 'ordered' | 'in_progress' | 'clear' | 'issues' | 'ready_to_close'
 expense_category: 'marketing' | 'inspection' | 'title_escrow' | 'legal' | 'hoa' | 'earnest_money' | 'contractor' | 'other'
 jv_type: 'fixed' | 'percentage'
+
+-- Comms enums (migration 032)
+conversation_type: 'dm' | 'group' | 'channel'
+message_sender_type: 'user' | 'system' | 'automator'
 ```
 
 ### Core Tables
@@ -682,7 +717,7 @@ Multiple roles per invitation.
 ```typescript
 type SectionKey =
   | 'inbox' | 'dashboard' | 'pay_time' | 'team'
-  | 'whiteboard' | 'contacts' | 'employees'
+  | 'whiteboard' | 'comms' | 'contacts' | 'employees'
   | 'transactions' | 'calendar' | 'reports' | 'settings'
 
 type AccessLevel = 'full' | 'view'
@@ -1097,6 +1132,7 @@ Immutable audit log of completed steps within an instance. No UPDATE/DELETE poli
 7. `create_showing` — Schedule property showings
 8. `update_deal_status` — Change deal pipeline status
 9. `trigger_automator` — Start a child automator on the same deal
+10. `send_message` — Send a message to a conversation (deal chat, channel, or new group)
 
 ### Deal Tables
 
@@ -1154,6 +1190,105 @@ All fact tables have `custom_fields JSONB` and `updated_at` triggers. Upserted o
 | deal_notes | Private notes | user_id, content |
 
 **RLS**: All child tables inherit access via parent deal's team_id. Comments/notes have owner-scoped UPDATE/DELETE.
+
+### Comms Tables (Internal Messaging)
+
+#### conversations
+Core messaging entity supporting DMs, groups, and channels.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| team_id | UUID | FK → teams |
+| type | conversation_type | dm, group, channel |
+| name | TEXT | Required for channels, optional for groups, null for DMs |
+| description | TEXT | Channels only |
+| is_default | BOOLEAN | Default FALSE (true for auto-created General channel) |
+| created_by | UUID | FK → users |
+| last_message_at | TIMESTAMPTZ | For sorting by recent activity |
+| created_at | TIMESTAMPTZ | |
+| updated_at | TIMESTAMPTZ | |
+
+**Indexes**: team_id, (team_id, type), last_message_at DESC
+
+#### conversation_participants
+Junction table tracking membership, read state, and mute preferences.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| conversation_id | UUID | FK → conversations (CASCADE) |
+| user_id | UUID | FK → users |
+| joined_at | TIMESTAMPTZ | Default NOW() |
+| last_read_message_id | UUID | FK → messages (nullable, for unread tracking) |
+| is_muted | BOOLEAN | Default FALSE |
+| role | TEXT | Default 'member' (channel admin/member distinction) |
+
+**Unique**: (conversation_id, user_id)
+**Indexes**: user_id, (conversation_id, user_id)
+
+#### messages
+Message content with rich metadata support.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| conversation_id | UUID | FK → conversations (CASCADE) |
+| sender_id | UUID | FK → users (nullable for system messages) |
+| sender_type | message_sender_type | user, system, automator |
+| content | TEXT | NOT NULL |
+| metadata | JSONB | Deal refs, contact refs, financial refs, deal snapshots, confirmations |
+| is_edited | BOOLEAN | Default FALSE |
+| edited_at | TIMESTAMPTZ | |
+| is_deleted | BOOLEAN | Default FALSE (soft delete for tombstones) |
+| sender_automator_id | UUID | FK → automators (nullable) |
+| created_at | TIMESTAMPTZ | Default NOW() |
+
+**Indexes**: (conversation_id, created_at DESC), sender_id
+**Realtime**: Published to `supabase_realtime` for live message delivery
+
+#### conversation_deal_links
+Many-to-many junction linking conversations to deals.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| conversation_id | UUID | FK → conversations (CASCADE) |
+| deal_id | UUID | FK → deals (CASCADE) |
+| linked_by | UUID | FK → users |
+| linked_at | TIMESTAMPTZ | Default NOW() |
+
+**Unique**: (conversation_id, deal_id)
+**Indexes**: deal_id, conversation_id
+
+#### message_attachments
+File metadata for message attachments (actual files in Supabase Storage).
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID | PK |
+| message_id | UUID | FK → messages (CASCADE) |
+| file_name | TEXT | NOT NULL |
+| storage_path | TEXT | NOT NULL |
+| mime_type | TEXT | |
+| file_size | BIGINT | |
+| created_at | TIMESTAMPTZ | Default NOW() |
+
+**Index**: message_id
+**Storage**: `comms-attachments` bucket, path: `{team_id}/{conversation_id}/{message_id}/{filename}`
+
+**RLS**: 24 policies total. Conversations visible to participants only. Messages visible/insertable by non-muted participants. Deal links follow conversation visibility. Attachments follow message visibility.
+
+**Triggers**:
+- `update_conversations_updated_at` — Auto-update `updated_at` on modifications
+- `on_message_created` — Auto-update `last_message_at` on new messages
+
+#### Comms RPC Functions (SECURITY DEFINER)
+
+| Function | Purpose |
+|----------|---------|
+| `get_unread_counts(p_user_id, p_team_id)` | Returns conversation_id + unread_count for all user's conversations |
+| `get_user_conversations(p_user_id, p_team_id, p_limit, p_offset)` | Returns conversation list with last message preview, unread count, participant names |
 
 ### Entity Relationship Diagram
 
@@ -1236,6 +1371,12 @@ All fact tables have `custom_fields JSONB` and `updated_at` triggers. Upserted o
 │                ├── deal_checklist_items (1:N)
 │                ├── deal_comments (1:N, → users)
 │                └── deal_notes (1:N, → users)
+│
+│  ┌──────────────────┐
+│  │  conversations   │──┬── conversation_participants (1:N, → users)
+│  │  (team_id, type) │  ├── messages (1:N, → users/automators)
+│  │  dm/group/channel│  │   └── message_attachments (1:N)
+│  └──────────────────┘  └── conversation_deal_links (N:M, → deals)
 └──────────────────────────────────────────────────────────────────
 ```
 
@@ -1311,6 +1452,11 @@ All bypass RLS for authorization checks:
 | employee_type_assignments | team member OR superadmin | admin OR self-assign | admin OR self | admin OR superadmin |
 | commission_rules | team member OR superadmin | team admin OR superadmin | team admin OR superadmin | team admin OR superadmin |
 | role_commission_rules | team member OR superadmin | team admin OR superadmin | team admin OR superadmin | team admin OR superadmin |
+| conversations | participant | team member | creator OR admin | creator OR admin |
+| conversation_participants | co-participant | participant OR admin | self OR admin | self OR admin |
+| messages | participant | non-muted participant | own OR admin | own OR admin |
+| conversation_deal_links | participant | participant | participant | participant |
+| message_attachments | via message visibility | via message insert | — | via message delete |
 
 ### Frontend Guards
 
@@ -1408,6 +1554,8 @@ function mergeRolePermissions(roles: TeamRole[]): RolePermissions {
     ├── /pay-time                           # Pay & Time (commissions + earnings)
     ├── /transactions                       # Transaction Guardian (waiting tasks)
     ├── /team                               # TeamDashboard (team-wide metrics)
+    ├── /comms                                # CommsPage (two-panel messaging hub)
+    ├── /comms/:conversationId                # Deep link to specific conversation
     ├── /calendar                            # Calendar (deal events derived from dates)
     ├── /reports                              # Coming Soon placeholder
     ├── /settings                           # SettingsHomePage (card-grid index)
@@ -1418,7 +1566,8 @@ function mergeRolePermissions(roles: TeamRole[]): RolePermissions {
     │   ├── /departments                    # DepartmentsPage
     │   ├── /employee-types                 # EmployeeTypesPage
     │   ├── /automators                     # AutomatorsPage (list/CRUD)
-    │   └── /automators/:automatorId        # AutomatorBuilderPage (full-page)
+    │   ├── /automators/:automatorId        # AutomatorBuilderPage (full-page)
+    │   └── /comms-automation               # CommsAutomationPage (event broadcasting)
     └── /access-denied
 ```
 
@@ -1434,6 +1583,7 @@ function mergeRolePermissions(roles: TeamRole[]): RolePermissions {
 - `useDealStore` - Deal pipeline state (list, filters, kanban)
 - `useDashboardStore` - Dashboard data for My Dashboard and Team Dashboard (deadlines, pipeline, financials, stale deals, workload, recently closed) with per-section loading states
 - `useCalendarStore` - Calendar state: view mode, current date, scope (my/team deals), owner filter, visible event types, event data with date-range caching, fetch deduplication
+- `useCommsStore` - Comms state: conversations (with previews), messages (cursor-paginated), selectedConversationId, totalUnreadCount, conversationTypeFilter, searchQuery, optimistic message sending, realtime message handler
 - `automatorBuilderStore` - Canvas state: nodes, edges, viewport, selected node, dirty flag, breadcrumb stack (parent→child navigation)
 
 **React Context:**
@@ -1479,6 +1629,9 @@ export async function addUserToTeam(
 - `automatorService.ts` - Automator CRUD + publish/unpublish/duplicate/archive + parent ref management
 - `automatorInstanceService.ts` - Instance lifecycle (start/execute/cancel), step execution via RPC, realtime subscriptions, TPT calculation
 - `calendarService.ts` - Calendar RPC call (`get_calendar_events`) + transformation of DB rows to FullCalendar event format with color mapping, className assignment, and date range helpers
+- `commsService.ts` - Comms CRUD (conversations, messages, participants, read state, deal links, channels), realtime subscriptions (`subscribeToMessages`, `subscribeToConversations`), full-text message search, DM deduplication, default channel management
+- `commsStorageService.ts` - File attachment upload/download via Supabase Storage (`comms-attachments` bucket), 10MB max file size, 5 files per message, signed URL generation
+- `commsEventBroadcaster.ts` - Deal event broadcasting to linked conversations (6 event types: status_change, automator_milestone, employee_change, vendor_change, financial_event, checklist_completion), team-level settings and thresholds
 - `dashboardService.ts` - Dashboard RPC calls (8 Postgres functions for My/Team Dashboard)
 - `employeeService.ts` - Employee profile CRUD, directory queries with search/filter/pagination
 - `commissionRuleService.ts` - Employee commission rule CRUD + validation (5 calculation types)
@@ -1537,7 +1690,7 @@ Team settings use a dedicated layout with sidebar navigation, separate from the 
 
 **Settings Config** (`src/config/settingsConfig.ts`):
 - `SETTINGS_CATEGORIES` array defines categories and items as typed data
-- 4 categories: **General** (team-members, roles), **Contact Hub** (contact-types, company-types), **Employees** (departments, employee-types), **Automation** (automators)
+- 5 categories: **General** (team-members, roles), **Contact Hub** (contact-types, company-types), **Employees** (departments, employee-types), **Automation** (automators), **Communication** (comms-automation)
 - `ALL_SETTINGS_ITEMS` flat array for search functionality
 - Each item has: id, label, icon, description, route
 
@@ -1551,9 +1704,9 @@ Team settings use a dedicated layout with sidebar navigation, separate from the 
 - 3-panel layout: NodePalette (left), AutomatorCanvas (center), ConfigurationPanel (right)
 - AutomatorToolbar at the top with save/publish/status controls + breadcrumb navigation for parent→child drill-down
 - State managed by `automatorBuilderStore` (Zustand) with breadcrumb stack
-- Node types: Start, End, Decision, DataCollection, Wait
+- Node types: Start, End, Decision, DataCollection, Wait, MessageConfirmation
 - Status lifecycle: draft → published → archived
-- **Backend Actions**: ConfigurationPanel includes action editor for each node — supports 9 action types with value source resolution (static, field reference, today)
+- **Backend Actions**: ConfigurationPanel includes action editor for each node — supports 10 action types with value source resolution (static, field reference, today)
 - **Parent-Child Automators**: `trigger_automator` action links automators; toolbar supports breadcrumb navigation through parent→child chain; TriggerBadge shown on nodes with trigger actions
 - **Automator List**: Tree view with completeness checks (warns if child automators not published), dependency badges ("Triggers" / "Triggered by")
 
@@ -1611,15 +1764,15 @@ The ContactHub uses a master-detail pattern with two entry points:
 | Settings Redesign | SettingsHomePage (card-grid), TeamSettingsLayout, TeamSettingsSidebar, SettingsCard | settingsConfig.ts |
 | Contact Methods | ContactMethodsInput (polymorphic: personal, company, relationship) | contactMethodHelpers.ts |
 | Whiteboard Pipeline | WhiteboardMetricCards, DealFilters, DealKanbanView (drag-to-change-status), DealListView, CreateDealModal | dealService.ts, useDealStore.ts |
-| Deal Detail | DealDetailPage (pinned header + two-panel layout), DealHeader (status/owner/save/delete), DealTabs (6 tabs), DealSidebar (4 tabs) | dealService.ts |
+| Deal Detail | DealDetailPage (pinned header + two-panel layout), DealHeader (status/owner/save/delete), DealTabs (6 tabs), DealSidebar (5 tabs: checklist, activity, comments, notes, chat) | dealService.ts, commsService.ts |
 | Deal Info Tab | DealInfoTab orchestrating ContractFactsSection, PropertyFactsSection, DealFactsSection (with TitleStatusStepper), CloseSection | dealService.ts (fact table upserts) |
 | Deal Disposition | DispoTab with ShowingsList (CRUD + contact search), DispositionDetails (JV config), BuyerAssignment (company→contact lookup) | dealService.ts |
 | Deal Employees | EmployeeTab with team member assignment, vendor assignment (contact search), role management | dealService.ts |
 | Deal Financials | FinancialTab with FinancialSummary (9 metric cards), ExpenseList (CRUD), CommissionBreakdown (per-employee %), ActualResults (closed deals) | dealService.ts |
-| Deal Sidebar | DealChecklist (TPT progress + automator source badges), DealActivityFeed (paginated), DealComments (@mention autocomplete), DealNotes | dealService.ts, activityLogService.ts |
-| Automator Builder | AutomatorList (tree view + dependency badges), AutomatorBuilder (3-panel), ConfigurationPanel (node config + 9 backend action types), ActionEditor, ValueSourcePicker, TriggerBadge | automatorService.ts |
+| Deal Sidebar | DealChecklist (TPT progress + automator source badges), DealActivityFeed (paginated), DealComments (@mention autocomplete), DealNotes, DealChat (inline deal-linked messaging) | dealService.ts, activityLogService.ts, commsService.ts |
+| Automator Builder | AutomatorList (tree view + dependency badges), AutomatorBuilder (3-panel), ConfigurationPanel (node config + 10 backend action types), ActionEditor, ValueSourcePicker, TriggerBadge, SendMessageAction, MessageConfirmationNode | automatorService.ts |
 | Automator Execution | ActionTab (flow map + instance list + step interaction), StartAutomatorDialog, StepHistory, FlowMap, InstanceList | automatorInstanceService.ts |
-| Automator Instance Engine | start_automator_instance(), execute_automator_step() RPCs with definition snapshots, immutable step audit log, 9 backend action types, parent-child cascading | Postgres RPC functions |
+| Automator Instance Engine | start_automator_instance(), execute_automator_step() RPCs with definition snapshots, immutable step audit log, 10 backend action types, parent-child cascading | Postgres RPC functions |
 | Wait Node | WaitNode builder component, wait_show_at/wait_due_at on instances, auto-pause on wait nodes | execute_automator_step() RPC (migration 029) |
 | Employee System | Employees page (overview + directory), EmployeeDetailPage, EmployeeProfileForm, EmployeeList with search/filters/pagination, EmployeeSummaryPanel drawer | employeeService.ts |
 | Departments | DepartmentsPage settings, DepartmentBadge, DepartmentFilter, auto-created defaults | departmentService.ts |
@@ -1635,6 +1788,10 @@ The ContactHub uses a master-detail pattern with two entry points:
 | Admin Type Templates | AdminTypeTemplates page with Contact/Company/Employee type template management | typeTemplateService.ts |
 | Calendar | CalendarPage (month/week/day/list views), DealCalendar (FullCalendar wrapper), CalendarToolbar, CalendarFilters (scope/owner/event type), CalendarLegend, EventPopover (click-through to deal) | calendarService.ts, useCalendarStore.ts |
 | Calendar Data Layer | `deal_calendar_events` Postgres view unioning 8 event sources, `get_calendar_events()` RPC with scope/date/owner filtering, date-range caching in Zustand store | Postgres view + function (migration 031) |
+| TED Comms (Messaging) | CommsPage (two-panel hub), ConversationList, ConversationListItem, NewConversationModal, MessageView, MessageBubble, MessageComposer, MessageSearch, MessageAttachment, ConversationSettings, ChannelManagement, DealLinkManager, DealReferenceCard, DealSnapshotCard, ContactReferenceCard, FinancialReferenceCard, ConfirmationButton | commsService.ts, useCommsStore.ts, commsStorageService.ts, commsEventBroadcaster.ts |
+| Comms Data Layer | 5 tables (conversations, conversation_participants, messages, conversation_deal_links, message_attachments), 2 enums, 24 RLS policies, 2 RPC functions, Realtime on messages + participants, 2 triggers | Postgres tables + RPC (migration 032) |
+| Deal Chat Tab | DealChat (inline messaging on Deal Detail sidebar, 5th tab), get-or-create deal conversation, realtime subscription, message grouping | commsService.ts |
+| Comms Automation Settings | CommsAutomationSettings (team-level event broadcast toggles + thresholds), CommsAutomationPage, deal event broadcasting for 6 event types | commsEventBroadcaster.ts |
 
 ### Placeholder / Not Yet Implemented
 
@@ -1827,6 +1984,16 @@ When writing epics, reference these existing implementations:
 | Third-party library theming (CSS override) | `calendarStyles.css` (FullCalendar Space Force theme using app CSS variables) |
 | Client-side caching with date-range dedup | `useCalendarStore.ts` (fetchedRanges tracking, merge + deduplicate on event_id) |
 | Multi-filter toggle chips UI | `CalendarFilters.tsx` (event type chips with color indicators, scope/owner dropdowns) |
+| Two-panel messaging layout | `CommsPage.tsx` (conversation list + message view, responsive mobile toggle) |
+| Real-time messaging with optimistic sends | `useCommsStore.ts` (temp IDs, rollback on error, realtime handler) |
+| Participant-scoped RLS (not team-wide) | `032_comms_tables.sql` (24 policies, visibility via conversation_participants join) |
+| Cursor-based infinite scroll | `commsService.ts` getMessages with `before` cursor + `useCommsStore.ts` loadMoreMessages |
+| Inline rich metadata in messages (JSONB) | `MessageBubble.tsx` renders DealReferenceCard, ContactReferenceCard, FinancialReferenceCard, DealSnapshotCard |
+| File attachments via Supabase Storage | `commsStorageService.ts` + `MessageAttachment.tsx` (upload, preview, download) |
+| Deal-linked conversations (N:M) | `conversation_deal_links` + `DealLinkManager.tsx` + `DealChat.tsx` sidebar tab |
+| Automator-aware messaging | `SendMessageAction.tsx` (send_message action) + `ConfirmationButton.tsx` (message_confirmation node) |
+| Event broadcasting with team settings | `commsEventBroadcaster.ts` + `CommsAutomationSettings.tsx` (toggle 6 event types, threshold config) |
+| Settings category extension pattern | `settingsConfig.ts` Communication category + `CommsAutomationPage.tsx` |
 
 ---
 
@@ -1883,6 +2050,19 @@ When writing epics, reference these existing implementations:
 | Calendar types | `src/types/calendar.types.ts` |
 | Calendar styles | `src/components/calendar/calendarStyles.css` |
 | Calendar events view + RPC | `supabase/migrations/031_calendar_events_view.sql` |
+| Comms page | `src/pages/CommsPage.tsx` |
+| Comms main component | `src/components/comms/MessageView.tsx` |
+| Comms service | `src/lib/commsService.ts` |
+| Comms storage service | `src/lib/commsStorageService.ts` |
+| Comms event broadcaster | `src/lib/commsEventBroadcaster.ts` |
+| Comms constants | `src/lib/commsConstants.ts` |
+| Comms store | `src/hooks/useCommsStore.ts` |
+| Comms types | `src/types/comms.types.ts` |
+| Deal Chat (sidebar) | `src/components/deals/sidebar/DealChat.tsx` |
+| SendMessage action (builder) | `src/components/automators/builder/actions/SendMessageAction.tsx` |
+| MessageConfirmation node | `src/components/automators/builder/nodes/MessageConfirmationNode.tsx` |
+| Comms automation settings | `src/components/settings/CommsAutomationSettings.tsx` |
+| Comms tables + RLS + RPCs | `supabase/migrations/032_comms_tables.sql` |
 
 ### Commands
 
