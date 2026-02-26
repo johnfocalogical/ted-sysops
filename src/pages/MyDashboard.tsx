@@ -1,53 +1,126 @@
-import { LayoutDashboard, TrendingUp, Clock, CheckSquare } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
+import { useEffect, useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import { PageHeader } from '@/components/shared/PageHeader'
+import { PipelineMetricCards } from '@/components/dashboard/PipelineMetricCards'
+import { FinancialSummaryCards } from '@/components/dashboard/FinancialSummaryCards'
+import { DeadlinesList } from '@/components/dashboard/DeadlinesList'
+import { AutomatorStepsWaiting } from '@/components/dashboard/AutomatorStepsWaiting'
+import { StaleDealsList } from '@/components/dashboard/StaleDealsList'
+import { RecentActivityFeed } from '@/components/dashboard/RecentActivityFeed'
+import { useDashboardStore } from '@/hooks/useDashboardStore'
+import { useTeamContext } from '@/hooks/useTeamContext'
+import type { DealStatus } from '@/types/deal.types'
 
 export function MyDashboard() {
-  const metrics = [
-    { label: 'Active Deals', value: '0', icon: LayoutDashboard, color: 'text-primary' },
-    { label: 'Total Profit', value: '$0', icon: TrendingUp, color: 'text-success' },
-    { label: 'Pending Actions', value: '0', icon: Clock, color: 'text-warning' },
-    { label: 'Completed', value: '0', icon: CheckSquare, color: 'text-muted-foreground' },
-  ]
+  const { orgId, teamId } = useParams<{ orgId: string; teamId: string }>()
+  const navigate = useNavigate()
+  const { context } = useTeamContext()
+  const userId = context?.user?.id
+
+  const {
+    deadlines,
+    myPipeline,
+    myFinancials,
+    staleDeals,
+    loading,
+    deadlineDaysAhead,
+    loadMyDashboard,
+    setDeadlineDaysAhead,
+    reset,
+  } = useDashboardStore()
+
+  const [revenuePeriod, setRevenuePeriod] = useState<'mtd' | 'qtd'>('mtd')
+
+  // Load dashboard data on mount / team change
+  useEffect(() => {
+    if (teamId && userId) {
+      loadMyDashboard(teamId, userId)
+    }
+    return () => reset()
+  }, [teamId, userId, loadMyDashboard, reset])
+
+  const handleDealClick = (dealId: string) => {
+    if (orgId && teamId) {
+      navigate(`/org/${orgId}/team/${teamId}/whiteboard?deal=${dealId}`)
+    }
+  }
+
+  const handleStatusClick = (status: DealStatus) => {
+    if (orgId && teamId) {
+      navigate(`/org/${orgId}/team/${teamId}/whiteboard?status=${status}`)
+    }
+  }
+
+  const handleDaysChange = (days: number) => {
+    if (teamId && userId) {
+      setDeadlineDaysAhead(days, teamId, userId)
+    }
+  }
+
+  const userName = context?.user?.full_name ?? 'Your'
 
   return (
-    <div>
+    <div className="space-y-8">
       <PageHeader
-        title="My Dashboard"
-        subtitle="Your personal overview and metrics"
+        title="Mission Control"
+        subtitle={`${userName}'s personal overview`}
       />
 
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {metrics.map((metric) => (
-          <Card key={metric.label} className="border-l-4 border-l-primary">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    {metric.label}
-                  </p>
-                  <p className={`text-3xl font-bold mt-1 ${metric.color}`}>
-                    {metric.value}
-                  </p>
-                </div>
-                <metric.icon className={`h-8 w-8 ${metric.color} opacity-20`} />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      {/* Section 1: Attention Needed */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <DeadlinesList
+          deadlines={deadlines}
+          loading={loading.deadlines}
+          daysAhead={deadlineDaysAhead}
+          onDaysChange={handleDaysChange}
+          onDealClick={handleDealClick}
+        />
+        <AutomatorStepsWaiting
+          teamId={teamId ?? ''}
+          userId={userId ?? ''}
+          onDealClick={handleDealClick}
+          onContinueClick={handleDealClick}
+        />
+        <StaleDealsList
+          staleDeals={staleDeals}
+          loading={loading.staleDeals}
+          onDealClick={handleDealClick}
+        />
       </div>
 
-      {/* Activity Section */}
-      <Card>
-        <CardContent className="pt-6">
-          <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
-          <div className="text-center py-8 text-muted-foreground">
-            <p>No recent activity to display.</p>
-            <p className="text-sm mt-1">Start by adding a deal on the Whiteboard.</p>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Section 2: My Pipeline */}
+      <div>
+        <h2 className="text-lg font-semibold mb-4">My Pipeline</h2>
+        <PipelineMetricCards
+          data={myPipeline}
+          loading={loading.myPipeline}
+          onStatusClick={handleStatusClick}
+        />
+      </div>
+
+      {/* Section 3: My Financials */}
+      <div>
+        <h2 className="text-lg font-semibold mb-4">My Financials</h2>
+        <FinancialSummaryCards
+          pipelineValue={myFinancials?.pipeline_value}
+          closedRevenueMtd={myFinancials?.closed_revenue_mtd}
+          closedRevenueQtd={myFinancials?.closed_revenue_qtd}
+          estimatedCommissions={myFinancials?.estimated_commissions}
+          totalExpenses={myFinancials?.total_expenses}
+          loading={loading.myFinancials}
+          showRevenuePeriodToggle
+          revenuePeriod={revenuePeriod}
+          onRevenuePeriodChange={setRevenuePeriod}
+        />
+      </div>
+
+      {/* Section 4: Recent Activity */}
+      <RecentActivityFeed
+        teamId={teamId ?? ''}
+        userId={userId}
+        limit={15}
+        onDealClick={handleDealClick}
+      />
     </div>
   )
 }
