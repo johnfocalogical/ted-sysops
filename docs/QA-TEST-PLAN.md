@@ -3787,6 +3787,255 @@ Before running tests, ensure:
 
 ---
 
+## 34. Calendar Tests
+
+### CAL-001: Calendar Page Load
+**Prerequisites**: User with calendar section access, team has active deals with dates
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Navigate to Calendar | Calendar page loads with "Calendar" title and Calendar icon |
+| 2 | Month view displays by default | Calendar grid shows current month |
+| 3 | Today's date is highlighted | Teal circle/highlight on today's date |
+| 4 | Deal events appear on calendar | Color-coded event chips visible on dates |
+| 5 | Legend visible below calendar | Color dots with labels for event types |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### CAL-002: View Toggle (Month / Week / Day)
+**Prerequisites**: Calendar page loaded with events
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click "Week" toggle button | Switches to week view with time grid |
+| 2 | Time grid shows 7 AM – 7 PM | Slot labels visible |
+| 3 | Showings appear as time blocks | Teal blocks with time range in time grid |
+| 4 | All-day events in top section | Closings, DD, etc. shown as all-day chips |
+| 5 | Click "Day" toggle button | Switches to single-day expanded view |
+| 6 | Click "Month" toggle button | Returns to month grid view |
+| 7 | Period label updates per view | Month: "February 2026", Week: "Feb 16 – 22, 2026", Day: "Tuesday, February 17, 2026" |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### CAL-003: Navigation (Prev / Next / Today)
+**Prerequisites**: Calendar page loaded
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click ► (next) button | Advances to next month/week/day |
+| 2 | Period label updates | Shows new date range |
+| 3 | Click ◄ (prev) button | Goes back one period |
+| 4 | Navigate several months forward | Calendar shows future months |
+| 5 | Click "Today" button | Snaps back to current date with today highlighted |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### CAL-004: Event Color Coding
+**Prerequisites**: Deals with various date types (closing, DD, inspection, earnest money, contract, showings)
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Find a closing date event | Red chip with "Closing: {address}" |
+| 2 | Find an extended closing event | Red outlined/dashed chip |
+| 3 | Find a DD period | Purple bar spanning start → end dates |
+| 4 | Find an inspection event | Amber chip |
+| 5 | Find an earnest money event | Green chip |
+| 6 | Find a contract date event | Slate/gray chip |
+| 7 | Find a showing event | Teal chip (shows time on week/day view) |
+| 8 | Legend matches event colors | Each legend dot color matches its event type |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### CAL-005: Scope Toggle (My Deals / Team Deals)
+**Prerequisites**: User is assigned to some deals; team has other deals assigned to other members
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Default scope is "My Deals" | Only user's own deal events shown |
+| 2 | Switch scope to "Team Deals" | More events appear from all team members |
+| 3 | Owner dropdown appears | Dropdown visible next to scope with "All" + team member names |
+| 4 | Select a specific team member | Only that member's deal events shown |
+| 5 | Select "All" | All team events return |
+| 6 | Switch back to "My Deals" | Events reduced to only user's deals, owner dropdown hidden |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### CAL-006: Event Type Filter Chips
+**Prerequisites**: Calendar with multiple event types visible
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | All event type chips are ON by default | All 8 types active (colored) |
+| 2 | Click "Closings" chip to toggle off | Closing events disappear from calendar |
+| 3 | Chip appears muted/inactive | Visual feedback (dimmed/faded) |
+| 4 | Click "Closings" chip again | Closing events reappear |
+| 5 | Toggle off all except "Showings" | Only teal showing events remain |
+| 6 | Toggle all back on | All events return |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### CAL-007: Event Click Popover
+**Prerequisites**: Calendar with visible events
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Click on a closing event | Popover opens near the event |
+| 2 | Popover shows event type with red dot | "Closing" label with colored indicator |
+| 3 | Shows deal address (bold) | Full address displayed |
+| 4 | Shows formatted date | e.g., "February 20, 2026" |
+| 5 | Shows deal status badge | Status with appropriate styling |
+| 6 | Shows "Go to Deal →" button | Primary teal button |
+| 7 | Click "Go to Deal →" | Navigates to deal detail page, popover closes |
+| 8 | Click outside popover | Popover closes |
+| 9 | Press Escape | Popover closes |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### CAL-008: DD Period Range Event and Popover
+**Prerequisites**: Deal with DD start and end dates
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Find DD period on month view | Purple bar spans from start to end date |
+| 2 | Bar spans across multiple day cells | Multi-day rendering visible |
+| 3 | Click the DD period event | Popover opens |
+| 4 | Shows date range | "Jan 15 – Feb 20, 2026" format |
+| 5 | Shows days remaining | "X days remaining" if future, "Expired" in red if past |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### CAL-009: Showing Event with Time
+**Prerequisites**: Deal with scheduled showing (specific time + duration)
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Switch to week or day view | Time grid visible |
+| 2 | Find showing event in time grid | Teal block at correct time (e.g., 2:00 – 3:00 PM) |
+| 3 | Block height reflects duration | 60-min showing spans 1 hour slot |
+| 4 | Click the showing event | Popover opens |
+| 5 | Popover shows time range | "2:00 PM – 3:00 PM" |
+| 6 | Shows buyer name (if assigned) | Buyer contact name from metadata |
+| 7 | Shows showing status | e.g., "Scheduled", "Completed" |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### CAL-010: Busy Day Overflow (+N More)
+**Prerequisites**: A day with 4+ events on the calendar
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Find a busy day in month view | Shows 3 event chips + "+N more" link |
+| 2 | "+N more" link is teal colored | Styled per theme |
+| 3 | Click "+N more" | Switches to day view for that date |
+| 4 | Day view shows all events | All events visible without overflow |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### CAL-011: Empty States
+**Prerequisites**: Various empty conditions
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | User with no active deals | "You don't have any active deals..." message |
+| 2 | Navigate to month with no events | Calendar grid still shows, empty state message displayed |
+| 3 | Toggle off all event types | "All event types are hidden..." message |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### CAL-012: Deal Status Filtering
+**Prerequisites**: Deals in various statuses
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Active/for_sale/pending_sale deals | Events show on calendar |
+| 2 | On-hold deal events | Events show with muted/faded styling (50% opacity) |
+| 3 | Closed/funded/canceled deals | Events do NOT appear on calendar |
+| 4 | Canceled showing | Shows with strikethrough text |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### CAL-013: Calendar Theme (Light & Dark)
+**Prerequisites**: Calendar page loaded
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | View calendar in light mode | White background, dark text, teal today highlight |
+| 2 | Switch to dark mode | Dark background, light text, grid lines adjust |
+| 3 | Event colors visible in both | Color contrast sufficient in both themes |
+| 4 | Popover readable in both | Text and backgrounds adapt to theme |
+| 5 | Legend readable in both | Color dots and labels visible |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
+### CAL-014: Responsive Layout (Mobile)
+**Prerequisites**: Mobile viewport (< 768px)
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 1 | Load calendar on mobile | Defaults to list/agenda view (not grid) |
+| 2 | List view shows events grouped by day | Day headers with chronological events |
+| 3 | Toolbar stacks vertically | Navigation and view toggle on separate rows |
+| 4 | Filter chips scroll horizontally | Chips don't wrap excessively |
+| 5 | Event popover works on mobile | Tap event opens popover, "Go to Deal" works |
+
+- [ ] **PASS** / [ ] **FAIL**
+
+**Notes**: _________________________________
+
+---
+
 ## Test Summary
 
 | Category | Total Tests | Passed | Failed |
@@ -3825,7 +4074,8 @@ Before running tests, ensure:
 | 31. My Dashboard (Mission Control) | 8 | | |
 | 32. Team Dashboard | 7 | | |
 | 33. Transaction Guardian | 5 | | |
-| **TOTAL** | **231** | | |
+| 34. Calendar | 14 | | |
+| **TOTAL** | **245** | | |
 
 ---
 

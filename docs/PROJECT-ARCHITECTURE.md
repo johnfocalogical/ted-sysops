@@ -66,6 +66,7 @@ The application uses a futuristic military aesthetic:
 | Lucide React | 0.562.0 | Icon library |
 | next-themes | 0.4.6 | Dark/light theme management |
 | date-fns | 4.1.0 | Date utilities |
+| FullCalendar | 6.1.20 | Calendar views (month/week/day/list) |
 
 ### State & Forms
 | Technology | Version | Purpose |
@@ -258,6 +259,14 @@ ted-sysops/
 │   │   │   ├── RoleCommissionRuleCard.tsx          # Role rule display
 │   │   │   └── RoleCommissionRuleFormModal.tsx     # Create/edit role rule
 │   │   │
+│   │   ├── calendar/              # Calendar feature (6 files)
+│   │   │   ├── DealCalendar.tsx          # Main calendar wrapper (FullCalendar + store integration)
+│   │   │   ├── CalendarToolbar.tsx       # Navigation, view toggle, today button
+│   │   │   ├── CalendarFilters.tsx       # Scope toggle, owner dropdown, event type chips
+│   │   │   ├── CalendarLegend.tsx        # Color-coded legend strip
+│   │   │   ├── EventPopover.tsx          # Click-triggered deal event summary popover
+│   │   │   └── calendarStyles.css        # FullCalendar Space Force theme overrides
+│   │   │
 │   │   ├── transactions/         # Transaction Guardian (1 file)
 │   │   │   └── TaskCard.tsx               # Waiting automator task card
 │   │   │
@@ -374,6 +383,7 @@ ted-sysops/
 │   │   ├── useCompanyStore.ts          # Company CRUD + list state (Zustand)
 │   │   ├── useEmployeeStore.ts         # Employee directory state (Zustand)
 │   │   ├── useDashboardStore.ts        # Dashboard metrics state (Zustand)
+│   │   ├── useCalendarStore.ts         # Calendar state: view, scope, filters, event cache (Zustand)
 │   │   ├── useCurrentEmployeeProfile.ts # Current user's employee profile
 │   │   ├── useCustomFields.ts          # Custom field value read/write
 │   │   └── useDealStore.ts            # Deal pipeline state (Zustand)
@@ -394,6 +404,8 @@ ted-sysops/
 │   │   ├── automatorService.ts         # Automator CRUD + publish/archive + parent refs
 │   │   ├── automatorInstanceService.ts # Instance lifecycle, step execution, realtime, TPT
 │   │   ├── dealService.ts             # Deal CRUD, fact tables, expenses, showings, etc.
+│   │   ├── calendarService.ts         # Calendar RPC call + event transformation to FullCalendar format
+│   │   ├── calendarConstants.ts       # Event color mappings, event type definitions
 │   │   ├── dashboardService.ts        # Dashboard RPC calls (8 Postgres functions)
 │   │   ├── employeeService.ts         # Employee profile CRUD + directory queries
 │   │   ├── employeeExportUtils.ts     # Export employees to CSV
@@ -421,6 +433,7 @@ ted-sysops/
 │   │   ├── commission.types.ts         # Commission rules, calculation types
 │   │   ├── role-commission.types.ts    # Role commissions, effective commissions
 │   │   ├── dashboard.types.ts          # Dashboard pipeline, financials, deadlines
+│   │   ├── calendar.types.ts           # CalendarEventRow, CalendarView, CalendarScope, DateRange
 │   │   ├── type-system.types.ts        # Type templates, team types, custom field defs
 │   │   ├── custom-fields.types.ts      # Custom field values, form types
 │   │   ├── activity.types.ts           # Activity log entries, DTOs
@@ -462,7 +475,8 @@ ted-sysops/
 │       ├── 027_execute_automator_step.sql # Step execution with 9 backend action types
 │       ├── 028_checklist_checked_by_source.sql # checked_by_source JSONB on checklist items
 │       ├── 029_wait_node_support.sql   # Wait node: wait_show_at, wait_due_at on instances
-│       └── 030_dashboard_functions.sql # 8 dashboard RPC functions + _dashboard_jv_fee helper
+│       ├── 030_dashboard_functions.sql # 8 dashboard RPC functions + _dashboard_jv_fee helper
+│       └── 031_calendar_events_view.sql # deal_calendar_events view + get_calendar_events() RPC
 │
 └── Configuration Files
     ├── package.json
@@ -1060,6 +1074,19 @@ Immutable audit log of completed steps within an instance. No UPDATE/DELETE poli
 | `dashboard_recently_closed(team_id, days)` | Recently closed/funded deals with net profit calculation |
 | `_dashboard_jv_fee(deal_id, sale_price)` | Helper: calculates JV fee based on disposition config |
 
+#### Calendar View & Function (SECURITY DEFINER)
+
+| Object | Type | Purpose |
+|--------|------|---------|
+| `deal_calendar_events` | VIEW | Unions 8 event sources (closings, extended closings, DD periods, DD expirations, inspections, earnest money, contract dates, showings) from deals + deal_contract_facts + deal_showings into a normalized event structure |
+| `get_calendar_events(p_team_id, p_user_id, p_scope, p_start_date, p_end_date, p_owner_filter)` | FUNCTION | Queries the view with team scoping, user scope (my_deals vs team_deals), date range filtering with overlap logic for range events, and optional owner filtering |
+
+**View columns**: event_id, deal_id, team_id, owner_id, tc_id, deal_address, deal_status, event_type, event_date, event_end_date, event_time, duration_min, buffer_min, event_label, metadata (JSONB)
+
+**Event types**: `closing`, `extended_closing`, `dd_period`, `dd_expiration`, `inspection`, `earnest_money`, `contract`, `showing`
+
+**Scope filtering**: `my_deals` returns events where `owner_id = user` OR `tc_id = user`; `team_deals` returns all team events. Optional `p_owner_filter` narrows to a specific owner.
+
 **Backend Action Types** (executed within `execute_automator_step`):
 1. `set_deal_field` — Update any deal field or related fact table
 2. `set_date_field` — Set date fields with smart parsing
@@ -1381,7 +1408,8 @@ function mergeRolePermissions(roles: TeamRole[]): RolePermissions {
     ├── /pay-time                           # Pay & Time (commissions + earnings)
     ├── /transactions                       # Transaction Guardian (waiting tasks)
     ├── /team                               # TeamDashboard (team-wide metrics)
-    ├── /calendar, /reports                 # Coming Soon placeholders
+    ├── /calendar                            # Calendar (deal events derived from dates)
+    ├── /reports                              # Coming Soon placeholder
     ├── /settings                           # SettingsHomePage (card-grid index)
     │   ├── /team-members                   # TeamMembersPage
     │   ├── /roles                          # RolesPage
@@ -1405,6 +1433,7 @@ function mergeRolePermissions(roles: TeamRole[]): RolePermissions {
 - `useEmployeeStore` - Employee directory, search, department/status/type filtering, pagination
 - `useDealStore` - Deal pipeline state (list, filters, kanban)
 - `useDashboardStore` - Dashboard data for My Dashboard and Team Dashboard (deadlines, pipeline, financials, stale deals, workload, recently closed) with per-section loading states
+- `useCalendarStore` - Calendar state: view mode, current date, scope (my/team deals), owner filter, visible event types, event data with date-range caching, fetch deduplication
 - `automatorBuilderStore` - Canvas state: nodes, edges, viewport, selected node, dirty flag, breadcrumb stack (parent→child navigation)
 
 **React Context:**
@@ -1449,6 +1478,7 @@ export async function addUserToTeam(
 - `activityLogService.ts` - Activity log CRUD, paginated queries
 - `automatorService.ts` - Automator CRUD + publish/unpublish/duplicate/archive + parent ref management
 - `automatorInstanceService.ts` - Instance lifecycle (start/execute/cancel), step execution via RPC, realtime subscriptions, TPT calculation
+- `calendarService.ts` - Calendar RPC call (`get_calendar_events`) + transformation of DB rows to FullCalendar event format with color mapping, className assignment, and date range helpers
 - `dashboardService.ts` - Dashboard RPC calls (8 Postgres functions for My/Team Dashboard)
 - `employeeService.ts` - Employee profile CRUD, directory queries with search/filter/pagination
 - `commissionRuleService.ts` - Employee commission rule CRUD + validation (5 calculation types)
@@ -1603,12 +1633,13 @@ The ContactHub uses a master-detail pattern with two entry points:
 | Team Dashboard | TeamDashboard with pipeline overview (MTD/QTD/YTD toggle), team workload table (permission-gated), team financials, recently closed list, team activity feed | dashboardService.ts, useDashboardStore.ts |
 | Dashboard Data Layer | 8 Postgres RPC functions for server-side aggregation, Zustand store with per-section loading, dashboardService wrapping RPC calls | Postgres functions (migration 030) |
 | Admin Type Templates | AdminTypeTemplates page with Contact/Company/Employee type template management | typeTemplateService.ts |
+| Calendar | CalendarPage (month/week/day/list views), DealCalendar (FullCalendar wrapper), CalendarToolbar, CalendarFilters (scope/owner/event type), CalendarLegend, EventPopover (click-through to deal) | calendarService.ts, useCalendarStore.ts |
+| Calendar Data Layer | `deal_calendar_events` Postgres view unioning 8 event sources, `get_calendar_events()` RPC with scope/date/owner filtering, date-range caching in Zustand store | Postgres view + function (migration 031) |
 
 ### Placeholder / Not Yet Implemented
 
 | Section | Status | Notes |
 |---------|--------|-------|
-| Calendar | Placeholder | Scheduling |
 | Reports | Placeholder | Analytics |
 | Earnings History | Placeholder | Pay & Time earnings tab |
 | Employee Leaderboard | Placeholder | Employee dashboard leaderboard |
@@ -1792,6 +1823,10 @@ When writing epics, reference these existing implementations:
 | Employee directory with multi-filter | `EmployeeList.tsx` + `useEmployeeStore.ts` (search + department + status + type filters) |
 | Wait/scheduling node in workflow | `WaitNode.tsx` + `wait_show_at`/`wait_due_at` on `automator_instances` |
 | Transaction monitoring (cross-deal tasks) | `Transactions.tsx` + `TaskCard.tsx` (queries automator_instances team-wide) |
+| Read-only derived data view (Postgres → FullCalendar) | `deal_calendar_events` VIEW + `calendarService.ts` + `DealCalendar.tsx` |
+| Third-party library theming (CSS override) | `calendarStyles.css` (FullCalendar Space Force theme using app CSS variables) |
+| Client-side caching with date-range dedup | `useCalendarStore.ts` (fetchedRanges tracking, merge + deduplicate on event_id) |
+| Multi-filter toggle chips UI | `CalendarFilters.tsx` (event type chips with color indicators, scope/owner dropdowns) |
 
 ---
 
@@ -1840,6 +1875,14 @@ When writing epics, reference these existing implementations:
 | Effective commissions | `src/lib/effectiveCommissionService.ts` |
 | My Dashboard page | `src/pages/MyDashboard.tsx` |
 | Team Dashboard page | `src/pages/TeamDashboard.tsx` |
+| Calendar page | `src/pages/CalendarPage.tsx` |
+| Calendar main component | `src/components/calendar/DealCalendar.tsx` |
+| Calendar service | `src/lib/calendarService.ts` |
+| Calendar constants | `src/lib/calendarConstants.ts` |
+| Calendar store | `src/hooks/useCalendarStore.ts` |
+| Calendar types | `src/types/calendar.types.ts` |
+| Calendar styles | `src/components/calendar/calendarStyles.css` |
+| Calendar events view + RPC | `supabase/migrations/031_calendar_events_view.sql` |
 
 ### Commands
 
