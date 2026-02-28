@@ -199,3 +199,58 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* ===========================
+   PROSEMIRROR / TIPTAP STYLES
+   =========================== */
+
+.ProseMirror {
+  @apply text-sm leading-relaxed;
+}
+
+.ProseMirror p {
+  @apply mb-2;
+}
+
+.ProseMirror p:last-child {
+  @apply mb-0;
+}
+
+.ProseMirror ul {
+  @apply list-disc pl-5 mb-2;
+}
+
+.ProseMirror ol {
+  @apply list-decimal pl-5 mb-2;
+}
+
+.ProseMirror li {
+  @apply mb-0.5;
+}
+
+.ProseMirror li p {
+  @apply mb-0;
+}
+
+.ProseMirror strong {
+  @apply font-bold;
+}
+
+.ProseMirror em {
+  @apply italic;
+}
+
+.ProseMirror u {
+  @apply underline;
+}
+
+/* Placeholder */
+.ProseMirror p.is-editor-empty:first-child::before {
+  @apply text-muted-foreground pointer-events-none float-left h-0;
+  content: attr(data-placeholder);
+}
+
+/* Focus outline */
+.ProseMirror:focus {
+  @apply outline-none;
+}

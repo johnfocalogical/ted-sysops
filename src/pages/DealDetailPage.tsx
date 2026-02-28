@@ -302,6 +302,7 @@ export function DealDetailPage() {
         <div className="hidden lg:block w-80 xl:w-96 shrink-0">
           <DealSidebar
             dealId={deal.id}
+            dealNotes={deal.notes ?? null}
             activeTab={activeSidebarTab}
             onTabChange={setActiveSidebarTab}
             onTptChange={setChecklistTpt}

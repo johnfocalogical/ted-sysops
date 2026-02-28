@@ -7,6 +7,7 @@ import type { ActivityLogWithUser } from '@/types/activity.types'
 
 interface DealActivityFeedProps {
   dealId: string
+  isVisible?: boolean
 }
 
 function getInitials(name: string | null, email: string): string {
@@ -59,13 +60,13 @@ function activityIcon(activityType: string): string {
 
 const PAGE_SIZE = 20
 
-export function DealActivityFeed({ dealId }: DealActivityFeedProps) {
+export function DealActivityFeed({ dealId, isVisible }: DealActivityFeedProps) {
   const [logs, setLogs] = useState<ActivityLogWithUser[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(false)
 
-  // Initial load
+  // Load / refresh when dealId changes or tab becomes visible
   useEffect(() => {
     let cancelled = false
     getActivityLogsForEntity('deal', dealId, { limit: PAGE_SIZE, offset: 0 })
@@ -80,7 +81,7 @@ export function DealActivityFeed({ dealId }: DealActivityFeedProps) {
         if (!cancelled) setLoading(false)
       })
     return () => { cancelled = true }
-  }, [dealId])
+  }, [dealId, isVisible])
 
   const handleLoadMore = async () => {
     setLoadingMore(true)

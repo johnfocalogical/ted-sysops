@@ -1,197 +1,121 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Loader2, Trash2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
-import { toast } from 'sonner'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { Check, Loader2, AlertCircle } from 'lucide-react'
+import { RichTextEditor } from '@/components/shared/RichTextEditor'
+import { updateDeal } from '@/lib/dealService'
+import { createActivityLog } from '@/lib/activityLogService'
 import { useAuth } from '@/hooks/useAuth'
-import { getDealNotes, createDealNote, deleteDealNote } from '@/lib/dealService'
-import type { DealNoteWithUser } from '@/types/deal.types'
+import { useTeamContext } from '@/hooks/useTeamContext'
 
 interface DealNotesProps {
   dealId: string
+  initialNotes: string | null
 }
 
-function relativeTime(dateStr: string): string {
-  const now = Date.now()
-  const then = new Date(dateStr).getTime()
-  const diff = now - then
-  const seconds = Math.floor(diff / 1000)
-  const minutes = Math.floor(seconds / 60)
-  const hours = Math.floor(minutes / 60)
-  const days = Math.floor(hours / 24)
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
-  if (seconds < 60) return 'just now'
-  if (minutes < 60) return `${minutes}m ago`
-  if (hours < 24) return `${hours}h ago`
-  if (days < 7) return `${days}d ago`
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-  })
-}
-
-export function DealNotes({ dealId }: DealNotesProps) {
+export function DealNotes({ dealId, initialNotes }: DealNotesProps) {
   const { user } = useAuth()
+  const { context } = useTeamContext()
+  const teamId = context?.currentTeam?.id
 
-  const [notes, setNotes] = useState<DealNoteWithUser[]>([])
-  const [loading, setLoading] = useState(true)
-  const [content, setContent] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const latestHtmlRef = useRef<string>(initialNotes || '')
+  const pendingSaveRef = useRef(false)
 
-  const loadNotes = useCallback(async () => {
+  // Keep mutable refs for values needed by the save function
+  // so the save logic never goes stale
+  const dealIdRef = useRef(dealId)
+  const userIdRef = useRef(user?.id)
+  const teamIdRef = useRef(teamId)
+  dealIdRef.current = dealId
+  userIdRef.current = user?.id
+  teamIdRef.current = teamId
+
+  const doSave = useCallback(async (html: string) => {
+    const uid = userIdRef.current
+    const tid = teamIdRef.current
+    const did = dealIdRef.current
+    if (!uid || !tid) return
+
+    setSaveStatus('saving')
     try {
-      const data = await getDealNotes(dealId)
-      setNotes(data)
+      await updateDeal(did, { notes: html })
+      await createActivityLog(
+        {
+          team_id: tid,
+          deal_id: did,
+          entity_type: 'deal',
+          activity_type: 'updated',
+          content: 'Updated deal notes',
+        },
+        uid
+      )
+      setSaveStatus('saved')
     } catch (err) {
-      console.error('Error loading notes:', err)
+      console.error('Error saving notes:', err)
+      setSaveStatus('error')
     }
-  }, [dealId])
+  }, [])
 
+  const handleUpdate = useCallback(
+    (html: string) => {
+      latestHtmlRef.current = html
+      pendingSaveRef.current = true
+      setSaveStatus('idle')
+
+      if (timerRef.current) clearTimeout(timerRef.current)
+      timerRef.current = setTimeout(() => {
+        pendingSaveRef.current = false
+        doSave(html)
+      }, 1500)
+    },
+    [doSave]
+  )
+
+  // Flush pending save on unmount only (empty deps = runs once)
   useEffect(() => {
-    let cancelled = false
-    loadNotes().finally(() => {
-      if (!cancelled) setLoading(false)
-    })
-    return () => { cancelled = true }
-  }, [loadNotes])
-
-  const handleAdd = async () => {
-    if (!content.trim() || !user?.id) return
-
-    setIsSubmitting(true)
-    try {
-      await createDealNote({ deal_id: dealId, content: content.trim() }, user.id)
-      setContent('')
-      await loadNotes()
-    } catch (err) {
-      console.error('Error adding note:', err)
-      toast.error('Failed to add note')
-    } finally {
-      setIsSubmitting(false)
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+      }
+      if (pendingSaveRef.current) {
+        doSave(latestHtmlRef.current)
+      }
     }
-  }
-
-  const handleDelete = async (noteId: string) => {
-    try {
-      await deleteDealNote(noteId)
-      setNotes((prev) => prev.filter((n) => n.id !== noteId))
-      toast.success('Note deleted')
-    } catch (err) {
-      console.error('Error deleting note:', err)
-      toast.error('Failed to delete note')
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-      </div>
-    )
-  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className="flex flex-col h-full">
-      {/* Notes list */}
-      <div className="flex-1 overflow-y-auto px-3 py-2">
-        {notes.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-xs text-muted-foreground">
-              No notes yet. Add a note below.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {notes.map((note) => (
-              <div key={note.id} className="group">
-                <div className="flex items-baseline justify-between">
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-xs font-medium">
-                      {note.user.full_name || note.user.email}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      {relativeTime(note.created_at)}
-                    </span>
-                  </div>
-                  {user?.id === note.user_id && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <Trash2 className="h-3 w-3 text-muted-foreground" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete note?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDelete(note.id)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap leading-relaxed">
-                  {note.content}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
+      <div className="flex-1 overflow-y-auto px-3 py-3">
+        <RichTextEditor
+          content={initialNotes || ''}
+          onUpdate={handleUpdate}
+          placeholder="Add notes about this deal..."
+        />
       </div>
 
-      {/* Add note area */}
-      <div className="shrink-0 border-t p-3 space-y-2">
-        <Textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="Add a note..."
-          rows={2}
-          className="resize-none text-xs"
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-              e.preventDefault()
-              handleAdd()
-            }
-          }}
-        />
-        <div className="flex justify-end">
-          <Button
-            size="sm"
-            onClick={handleAdd}
-            disabled={!content.trim() || isSubmitting}
-            className="text-xs h-7"
-          >
-            {isSubmitting ? (
-              <Loader2 className="h-3 w-3 animate-spin mr-1" />
-            ) : null}
-            Add Note
-          </Button>
-        </div>
+      {/* Save status indicator */}
+      <div className="shrink-0 border-t px-3 py-1.5 flex items-center justify-end">
+        {saveStatus === 'saving' && (
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Saving...
+          </span>
+        )}
+        {saveStatus === 'saved' && (
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Check className="h-3 w-3" />
+            Saved
+          </span>
+        )}
+        {saveStatus === 'error' && (
+          <span className="flex items-center gap-1 text-xs text-destructive">
+            <AlertCircle className="h-3 w-3" />
+            Save failed
+          </span>
+        )}
       </div>
     </div>
   )

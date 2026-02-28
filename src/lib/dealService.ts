@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { broadcastDealEvent } from './commsEventBroadcaster'
 import type {
   Deal,
   DealStatus,
@@ -286,9 +287,21 @@ export async function createDeal(dto: CreateDealDTO, userId: string): Promise<De
 
   if (error) throw error
 
-  // Initialize empty fact rows (so they exist for upsert later)
+  // Initialize fact rows — seed contract facts with values from the deal
+  const contractFactsSeed: Record<string, unknown> = { deal_id: deal.id }
+  if (dto.contract_price) {
+    contractFactsSeed.actual_contract_price = dto.contract_price
+    contractFactsSeed.original_contract_price = dto.contract_price
+  }
+  if (dto.contract_date) {
+    contractFactsSeed.contract_date = dto.contract_date
+  }
+  if (dto.closing_date) {
+    contractFactsSeed.original_closing_date = dto.closing_date
+  }
+
   await Promise.all([
-    supabase.from('deal_contract_facts').insert({ deal_id: deal.id }),
+    supabase.from('deal_contract_facts').insert(contractFactsSeed),
     supabase.from('deal_property_facts').insert({ deal_id: deal.id }),
     supabase.from('deal_facts').insert({ deal_id: deal.id }),
     supabase.from('deal_disposition').insert({ deal_id: deal.id }),
@@ -303,6 +316,17 @@ export async function createDeal(dto: CreateDealDTO, userId: string): Promise<De
 export async function updateDeal(dealId: string, dto: UpdateDealDTO): Promise<Deal> {
   if (!supabase) throw new Error('Supabase not configured')
 
+  // Capture old status before update for broadcast comparison
+  let oldStatus: string | undefined
+  if (dto.status) {
+    const { data: existing } = await supabase
+      .from('deals')
+      .select('status')
+      .eq('id', dealId)
+      .single()
+    oldStatus = existing?.status
+  }
+
   const { data, error } = await supabase
     .from('deals')
     .update(dto)
@@ -312,6 +336,15 @@ export async function updateDeal(dealId: string, dto: UpdateDealDTO): Promise<De
     .single()
 
   if (error) throw error
+
+  // Broadcast status change
+  if (dto.status && dto.status !== oldStatus) {
+    broadcastDealEvent(dealId, data.team_id, 'status_change', {
+      oldStatus,
+      newStatus: dto.status,
+    })
+  }
+
   return data
 }
 
@@ -456,6 +489,13 @@ export async function createDealExpense(dto: CreateDealExpenseDTO, userId: strin
     .select()
     .single()
   if (error) throw error
+
+  // Broadcast financial event
+  broadcastDealEvent(dto.deal_id, null, 'financial_event', {
+    expenseCategory: dto.category,
+    expenseAmount: dto.amount,
+  })
+
   return data
 }
 
@@ -560,6 +600,14 @@ export async function updateDealChecklistItem(itemId: string, dto: UpdateDealChe
     .select()
     .single()
   if (error) throw error
+
+  // Broadcast checklist completion
+  if (dto.is_checked === true) {
+    broadcastDealEvent(data.deal_id, null, 'checklist_completion', {
+      checklistItem: data.label ?? data.item_key,
+    })
+  }
+
   return data
 }
 
@@ -674,6 +722,21 @@ export async function createDealEmployee(dto: CreateDealEmployeeDTO): Promise<De
     .select()
     .single()
   if (error) throw error
+
+  // Broadcast employee assignment — resolve name asynchronously
+  supabase
+    .from('users')
+    .select('full_name')
+    .eq('id', dto.user_id)
+    .single()
+    .then(({ data: user }) => {
+      broadcastDealEvent(dto.deal_id, null, 'employee_change', {
+        personName: user?.full_name ?? undefined,
+        role: dto.role,
+        action: 'assigned',
+      })
+    })
+
   return data
 }
 
@@ -691,8 +754,26 @@ export async function updateDealEmployee(employeeId: string, dto: UpdateDealEmpl
 
 export async function deleteDealEmployee(employeeId: string): Promise<void> {
   if (!supabase) throw new Error('Supabase not configured')
+
+  // Fetch before delete for broadcast
+  const { data: emp } = await supabase
+    .from('deal_employees')
+    .select('deal_id, user_id, role, user:users!deal_employees_user_id_fkey(full_name)')
+    .eq('id', employeeId)
+    .single()
+
   const { error } = await supabase.from('deal_employees').delete().eq('id', employeeId)
   if (error) throw error
+
+  // Broadcast removal
+  if (emp) {
+    const user = emp.user as { full_name: string | null } | null
+    broadcastDealEvent(emp.deal_id, null, 'employee_change', {
+      personName: user?.full_name ?? undefined,
+      role: emp.role ?? undefined,
+      action: 'removed',
+    })
+  }
 }
 
 // ============================================================================
@@ -728,6 +809,36 @@ export async function createDealVendor(dto: CreateDealVendorDTO): Promise<DealVe
     .select()
     .single()
   if (error) throw error
+
+  // Broadcast vendor addition — resolve name asynchronously
+  if (dto.contact_id) {
+    supabase
+      .from('contacts')
+      .select('first_name, last_name')
+      .eq('id', dto.contact_id)
+      .single()
+      .then(({ data: contact }) => {
+        broadcastDealEvent(dto.deal_id, null, 'vendor_change', {
+          personName: contact ? `${contact.first_name ?? ''} ${contact.last_name ?? ''}`.trim() : undefined,
+          role: dto.role,
+          action: 'assigned',
+        })
+      })
+  } else if (dto.company_id) {
+    supabase
+      .from('companies')
+      .select('name')
+      .eq('id', dto.company_id)
+      .single()
+      .then(({ data: company }) => {
+        broadcastDealEvent(dto.deal_id, null, 'vendor_change', {
+          personName: company?.name ?? undefined,
+          role: dto.role,
+          action: 'assigned',
+        })
+      })
+  }
+
   return data
 }
 
@@ -745,6 +856,32 @@ export async function updateDealVendor(vendorId: string, dto: UpdateDealVendorDT
 
 export async function deleteDealVendor(vendorId: string): Promise<void> {
   if (!supabase) throw new Error('Supabase not configured')
+
+  // Fetch before delete for broadcast
+  const { data: vendor } = await supabase
+    .from('deal_vendors')
+    .select(`
+      deal_id, role,
+      contact:contacts!deal_vendors_contact_id_fkey(first_name, last_name),
+      company:companies!deal_vendors_company_id_fkey(name)
+    `)
+    .eq('id', vendorId)
+    .single()
+
   const { error } = await supabase.from('deal_vendors').delete().eq('id', vendorId)
   if (error) throw error
+
+  // Broadcast removal
+  if (vendor) {
+    const contact = vendor.contact as { first_name: string | null; last_name: string | null } | null
+    const company = vendor.company as { name: string | null } | null
+    const name = contact
+      ? `${contact.first_name ?? ''} ${contact.last_name ?? ''}`.trim()
+      : company?.name ?? undefined
+    broadcastDealEvent(vendor.deal_id, null, 'vendor_change', {
+      personName: name,
+      role: vendor.role ?? undefined,
+      action: 'removed',
+    })
+  }
 }
