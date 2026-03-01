@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Check, ChevronsUpDown, X, Plus } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -29,23 +29,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
 import { Separator } from '@/components/ui/separator'
+import { DatePickerField } from '@/components/shared/DatePickerField'
 import { toast } from 'sonner'
 import { createDeal } from '@/lib/dealService'
+import { searchContacts, createContact } from '@/lib/contactService'
 import { DEAL_TYPE_LABELS } from '@/types/deal.types'
 import type { DealType } from '@/types/deal.types'
+import { cn } from '@/lib/utils'
 
 const createDealSchema = z.object({
   address: z.string().min(1, 'Address is required'),
   city: z.string().optional(),
   state: z.string().optional(),
   zip: z.string().optional(),
-  deal_type: z.enum(['wholesale', 'listing', 'novation', 'purchase'], {
-    required_error: 'Deal type is required',
-  }),
+  deal_type: z.enum(['wholesale', 'listing', 'novation', 'purchase']),
   contract_price: z.string().optional(),
   contract_date: z.string().optional(),
   closing_date: z.string().optional(),
+  seller_contact_id: z.string().optional(),
   notes: z.string().optional(),
 })
 
@@ -60,6 +75,19 @@ interface CreateDealModalProps {
   onDealCreated: () => void
 }
 
+// Format a number as currency display string
+function formatCurrencyDisplay(value: string): string {
+  const cleaned = value.replace(/[^0-9.-]/g, '')
+  const num = parseFloat(cleaned)
+  if (isNaN(num)) return ''
+  return num.toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  })
+}
+
 export function CreateDealModal({
   open,
   onOpenChange,
@@ -71,8 +99,24 @@ export function CreateDealModal({
   const navigate = useNavigate()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Currency field state
+  const [priceFocused, setPriceFocused] = useState(false)
+
+  // Seller picker state
+  const [sellerOpen, setSellerOpen] = useState(false)
+  const [sellerSearch, setSellerSearch] = useState('')
+  const [sellerResults, setSellerResults] = useState<{ id: string; first_name: string; last_name: string | null }[]>([])
+  const [sellerName, setSellerName] = useState('')
+  const sellerDebounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  // Inline contact creation state
+  const [creatingContact, setCreatingContact] = useState(false)
+  const [newFirstName, setNewFirstName] = useState('')
+  const [newLastName, setNewLastName] = useState('')
+  const [savingContact, setSavingContact] = useState(false)
+
   const form = useForm<CreateDealFormData>({
-    resolver: zodResolver(createDealSchema),
+    resolver: zodResolver(createDealSchema) as any,
     defaultValues: {
       address: '',
       city: '',
@@ -82,9 +126,47 @@ export function CreateDealModal({
       contract_price: '',
       contract_date: '',
       closing_date: '',
+      seller_contact_id: '',
       notes: '',
     },
   })
+
+  // Reset seller state when modal closes
+  useEffect(() => {
+    if (!open) {
+      setSellerName('')
+      setSellerSearch('')
+      setSellerResults([])
+      setCreatingContact(false)
+      setNewFirstName('')
+      setNewLastName('')
+    }
+  }, [open])
+
+  // Search contacts as user types
+  useEffect(() => {
+    if (sellerDebounceRef.current) clearTimeout(sellerDebounceRef.current)
+
+    if (!sellerSearch.trim()) {
+      // Load initial results when opening (show all)
+      if (sellerOpen) {
+        searchContacts(teamId, '', 20)
+          .then(setSellerResults)
+          .catch(() => setSellerResults([]))
+      }
+      return
+    }
+
+    sellerDebounceRef.current = setTimeout(() => {
+      searchContacts(teamId, sellerSearch, 20)
+        .then(setSellerResults)
+        .catch(() => setSellerResults([]))
+    }, 200)
+
+    return () => {
+      if (sellerDebounceRef.current) clearTimeout(sellerDebounceRef.current)
+    }
+  }, [sellerSearch, sellerOpen, teamId])
 
   async function onSubmit(data: CreateDealFormData) {
     setIsSubmitting(true)
@@ -105,6 +187,7 @@ export function CreateDealModal({
           contract_price: contractPrice && !isNaN(contractPrice) ? contractPrice : undefined,
           contract_date: data.contract_date || undefined,
           closing_date: data.closing_date || undefined,
+          seller_contact_id: data.seller_contact_id || undefined,
           notes: data.notes || undefined,
         },
         userId
@@ -230,6 +313,161 @@ export function CreateDealModal({
                 )}
               />
 
+              {/* Seller Contact Picker */}
+              <FormField
+                control={form.control}
+                name="seller_contact_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Seller</FormLabel>
+                    <Popover open={sellerOpen} onOpenChange={setSellerOpen}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                              'w-full justify-between font-normal',
+                              !field.value && 'text-muted-foreground'
+                            )}
+                          >
+                            {field.value ? sellerName : 'Select seller...'}
+                            {field.value ? (
+                              <X
+                                className="ml-2 h-4 w-4 shrink-0 opacity-50 hover:opacity-100"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  field.onChange('')
+                                  setSellerName('')
+                                }}
+                              />
+                            ) : (
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            )}
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                        {creatingContact ? (
+                          <div className="p-3 space-y-3">
+                            <p className="text-sm font-medium">New Contact</p>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Input
+                                placeholder="First name *"
+                                value={newFirstName}
+                                onChange={(e) => setNewFirstName(e.target.value)}
+                                autoFocus
+                              />
+                              <Input
+                                placeholder="Last name"
+                                value={newLastName}
+                                onChange={(e) => setNewLastName(e.target.value)}
+                              />
+                            </div>
+                            <div className="flex gap-2 justify-end">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setCreatingContact(false)
+                                  setNewFirstName('')
+                                  setNewLastName('')
+                                }}
+                                disabled={savingContact}
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                className="bg-primary hover:bg-primary/90"
+                                disabled={!newFirstName.trim() || savingContact}
+                                onClick={async () => {
+                                  setSavingContact(true)
+                                  try {
+                                    const contact = await createContact(
+                                      {
+                                        team_id: teamId,
+                                        first_name: newFirstName.trim(),
+                                        last_name: newLastName.trim() || undefined,
+                                      },
+                                      userId
+                                    )
+                                    const name = [contact.first_name, contact.last_name].filter(Boolean).join(' ')
+                                    field.onChange(contact.id)
+                                    setSellerName(name)
+                                    setSellerOpen(false)
+                                    setCreatingContact(false)
+                                    setNewFirstName('')
+                                    setNewLastName('')
+                                    toast.success('Contact created')
+                                  } catch {
+                                    toast.error('Failed to create contact')
+                                  } finally {
+                                    setSavingContact(false)
+                                  }
+                                }}
+                              >
+                                {savingContact && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
+                                Create
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <Command shouldFilter={false}>
+                            <CommandInput
+                              placeholder="Search contacts..."
+                              value={sellerSearch}
+                              onValueChange={setSellerSearch}
+                            />
+                            <CommandList>
+                              <CommandEmpty>No contacts found.</CommandEmpty>
+                              <CommandGroup>
+                                {sellerResults.map((contact) => {
+                                  const name = [contact.first_name, contact.last_name].filter(Boolean).join(' ')
+                                  return (
+                                    <CommandItem
+                                      key={contact.id}
+                                      value={contact.id}
+                                      onSelect={() => {
+                                        field.onChange(contact.id)
+                                        setSellerName(name)
+                                        setSellerOpen(false)
+                                        setSellerSearch('')
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          'mr-2 h-4 w-4',
+                                          field.value === contact.id ? 'opacity-100' : 'opacity-0'
+                                        )}
+                                      />
+                                      {name}
+                                    </CommandItem>
+                                  )
+                                })}
+                              </CommandGroup>
+                            </CommandList>
+                            <div className="border-t p-1">
+                              <button
+                                type="button"
+                                className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                                onClick={() => setCreatingContact(true)}
+                              >
+                                <Plus className="h-4 w-4" />
+                                Create new contact
+                              </button>
+                            </div>
+                          </Command>
+                        )}
+                      </PopoverContent>
+                    </Popover>
+                  </FormItem>
+                )}
+              />
+
+              {/* Contract Price with format-on-blur */}
               <FormField
                 control={form.control}
                 name="contract_price"
@@ -237,7 +475,17 @@ export function CreateDealModal({
                   <FormItem>
                     <FormLabel>Contract Price</FormLabel>
                     <FormControl>
-                      <Input placeholder="$0" {...field} />
+                      <Input
+                        placeholder="$0"
+                        className="tabular-nums"
+                        value={priceFocused ? field.value : (field.value ? formatCurrencyDisplay(field.value) : '')}
+                        onFocus={() => setPriceFocused(true)}
+                        onChange={(e) => field.onChange(e.target.value)}
+                        onBlur={() => {
+                          setPriceFocused(false)
+                          field.onBlur()
+                        }}
+                      />
                     </FormControl>
                   </FormItem>
                 )}
@@ -260,7 +508,10 @@ export function CreateDealModal({
                     <FormItem>
                       <FormLabel>Contract Date</FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} />
+                        <DatePickerField
+                          value={field.value ?? ''}
+                          onChange={field.onChange}
+                        />
                       </FormControl>
                     </FormItem>
                   )}
@@ -272,7 +523,10 @@ export function CreateDealModal({
                     <FormItem>
                       <FormLabel>Closing Date</FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} />
+                        <DatePickerField
+                          value={field.value ?? ''}
+                          onChange={field.onChange}
+                        />
                       </FormControl>
                     </FormItem>
                   )}

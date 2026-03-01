@@ -14,6 +14,7 @@ import { EndNode } from './nodes/EndNode'
 import { DecisionNode } from './nodes/DecisionNode'
 import { DataCollectionNode } from './nodes/DataCollectionNode'
 import { WaitNode } from './nodes/WaitNode'
+import { MessageConfirmationNode } from './nodes/MessageConfirmationNode'
 import { BuilderEdge } from './edges/BuilderEdge'
 import { QuickAddMenu } from './QuickAddMenu'
 import type { AutomatorNodeType } from '@/types/automator.types'
@@ -25,6 +26,7 @@ const nodeTypes: NodeTypes = {
   decision: DecisionNode,
   dataCollection: DataCollectionNode,
   wait: WaitNode,
+  messageConfirmation: MessageConfirmationNode,
 }
 
 // Register custom edge types - MUST be outside component to prevent re-renders
@@ -261,6 +263,8 @@ function AutomatorCanvasInner({ onNodeSelect }: AutomatorCanvasProps) {
         return '#00d2af'
       case 'wait':
         return '#f59e0b'
+      case 'messageConfirmation':
+        return '#7c3aed'
       default:
         return '#6b7280'
     }
@@ -289,7 +293,7 @@ function AutomatorCanvasInner({ onNodeSelect }: AutomatorCanvasProps) {
         fitView
         fitViewOptions={fitViewOptions}
         defaultEdgeOptions={defaultEdgeOptions}
-        connectionLineType="smoothstep"
+        connectionLineType={"smoothstep" as any}
         snapToGrid
         snapGrid={snapGrid}
         deleteKeyCode={deleteKeyCode}

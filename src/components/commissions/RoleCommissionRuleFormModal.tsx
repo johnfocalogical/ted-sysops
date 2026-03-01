@@ -155,7 +155,8 @@ export function RoleCommissionRuleFormModal({
   >([{ role: '', multiplier: 1 }])
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       name: '',
       calculation_type: 'flat_fee',
@@ -185,7 +186,7 @@ export function RoleCommissionRuleFormModal({
         notes: rule.notes || '',
       }
 
-      const config = rule.configuration as Record<string, unknown>
+      const config = rule.configuration as unknown as Record<string, unknown>
 
       switch (rule.calculation_type) {
         case 'flat_fee':

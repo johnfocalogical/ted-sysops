@@ -33,6 +33,12 @@ export const NODE_COLORS = {
     icon: 'text-amber-500',
     handle: 'bg-amber-500',
   },
+  messageConfirmation: {
+    bg: 'bg-accent/10',
+    border: 'border-accent',
+    icon: 'text-accent',
+    handle: 'bg-accent',
+  },
 } as const
 
 export const NODE_BASE_STYLES = {

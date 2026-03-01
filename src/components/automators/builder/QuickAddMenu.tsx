@@ -1,10 +1,11 @@
-import { Zap, HelpCircle, Flag, Clock } from 'lucide-react'
+import { Zap, HelpCircle, Flag, Clock, MessageSquare } from 'lucide-react'
 import type { AutomatorNodeType } from '@/types/automator.types'
 
 const QUICK_ADD_ITEMS: { type: AutomatorNodeType; label: string; icon: typeof HelpCircle }[] = [
   { type: 'dataCollection', label: 'Action', icon: Zap },
   { type: 'decision', label: 'Decision', icon: HelpCircle },
   { type: 'wait', label: 'Wait', icon: Clock },
+  { type: 'messageConfirmation', label: 'Confirmation', icon: MessageSquare },
   { type: 'end', label: 'End', icon: Flag },
 ]
 

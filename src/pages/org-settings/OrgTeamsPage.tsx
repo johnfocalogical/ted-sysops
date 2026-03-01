@@ -199,9 +199,10 @@ export function OrgTeamsPage() {
       {organization && (
         <CreateTeamModal
           open={createModalOpen}
-          onOpenChange={setCreateModalOpen}
+          onClose={() => setCreateModalOpen(false)}
           orgId={organization.id}
-          onTeamCreated={handleTeamCreated}
+          orgName={organization.name}
+          onCreated={() => handleTeamCreated()}
         />
       )}
 

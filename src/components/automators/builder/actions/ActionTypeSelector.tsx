@@ -16,6 +16,7 @@ import {
   Eye,
   ArrowRightLeft,
   Zap,
+  MessageSquare,
 } from 'lucide-react'
 import { useState } from 'react'
 import type { ActionType, AutomatorAction } from '@/types/automator.types'
@@ -124,6 +125,22 @@ const ACTION_GROUPS: { label: string; actions: ActionOption[] }[] = [
       },
     ],
   },
+  {
+    label: 'Communication',
+    actions: [
+      {
+        type: 'send_message',
+        label: 'Send Message',
+        description: 'Send a message to a conversation',
+        icon: MessageSquare,
+        defaultParams: {
+          target: 'deal_chat',
+          message_content: { source: 'static', value: '' },
+          include_deal_link: true,
+        },
+      },
+    ],
+  },
 ]
 
 export function ActionTypeSelector({ onSelect }: ActionTypeSelectorProps) {
@@ -161,7 +178,9 @@ export function ActionTypeSelector({ onSelect }: ActionTypeSelectorProps) {
                   className="w-full flex items-start gap-2 px-2 py-1.5 rounded-sm hover:bg-accent text-left text-xs"
                 >
                   <Icon className={`h-3.5 w-3.5 mt-0.5 shrink-0 ${
-                    action.type === 'trigger_automator' ? 'text-purple-500' : 'text-primary'
+                    action.type === 'trigger_automator' || action.type === 'send_message'
+                      ? 'text-purple-500'
+                      : 'text-primary'
                   }`} />
                   <div>
                     <div className="font-medium">{action.label}</div>

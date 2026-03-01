@@ -13,6 +13,7 @@ export type SectionKey =
   | 'pay_time'
   | 'team'
   | 'whiteboard'
+  | 'comms'
   | 'contacts'
   | 'employees'
   | 'transactions'
@@ -29,6 +30,7 @@ export interface TeamRole {
   team_id: string
   name: string
   description: string | null
+  color?: string
   permissions: RolePermissions
   is_default: boolean
   template_id: string | null

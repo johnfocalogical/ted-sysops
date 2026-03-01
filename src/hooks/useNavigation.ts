@@ -46,6 +46,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'My Pay & Time', route: 'pay-time', icon: 'Wallet', section: 'pay_time' },
   { label: 'Team Dashboard', route: 'team', icon: 'Users', section: 'team' },
   { label: 'Whiteboard', route: 'whiteboard', icon: 'Kanban', section: 'whiteboard' },
+  { label: 'Comms', route: 'comms', icon: 'MessageSquare', section: 'comms' },
   { label: 'Contact Hub', route: 'contacts', icon: 'Contact', section: 'contacts' },
   { label: 'Employee Sentinel', route: 'employees', icon: 'UserCog', section: 'employees' },
   { label: 'Transaction Guardian', route: 'transactions', icon: 'Shield', section: 'transactions' },

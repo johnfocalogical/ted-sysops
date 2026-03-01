@@ -1,4 +1,4 @@
-import { Play, StopCircle, HelpCircle, Zap, Clock } from 'lucide-react'
+import { Play, StopCircle, HelpCircle, Zap, Clock, MessageSquare } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { AutomatorNodeType } from '@/types/automator.types'
 
@@ -45,6 +45,13 @@ const nodeTypes: NodeTypeConfig[] = [
     description: 'Time delay',
     icon: Clock,
     color: 'text-amber-500 bg-amber-500/10 border-amber-500/30',
+  },
+  {
+    type: 'messageConfirmation',
+    label: 'Confirmation',
+    description: 'Chat-based confirm',
+    icon: MessageSquare,
+    color: 'text-accent bg-accent/10 border-accent/30',
   },
 ]
 

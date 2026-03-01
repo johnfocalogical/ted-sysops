@@ -131,7 +131,7 @@ export function CustomFieldInput({
         return (
           <NumberInput
             name={name}
-            value={getNumberValue()}
+            value={getNumberValue() ?? 0}
             onChange={(v) => onChange(v)}
             description={description}
             isRequired={is_required}
@@ -144,7 +144,7 @@ export function CustomFieldInput({
         return (
           <CurrencyInput
             name={name}
-            value={getNumberValue()}
+            value={getNumberValue() ?? 0}
             onChange={(v) => onChange(v)}
             description={description}
             isRequired={is_required}

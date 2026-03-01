@@ -348,5 +348,5 @@ export async function getTeamMembersForMentions(
 
   if (error) throw error
 
-  return (data || []).map((row: { user: MentionedUser }) => row.user)
+  return ((data || []) as unknown as { user: MentionedUser }[]).map((row) => row.user)
 }

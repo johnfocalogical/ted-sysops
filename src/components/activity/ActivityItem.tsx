@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import {
   Activity,
@@ -67,6 +67,7 @@ export function ActivityItem({
   compact = false,
 }: ActivityItemProps) {
   const [showDetails, setShowDetails] = useState(false)
+  const meta = activity.metadata as Record<string, string> | null
 
   const userName = activity.user?.full_name || activity.user?.email || 'Unknown user'
   const userInitials = userName.slice(0, 2).toUpperCase()
@@ -164,18 +165,18 @@ export function ActivityItem({
               )}
 
             {/* Department change */}
-            {activity.metadata.from_department_name !== undefined && (
+            {(meta?.from_department_name !== undefined && (
               <div className="flex gap-2">
                 <span className="font-medium min-w-[120px]">Department:</span>
                 <span className="text-red-500 line-through">
-                  {(activity.metadata.from_department_name as string) || '(none)'}
+                  {meta.from_department_name || '(none)'}
                 </span>
                 <span className="text-muted-foreground">&rarr;</span>
                 <span className="text-green-600">
-                  {(activity.metadata.to_department_name as string) || '(none)'}
+                  {meta.to_department_name || '(none)'}
                 </span>
               </div>
-            )}
+            )) as ReactNode}
 
             {/* Role changes */}
             {activity.metadata.before_roles !== undefined && (
@@ -204,7 +205,7 @@ export function ActivityItem({
             )}
 
             {/* Commission rule before/after */}
-            {activity.metadata.previous_rule && (
+            {!!activity.metadata.previous_rule && (
               <div>
                 <span className="font-medium">Previous values:</span>
                 <pre className="mt-1 text-[10px] text-muted-foreground overflow-x-auto">

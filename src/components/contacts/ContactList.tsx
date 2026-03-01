@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { Search, Loader2, Users } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -33,7 +33,6 @@ export function ContactList({ onContactClick }: ContactListProps) {
     setPage,
     setSearch,
     setTypeFilter,
-    loadContacts,
     loadContactTypes,
   } = useContactStore()
 

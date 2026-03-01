@@ -1,7 +1,5 @@
 import { supabase } from './supabase'
 import type {
-  OrganizationMember,
-  OrganizationMemberWithUser,
   OrgMemberWithTeams,
   TeamWithMemberCount,
   OrganizationWithDetails,
@@ -23,7 +21,7 @@ export async function isOrgOwner(orgId: string, userId: string): Promise<boolean
       .select('is_owner')
       .eq('organization_id', orgId)
       .eq('user_id', userId)
-      .single()
+      .maybeSingle()
 
     if (!error && data) {
       return data.is_owner
@@ -235,12 +233,12 @@ export async function getAllOrgUsers(orgId: string): Promise<OrgMemberWithTeams[
   })
 
   // 5. Combine into result, sorted by owner status then name
-  const result: OrgMemberWithTeams[] = userIds.map((userId) => {
+  const result = userIds.map((userId) => {
     const user = usersMap.get(userId)
     const isOwner = ownerMap.get(userId) ?? false
 
     return {
-      id: `org-user-${userId}`, // Synthetic ID since user may not be in organization_members
+      id: `org-user-${userId}`,
       organization_id: orgId,
       user_id: userId,
       is_owner: isOwner,
@@ -249,7 +247,7 @@ export async function getAllOrgUsers(orgId: string): Promise<OrgMemberWithTeams[
       user: user || { id: userId, email: '', full_name: null, avatar_url: null },
       teams: teamsMap.get(userId) || [],
     }
-  })
+  }) as OrgMemberWithTeams[]
 
   // Sort: owners first, then by name/email
   return result.sort((a, b) => {
@@ -333,7 +331,7 @@ export async function getOrganizationMembers(orgId: string): Promise<OrgMemberWi
       user: user || { id: m.user_id, email: '', full_name: null, avatar_url: null },
       teams: teamsMap.get(m.user_id) || [],
     }
-  })
+  }) as OrgMemberWithTeams[]
 }
 
 /**

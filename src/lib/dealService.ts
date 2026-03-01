@@ -118,7 +118,7 @@ export async function getDealMetrics(teamId: string): Promise<DealStatusMetric[]
     entry.count++
 
     // Estimated gross profit = best sale price - contract price
-    const disp = deal.disposition as {
+    const disp = deal.disposition as unknown as {
       actual_sale_price: number | null
       updated_projected_sale_price: number | null
       original_projected_sale_price: number | null
@@ -767,7 +767,7 @@ export async function deleteDealEmployee(employeeId: string): Promise<void> {
 
   // Broadcast removal
   if (emp) {
-    const user = emp.user as { full_name: string | null } | null
+    const user = emp.user as unknown as { full_name: string | null } | null
     broadcastDealEvent(emp.deal_id, null, 'employee_change', {
       personName: user?.full_name ?? undefined,
       role: emp.role ?? undefined,
@@ -873,8 +873,8 @@ export async function deleteDealVendor(vendorId: string): Promise<void> {
 
   // Broadcast removal
   if (vendor) {
-    const contact = vendor.contact as { first_name: string | null; last_name: string | null } | null
-    const company = vendor.company as { name: string | null } | null
+    const contact = vendor.contact as unknown as { first_name: string | null; last_name: string | null } | null
+    const company = vendor.company as unknown as { name: string | null } | null
     const name = contact
       ? `${contact.first_name ?? ''} ${contact.last_name ?? ''}`.trim()
       : company?.name ?? undefined

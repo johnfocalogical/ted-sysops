@@ -179,7 +179,7 @@ export function EditMemberModal({
             .from('employee_profiles')
             .select('id')
             .eq('team_member_id', member.id)
-            .single()
+            .maybeSingle()
 
           if (epData) {
             const beforeRoleNames = roles

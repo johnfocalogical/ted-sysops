@@ -32,6 +32,7 @@ export type ActionType =
   | 'create_showing'
   | 'update_deal_status'
   | 'trigger_automator'
+  | 'send_message'
 
 /** Where an action gets its value at execution time */
 export type ValueSource =
@@ -94,6 +95,20 @@ export interface TriggerAutomatorParams {
   automator_id: string
 }
 
+/** Target for send_message action */
+export type SendMessageTarget = 'deal_chat' | 'channel' | 'new_group'
+
+/** Params for send_message: send a message to a conversation */
+export interface SendMessageActionParams {
+  target: SendMessageTarget
+  channel_id?: string
+  participant_ids?: string[]
+  include_deal_employees?: boolean
+  include_deal_owner?: boolean
+  message_content: ValueSource
+  include_deal_link: boolean
+}
+
 /** Union of all action param types */
 export type ActionParams =
   | SetDealFieldParams
@@ -105,6 +120,7 @@ export type ActionParams =
   | CreateShowingParams
   | UpdateDealStatusParams
   | TriggerAutomatorParams
+  | SendMessageActionParams
 
 /** A configured backend action on an automator node */
 export interface AutomatorAction {
@@ -153,7 +169,7 @@ export interface DataCollectionField {
 // Node Types
 // ============================================================================
 
-export type AutomatorNodeType = 'start' | 'end' | 'decision' | 'dataCollection' | 'wait'
+export type AutomatorNodeType = 'start' | 'end' | 'decision' | 'dataCollection' | 'wait' | 'messageConfirmation'
 
 /** Base node data shared by all node types */
 export interface BaseNodeData {
@@ -231,6 +247,21 @@ export function formatDuration(d: WaitDuration): string {
   return parts.length > 0 ? parts.join(' ') : '0h'
 }
 
+// Message Confirmation Node - Pause workflow and wait for chat-based confirmation
+export type MessageConfirmationAssignee = 'specific_user' | 'deal_owner' | 'any_participant'
+export type MessageConfirmationTimeoutAction = 'remind' | 'default_branch'
+
+export interface MessageConfirmationNodeData extends BaseNodeData {
+  type: 'messageConfirmation'
+  prompt_message: ValueSource
+  assignee: MessageConfirmationAssignee
+  assignee_user_id?: string
+  confirmation_method: 'button'
+  timeout_hours?: number
+  timeout_action?: MessageConfirmationTimeoutAction
+  reminder_message?: string
+}
+
 // Union type for all node data
 export type AutomatorNodeData =
   | StartNodeData
@@ -238,6 +269,7 @@ export type AutomatorNodeData =
   | DecisionNodeData
   | DataCollectionNodeData
   | WaitNodeData
+  | MessageConfirmationNodeData
 
 // React Flow Node with our data
 export interface AutomatorNode {

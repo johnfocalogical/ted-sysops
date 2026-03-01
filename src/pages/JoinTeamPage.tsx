@@ -91,7 +91,7 @@ export function JoinTeamPage() {
             .from('teams')
             .select('id')
             .eq('join_code', joinCode)
-            .single()
+            .maybeSingle()
 
           if (disabledTeam) {
             setPageState('disabled')
@@ -129,7 +129,7 @@ export function JoinTeamPage() {
           .select('id')
           .eq('team_id', team.id)
           .eq('user_id', user.id)
-          .single()
+          .maybeSingle()
 
         if (existingMember) {
           setPageState('already-member')

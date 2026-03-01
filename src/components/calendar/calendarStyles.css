@@ -1,0 +1,197 @@
+/* calendarStyles.css - Space Force theme overrides for FullCalendar */
+
+/* Use app theme variables for backgrounds and text */
+.deal-calendar-wrapper .fc {
+  --fc-border-color: hsl(var(--border));
+  --fc-page-bg-color: hsl(var(--card));
+  --fc-neutral-bg-color: hsl(var(--muted));
+  --fc-today-bg-color: hsl(var(--primary) / 0.05);
+  --fc-event-border-color: transparent;
+  --fc-now-indicator-color: hsl(var(--destructive));
+  font-family: 'Inter', sans-serif;
+}
+
+/* Day header styling */
+.deal-calendar-wrapper .fc-col-header-cell {
+  background: hsl(var(--muted));
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground));
+}
+
+.deal-calendar-wrapper .fc-col-header-cell-cushion {
+  padding: 8px 4px;
+}
+
+/* Day number styling */
+.deal-calendar-wrapper .fc-daygrid-day-number {
+  font-size: 0.875rem;
+  color: hsl(var(--foreground));
+  padding: 4px 8px;
+}
+
+/* Today highlight */
+.deal-calendar-wrapper .fc-day-today {
+  background: hsl(var(--primary) / 0.05) !important;
+}
+
+.deal-calendar-wrapper .fc-day-today .fc-daygrid-day-number {
+  background: hsl(var(--primary));
+  color: white;
+  border-radius: 9999px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Event chips */
+.deal-calendar-wrapper .fc-event {
+  border-radius: 4px;
+  font-size: 0.75rem;
+  padding: 1px 4px;
+  cursor: pointer;
+  border: none;
+}
+
+.deal-calendar-wrapper .fc-event:hover {
+  filter: brightness(0.9);
+}
+
+/* Extended closing: dashed border */
+.deal-calendar-wrapper .fc-event.event-extended-closing {
+  border: 1.5px dashed;
+  background: transparent !important;
+}
+
+/* Canceled showing: strikethrough */
+.deal-calendar-wrapper .fc-event.event-canceled .fc-event-title {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* On-hold deal: muted/faded */
+.deal-calendar-wrapper .fc-event.event-on-hold {
+  opacity: 0.5;
+}
+
+/* Time grid slots */
+.deal-calendar-wrapper .fc-timegrid-slot {
+  height: 48px;
+  border-color: hsl(var(--border));
+}
+
+.deal-calendar-wrapper .fc-timegrid-slot-label {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+/* +N more link */
+.deal-calendar-wrapper .fc-more-link {
+  color: hsl(var(--primary));
+  font-weight: 500;
+  font-size: 0.75rem;
+}
+
+.deal-calendar-wrapper .fc-more-link:hover {
+  color: hsl(var(--primary) / 0.8);
+  text-decoration: underline;
+}
+
+/* Days outside current month */
+.deal-calendar-wrapper .fc-day-other .fc-daygrid-day-number {
+  opacity: 0.4;
+}
+
+/* Dark mode adjustments */
+.dark .deal-calendar-wrapper .fc-event {
+  color: white;
+}
+
+/* Scrollbar styling for time grid */
+.deal-calendar-wrapper .fc-scroller {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+}
+
+/* All-day section in week/day view */
+.deal-calendar-wrapper .fc-daygrid-body {
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+/* Completed showing: slightly muted */
+.deal-calendar-wrapper .fc-event.event-showing-completed {
+  opacity: 0.7;
+}
+
+/* No-show: amber/warning tint */
+.deal-calendar-wrapper .fc-event.event-showing-no-show {
+  background: #F59E0B !important;
+  border-color: #D97706 !important;
+}
+
+/* Event title truncation in month view */
+.deal-calendar-wrapper .fc-daygrid-event .fc-event-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* List view styling */
+.deal-calendar-wrapper .fc-list {
+  border-color: hsl(var(--border));
+}
+
+.deal-calendar-wrapper .fc-list-day-cushion {
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.deal-calendar-wrapper .fc-list-event:hover td {
+  background: hsl(var(--muted) / 0.5);
+}
+
+.deal-calendar-wrapper .fc-list-event-dot {
+  border-radius: 50%;
+}
+
+/* Responsive: toolbar stacks on mobile */
+@media (max-width: 767px) {
+  .deal-calendar-wrapper .fc-col-header-cell {
+    font-size: 0.65rem;
+  }
+
+  .deal-calendar-wrapper .fc-daygrid-day-number {
+    font-size: 0.75rem;
+    padding: 2px 4px;
+  }
+
+  .deal-calendar-wrapper .fc-event {
+    font-size: 0.65rem;
+    padding: 0 2px;
+  }
+}
+
+/* Loading overlay */
+.deal-calendar-wrapper .calendar-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: hsl(var(--primary));
+  animation: calendar-loading-pulse 1.5s ease-in-out infinite;
+  z-index: 10;
+}
+
+@keyframes calendar-loading-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}

@@ -99,7 +99,7 @@ export async function getEmployeeDirectory(
 
   // Fetch contact methods for each employee
   const profileIds = (data || []).map((ep: { id: string }) => ep.id)
-  let methodsByProfile: Record<string, typeof contactMethodsData> = {}
+  let methodsByProfile: Record<string, any[]> = {}
 
   if (profileIds.length > 0) {
     const { data: contactMethodsData, error: cmError } = await supabase
@@ -297,12 +297,10 @@ export async function getEmployeeProfileByTeamMemberId(
     .from('employee_profiles')
     .select('id')
     .eq('team_member_id', teamMemberId)
-    .single()
+    .maybeSingle()
 
-  if (error) {
-    if (error.code === 'PGRST116') return null
-    throw error
-  }
+  if (error) throw error
+  if (!data) return null
 
   return getEmployeeProfileById(data.id)
 }

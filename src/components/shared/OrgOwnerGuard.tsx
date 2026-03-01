@@ -13,8 +13,8 @@ interface OrgOwnerGuardProps {
 export function OrgOwnerGuard({ children }: OrgOwnerGuardProps) {
   const { orgId } = useParams<{ orgId: string }>()
   const { user, loading: authLoading } = useAuth()
-  const { loadOrg, isOwner, loading: orgLoading } = useOrgContext()
-  const [isSuperadmin, setIsSuperadmin] = useState<boolean | null>(null)
+  const { loadOrg, loading: orgLoading } = useOrgContext()
+  const [, setIsSuperadmin] = useState<boolean | null>(null)
   const [checkingAccess, setCheckingAccess] = useState(true)
   const [hasAccess, setHasAccess] = useState(false)
 

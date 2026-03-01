@@ -47,6 +47,7 @@ import { Employees } from '@/pages/Employees'
 import { EmployeeDetailPage } from '@/pages/EmployeeDetailPage'
 import { Transactions } from '@/pages/Transactions'
 import { CalendarPage } from '@/pages/CalendarPage'
+import { CommsPage } from '@/pages/CommsPage'
 import { Reports } from '@/pages/Reports'
 import { DealDetailPage } from '@/pages/DealDetailPage'
 // Team settings pages
@@ -59,6 +60,8 @@ import { AutomatorsPage } from '@/pages/settings/AutomatorsPage'
 import { AutomatorBuilderPage } from '@/pages/settings/AutomatorBuilderPage'
 import { DepartmentsPage } from '@/pages/settings/DepartmentsPage'
 import { EmployeeTypesPage } from '@/pages/settings/EmployeeTypesPage'
+import { CommsAutomationPage } from '@/pages/settings/CommsAutomationPage'
+import { ProfilePage } from '@/pages/settings/ProfilePage'
 
 function App() {
   return (
@@ -164,6 +167,16 @@ function App() {
               <DealDetailPage />
             </SectionAccessGuard>
           } />
+          <Route path="comms" element={
+            <SectionAccessGuard section="comms">
+              <CommsPage />
+            </SectionAccessGuard>
+          } />
+          <Route path="comms/:conversationId" element={
+            <SectionAccessGuard section="comms">
+              <CommsPage />
+            </SectionAccessGuard>
+          } />
           <Route path="contacts" element={
             <SectionAccessGuard section="contacts">
               <ContactHub />
@@ -223,6 +236,8 @@ function App() {
           <Route path="automators" element={<AutomatorsPage />} />
           <Route path="departments" element={<DepartmentsPage />} />
           <Route path="employee-types" element={<EmployeeTypesPage />} />
+          <Route path="comms-automation" element={<CommsAutomationPage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
 
         {/* Automator Builder (full-page layout) */}

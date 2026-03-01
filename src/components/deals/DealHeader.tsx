@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
   Save,
@@ -8,6 +8,7 @@ import {
   User,
   Users,
   Building2,
+  MessageSquare,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -47,6 +48,10 @@ import {
   DEAL_STATUS_LABELS,
   DEAL_TYPE_LABELS,
 } from '@/types/deal.types'
+import * as commsService from '@/lib/commsService'
+import { useAuth } from '@/hooks/useAuth'
+import { useTeamContext } from '@/hooks/useTeamContext'
+import { toast } from 'sonner'
 
 // Status badge color map (Space Force themed)
 const STATUS_COLORS: Record<DealStatus, string> = {
@@ -134,7 +139,26 @@ export function DealHeader({
   onDelete,
 }: DealHeaderProps) {
   const { orgId, teamId } = useParams<{ orgId: string; teamId: string }>()
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const { hasFullAccess } = useTeamContext()
   const [pendingStatus, setPendingStatus] = useState<DealStatus | null>(null)
+  const [openingChat, setOpeningChat] = useState(false)
+  const canComms = hasFullAccess('comms')
+
+  const handleOpenChat = async () => {
+    if (!teamId || !user?.id) return
+    setOpeningChat(true)
+    try {
+      const conv = await commsService.getDealChatConversation(deal.id, teamId, user.id)
+      navigate(`/org/${orgId}/team/${teamId}/comms/${conv.id}`)
+    } catch (err) {
+      console.error('Failed to open deal chat:', err)
+      toast.error('Failed to open conversation')
+    } finally {
+      setOpeningChat(false)
+    }
+  }
 
   const handleStatusChange = (value: string) => {
     const newStatus = value as DealStatus
@@ -202,6 +226,26 @@ export function DealHeader({
                 <span className="ml-1.5 h-2 w-2 rounded-full bg-amber-400 inline-block" />
               )}
             </Button>
+
+            {canComms && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleOpenChat}
+                    disabled={openingChat}
+                  >
+                    {openingChat ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <MessageSquare className="h-4 w-4" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Open Deal Chat</TooltipContent>
+              </Tooltip>
+            )}
 
             <AlertDialog>
               <AlertDialogTrigger asChild>

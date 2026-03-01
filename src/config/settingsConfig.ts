@@ -7,6 +7,8 @@ import {
   Briefcase,
   UserCheck,
   Zap,
+  Radio,
+  User,
 } from 'lucide-react'
 
 export interface SettingsItem {
@@ -24,6 +26,19 @@ export interface SettingsCategory {
 }
 
 export const SETTINGS_CATEGORIES: SettingsCategory[] = [
+  {
+    id: 'account',
+    label: 'Account',
+    items: [
+      {
+        id: 'profile',
+        label: 'My Profile',
+        icon: User,
+        description: 'View and manage your personal account information',
+        route: 'profile',
+      },
+    ],
+  },
   {
     id: 'general',
     label: 'General',
@@ -94,6 +109,19 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
         icon: Zap,
         description: 'Create and manage workflow automations',
         route: 'automators',
+      },
+    ],
+  },
+  {
+    id: 'communication',
+    label: 'Communication',
+    items: [
+      {
+        id: 'comms-automation',
+        label: 'Comms Automation',
+        icon: Radio,
+        description: 'Configure deal event broadcasting to conversations',
+        route: 'comms-automation',
       },
     ],
   },

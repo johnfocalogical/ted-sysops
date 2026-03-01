@@ -81,6 +81,16 @@ export function InviteMemberModal({
     },
   })
 
+  // Reset state when modal opens
+  useEffect(() => {
+    if (open) {
+      form.reset()
+      setError(null)
+      setCreatedInvitationId(null)
+      setCopied(false)
+    }
+  }, [open])
+
   // Load team roles
   useEffect(() => {
     const loadRoles = async () => {
@@ -123,7 +133,7 @@ export function InviteMemberModal({
         .eq('team_id', context.team.id)
         .eq('email', data.email.toLowerCase())
         .eq('status', 'pending')
-        .single()
+        .maybeSingle()
 
       if (existingInvitation) {
         setError('There is already a pending invitation for this email')

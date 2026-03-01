@@ -33,7 +33,6 @@ export function CompanyList({ onCompanyClick }: CompanyListProps) {
     setPage,
     setSearch,
     setTypeFilter,
-    loadCompanies,
     loadCompanyTypes,
   } = useCompanyStore()
 

@@ -15,10 +15,10 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
-import type { ContactType, ContactWithDetails, ContactMethodInput } from '@/types/contact.types'
+import type { ContactType, ContactWithDetails } from '@/types/contact.types'
 import type { CompanyType } from '@/types/company.types'
 import { ContactMethodsInput } from '@/components/shared/ContactMethodsInput'
-import { CompanyTypeSectionsInput, type CompanyTypeSection } from '@/components/shared/CompanyTypeSectionsInput'
+import { CompanyTypeSectionsInput } from '@/components/shared/CompanyTypeSectionsInput'
 import { CustomFieldsForm } from '@/components/custom-fields'
 import { useCustomFields } from '@/hooks/useCustomFields'
 
@@ -47,7 +47,7 @@ const contactSchema = z.object({
           value: z.string().min(1),
           is_primary: z.boolean(),
         })
-      ).optional(),
+      ).default([]),
     })
   ).optional(),
 })
@@ -71,13 +71,13 @@ export function ContactForm({
   contact,
   contactTypes,
   companyTypes,
-  teamId,
+  teamId: _teamId,
   onSubmit,
   onCancel,
   isSubmitting = false,
 }: ContactFormProps) {
   const form = useForm<ContactFormData>({
-    resolver: zodResolver(contactSchema),
+    resolver: zodResolver(contactSchema) as any,
     defaultValues: {
       first_name: contact?.first_name || '',
       last_name: contact?.last_name || '',

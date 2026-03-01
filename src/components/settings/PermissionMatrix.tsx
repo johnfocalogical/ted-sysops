@@ -1,6 +1,6 @@
 import {
   Inbox, LayoutDashboard, Wallet, Users, Kanban, Contact, UserCog,
-  Shield, Calendar, BarChart3, Settings
+  Shield, Calendar, BarChart3,
 } from 'lucide-react'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import type { SectionKey, RolePermissions } from '@/types/role.types'
@@ -9,8 +9,8 @@ import { cn } from '@/lib/utils'
 // Section display configuration
 const SECTIONS: { key: SectionKey; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { key: 'inbox', label: 'Inbox', icon: Inbox },
-  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { key: 'pay_time', label: 'Pay & Time', icon: Wallet },
+  { key: 'dashboard', label: "User's Dashboard", icon: LayoutDashboard },
+  { key: 'pay_time', label: "User's Pay & Time", icon: Wallet },
   { key: 'team', label: 'Team Dashboard', icon: Users },
   { key: 'whiteboard', label: 'Whiteboard', icon: Kanban },
   { key: 'contacts', label: 'Contact Hub', icon: Contact },
@@ -18,7 +18,6 @@ const SECTIONS: { key: SectionKey; label: string; icon: React.ComponentType<{ cl
   { key: 'transactions', label: 'Transaction Guardian', icon: Shield },
   { key: 'calendar', label: 'Calendar', icon: Calendar },
   { key: 'reports', label: 'Reports', icon: BarChart3 },
-  { key: 'settings', label: 'Settings', icon: Settings },
 ]
 
 type AccessValue = 'none' | 'view' | 'full'
@@ -52,6 +51,7 @@ export function fromRolePermissions(perms: RolePermissions | undefined): Record<
     pay_time: 'none',
     team: 'none',
     whiteboard: 'none',
+    comms: 'none',
     contacts: 'none',
     employees: 'none',
     transactions: 'none',

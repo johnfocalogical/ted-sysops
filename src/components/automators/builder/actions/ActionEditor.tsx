@@ -15,6 +15,7 @@ import {
   Eye,
   ArrowRightLeft,
   Zap,
+  MessageSquare,
 } from 'lucide-react'
 import { ActionTypeSelector } from './ActionTypeSelector'
 import { SetDealFieldAction } from './SetDealFieldAction'
@@ -26,6 +27,7 @@ import { AddEmployeeAction } from './AddEmployeeAction'
 import { CreateShowingAction } from './CreateShowingAction'
 import { UpdateDealStatusAction } from './UpdateDealStatusAction'
 import { TriggerAutomatorAction } from './TriggerAutomatorAction'
+import { SendMessageAction } from './SendMessageAction'
 import type {
   AutomatorAction,
   ActionType,
@@ -39,6 +41,7 @@ import type {
   CreateShowingParams,
   UpdateDealStatusParams,
   TriggerAutomatorParams,
+  SendMessageActionParams,
 } from '@/types/automator.types'
 
 interface ActionEditorProps {
@@ -58,6 +61,7 @@ const ACTION_META: Record<ActionType, { label: string; icon: typeof FileEdit; co
   create_showing: { label: 'Create Showing', icon: Eye, color: 'border-l-blue-500' },
   update_deal_status: { label: 'Update Deal Status', icon: ArrowRightLeft, color: 'border-l-primary' },
   trigger_automator: { label: 'Trigger Automator', icon: Zap, color: 'border-l-purple-500' },
+  send_message: { label: 'Send Message', icon: MessageSquare, color: 'border-l-purple-500' },
 }
 
 export function ActionEditor({ actions, onChange, availableFields = [] }: ActionEditorProps) {
@@ -136,7 +140,9 @@ export function ActionEditor({ actions, onChange, availableFields = [] }: Action
                 </button>
               </div>
               <Icon className={`h-3.5 w-3.5 shrink-0 ${
-                action.action_type === 'trigger_automator' ? 'text-purple-500' : 'text-primary'
+                action.action_type === 'trigger_automator' || action.action_type === 'send_message'
+                  ? 'text-purple-500'
+                  : 'text-primary'
               }`} />
               <span className="text-xs font-medium flex-1">{meta.label}</span>
               <Button
@@ -210,6 +216,13 @@ export function ActionEditor({ actions, onChange, availableFields = [] }: Action
               <TriggerAutomatorAction
                 params={action.params as TriggerAutomatorParams}
                 onChange={(params) => handleUpdate(index, params)}
+              />
+            )}
+            {action.action_type === 'send_message' && (
+              <SendMessageAction
+                params={action.params as SendMessageActionParams}
+                onChange={(params) => handleUpdate(index, params)}
+                availableFields={availableFields}
               />
             )}
           </Card>

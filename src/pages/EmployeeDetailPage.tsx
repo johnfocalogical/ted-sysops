@@ -9,7 +9,6 @@ import {
   Mail,
   Phone,
   Shield,
-  User,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -50,7 +49,7 @@ export function EmployeeDetailPage() {
 
   // Check if user can edit this profile
   const canEdit = isAdmin() || (
-    context?.teamMember?.user_id === employee?.user.id
+    context?.membership?.user_id === employee?.user.id
   )
 
   // Load employee data

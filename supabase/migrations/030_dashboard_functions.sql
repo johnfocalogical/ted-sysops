@@ -615,9 +615,9 @@ BEGIN
   LEFT JOIN deal_disposition dd ON dd.deal_id = d.id
   LEFT JOIN deal_contract_facts cf ON cf.deal_id = d.id
   LEFT JOIN (
-    SELECT deal_id, SUM(amount) AS total
-    FROM deal_expenses
-    GROUP BY deal_id
+    SELECT de.deal_id, SUM(de.amount) AS total
+    FROM deal_expenses de
+    GROUP BY de.deal_id
   ) exp ON exp.deal_id = d.id
   WHERE d.team_id = p_team_id
     AND d.deleted_at IS NULL

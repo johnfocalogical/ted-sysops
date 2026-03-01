@@ -25,7 +25,6 @@ import { ContactMethodsInput } from '@/components/shared/ContactMethodsInput'
 import { TypeBadge } from '@/components/shared/TypeBadge'
 import type { EmployeeWithDetails, Department } from '@/types/employee.types'
 import type { TeamEmployeeType } from '@/types/type-system.types'
-import type { ContactMethodInput } from '@/types/contact.types'
 
 const employeeProfileSchema = z.object({
   job_title: z.string().optional(),

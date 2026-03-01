@@ -1,12 +1,17 @@
+import { useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, Wallet, Users, Kanban, Contact, UserCog,
   Shield, Calendar, BarChart3, Settings, ChevronLeft, ChevronRight,
-  X, Rocket
+  X, Rocket, MessageSquare
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { useNavigation, NAV_ITEMS } from '@/hooks/useNavigation'
 import { useTeamContext } from '@/hooks/useTeamContext'
+import { useCommsStore } from '@/hooks/useCommsStore'
+import { subscribeToUnreadUpdates } from '@/lib/commsService'
+import { useAuth } from '@/hooks/useAuth'
 import { cn } from '@/lib/utils'
 
 // Icon mapping
@@ -15,6 +20,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Wallet,
   Users,
   Kanban,
+  MessageSquare,
   Contact,
   UserCog,
   Shield,
@@ -26,6 +32,26 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 export function Sidebar() {
   const { collapsed, mobileOpen, toggleCollapsed, closeMobileMenu } = useNavigation()
   const { context, canAccess } = useTeamContext()
+  const { user } = useAuth()
+  const { totalUnreadCount, setTeamId, setUser, loadUnreadCount } = useCommsStore()
+
+  // Initialize comms store for unread badge
+  useEffect(() => {
+    if (context?.team.id && user?.id) {
+      setTeamId(context.team.id)
+      setUser(user.id, (user.user_metadata?.full_name as string) ?? null, (user.user_metadata?.avatar_url as string) ?? null)
+      loadUnreadCount()
+    }
+  }, [context?.team.id, user?.id])
+
+  // Realtime subscription for unread badge — always active while Sidebar is mounted
+  useEffect(() => {
+    if (!context?.team.id) return
+    const unsubscribe = subscribeToUnreadUpdates(context.team.id, () => {
+      loadUnreadCount()
+    })
+    return unsubscribe
+  }, [context?.team.id])
 
   // Build the base path for team-scoped URLs
   const basePath = context
@@ -94,13 +120,39 @@ export function Sidebar() {
                   }
                   title={collapsed ? item.label : undefined}
                 >
-                  <Icon className="h-5 w-5 flex-shrink-0" />
+                  <div className="relative flex-shrink-0">
+                    <Icon className="h-5 w-5" />
+                    {/* Collapsed badge dot */}
+                    {item.route === 'comms' && totalUnreadCount > 0 && collapsed && (
+                      <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-destructive hidden lg:block" />
+                    )}
+                  </div>
                   {!collapsed && (
-                    <span className="lg:block">{item.label}</span>
+                    <>
+                      <span className="lg:block flex-1">{item.label}</span>
+                      {item.route === 'comms' && totalUnreadCount > 0 && (
+                        <Badge
+                          variant="destructive"
+                          className="h-5 min-w-[20px] px-1.5 text-[10px] hidden lg:flex items-center justify-center"
+                        >
+                          {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
+                        </Badge>
+                      )}
+                    </>
                   )}
                   {/* Always show label on mobile even if collapsed on desktop */}
                   {collapsed && (
-                    <span className="lg:hidden">{item.label}</span>
+                    <>
+                      <span className="lg:hidden flex-1">{item.label}</span>
+                      {item.route === 'comms' && totalUnreadCount > 0 && (
+                        <Badge
+                          variant="destructive"
+                          className="h-5 min-w-[20px] px-1.5 text-[10px] lg:hidden flex items-center justify-center"
+                        >
+                          {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
+                        </Badge>
+                      )}
+                    </>
                   )}
                 </NavLink>
               </li>

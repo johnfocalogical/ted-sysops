@@ -36,12 +36,14 @@ export function PendingInvitationsNotification() {
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
-    const loadInvitations = async () => {
-      if (!supabase || !user?.email) {
-        setLoading(false)
-        return
-      }
+    if (!supabase || !user?.email) {
+      setLoading(false)
+      return
+    }
 
+    let active = true
+
+    const loadInvitations = async () => {
       try {
         const { data, error } = await supabase
           .from('team_invitations')
@@ -57,26 +59,30 @@ export function PendingInvitationsNotification() {
             ),
             inviter:users!invited_by (full_name)
           `)
-          .eq('email', user.email.toLowerCase())
+          .eq('email', user.email!.toLowerCase())
           .eq('status', 'pending')
           .gt('expires_at', new Date().toISOString())
           .order('created_at', { ascending: false })
 
-        if (!error && data) {
+        if (!error && data && active) {
           setInvitations(data as unknown as PendingInvitation[])
         }
       } catch (err) {
         console.error('Error loading invitations:', err)
       } finally {
-        setLoading(false)
+        if (active) setLoading(false)
       }
     }
 
     loadInvitations()
 
-    // Set up realtime subscription for new invitations
-    if (supabase && user?.email) {
-      const channel = supabase
+    // Defer realtime subscription to the next tick so that
+    // React StrictMode's synchronous cleanup cycle (mount → cleanup → mount)
+    // cancels the timer before the WebSocket connection starts.
+    let channel: ReturnType<typeof supabase.channel> | undefined
+    const timer = setTimeout(() => {
+      if (!active) return
+      channel = supabase!
         .channel('user-invitations')
         .on(
           'postgres_changes',
@@ -86,15 +92,17 @@ export function PendingInvitationsNotification() {
             table: 'team_invitations',
           },
           () => {
-            loadInvitations() // Reload on any change
+            if (active) loadInvitations()
           }
         )
         .subscribe()
+    }, 0)
 
-      return () => {
-        if (supabase) {
-          supabase.removeChannel(channel)
-        }
+    return () => {
+      active = false
+      clearTimeout(timer)
+      if (channel) {
+        supabase.removeChannel(channel)
       }
     }
   }, [user?.email])

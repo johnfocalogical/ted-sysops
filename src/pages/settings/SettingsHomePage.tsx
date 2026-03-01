@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input'
 import { SettingsCard } from '@/components/settings/SettingsCard'
 import { ViewOnlyBanner } from '@/components/shared/ViewOnlyBanner'
 import { usePermissions } from '@/hooks/usePermissions'
-import { SETTINGS_CATEGORIES, ALL_SETTINGS_ITEMS } from '@/config/settingsConfig'
+import { SETTINGS_CATEGORIES } from '@/config/settingsConfig'
 
 export function SettingsHomePage() {
   const { isViewOnly } = usePermissions('settings')

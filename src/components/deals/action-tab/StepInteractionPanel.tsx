@@ -29,7 +29,6 @@ import type {
   DecisionNodeData,
   DataCollectionNodeData,
   EndNodeData,
-  WaitNodeData,
 } from '@/types/automator.types'
 import { getEffectiveOptions } from '@/lib/decisionNodeUtils'
 
@@ -482,7 +481,6 @@ function WaitInteraction({
 
   const isBeforeShow = showAt && now < showAt
   const isOverdue = dueAt && now > dueAt
-  const isReady = !isBeforeShow
 
   if (isBeforeShow) {
     return (

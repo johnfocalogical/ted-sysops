@@ -16,7 +16,7 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 export function DealNotes({ dealId, initialNotes }: DealNotesProps) {
   const { user } = useAuth()
   const { context } = useTeamContext()
-  const teamId = context?.currentTeam?.id
+  const teamId = context?.team?.id
 
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)

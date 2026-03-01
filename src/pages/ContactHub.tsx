@@ -154,7 +154,6 @@ export function ContactHub() {
       <ContactDetailDrawer
         open={showContactDrawer}
         onOpenChange={setShowContactDrawer}
-        canEdit={canEdit}
       />
 
       {/* Company Drawer */}

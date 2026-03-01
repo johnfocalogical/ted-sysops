@@ -43,7 +43,6 @@ export function EmployeeList({ onEmployeeClick }: EmployeeListProps) {
     setDepartmentFilter,
     setStatusFilter,
     setEmployeeTypeFilter,
-    loadEmployees,
     loadDepartments,
     loadEmployeeTypes,
   } = useEmployeeStore()

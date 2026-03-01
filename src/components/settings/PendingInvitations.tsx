@@ -14,6 +14,12 @@ import { supabase } from '@/lib/supabase'
 import { useTeamContext } from '@/hooks/useTeamContext'
 import type { PermissionLevel } from '@/types/team-member.types'
 import { cn } from '@/lib/utils'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 interface RoleInfo {
   id: string
@@ -262,45 +268,61 @@ export function PendingInvitations({ refreshTrigger }: PendingInvitationsProps) 
               )}
             </TableCell>
             <TableCell>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => handleCopyLink(invitation.id)}
-                  title="Copy invite link"
-                >
-                  {copiedId === invitation.id ? (
-                    <Check className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => handleResend(invitation.id)}
-                  disabled={actionLoading === invitation.id}
-                  title="Resend invitation"
-                >
-                  {actionLoading === invitation.id ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <RefreshCw className="h-4 w-4" />
-                  )}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-destructive hover:text-destructive"
-                  onClick={() => handleRevoke(invitation.id)}
-                  disabled={actionLoading === invitation.id}
-                  title="Revoke invitation"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
+              <TooltipProvider delayDuration={300}>
+                <div className="flex items-center gap-1">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => handleCopyLink(invitation.id)}
+                      >
+                        {copiedId === invitation.id ? (
+                          <Check className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {copiedId === invitation.id ? 'Copied!' : 'Copy invite link'}
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => handleResend(invitation.id)}
+                        disabled={actionLoading === invitation.id}
+                      >
+                        {actionLoading === invitation.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <RefreshCw className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Resend invitation</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                        onClick={() => handleRevoke(invitation.id)}
+                        disabled={actionLoading === invitation.id}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Revoke invitation</TooltipContent>
+                  </Tooltip>
+                </div>
+              </TooltipProvider>
             </TableCell>
           </TableRow>
         ))}

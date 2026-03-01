@@ -15,6 +15,7 @@ export const SECTION_DISPLAY_NAMES: Record<SectionKey, string> = {
   pay_time: 'Pay & Time',
   team: 'Team Dashboard',
   whiteboard: 'Whiteboard',
+  comms: 'Comms',
   contacts: 'Contact Hub',
   employees: 'Employee Sentinel',
   transactions: 'Transaction Guardian',

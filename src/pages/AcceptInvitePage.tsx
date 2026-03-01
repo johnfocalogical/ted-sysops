@@ -158,7 +158,7 @@ export function AcceptInvitePage() {
           .select('id')
           .eq('team_id', invitation.team.id)
           .eq('user_id', user.id)
-          .single()
+          .maybeSingle()
 
         if (existingMember) {
           setPageState('already-member')
@@ -178,7 +178,7 @@ export function AcceptInvitePage() {
     try {
       // Use SECURITY DEFINER function to bypass RLS
       // This handles: updating invitation, creating team member, assigning roles
-      const { data, error } = await supabase.rpc('accept_invitation', {
+      const { error } = await supabase.rpc('accept_invitation', {
         p_invitation_id: invitation.id,
         p_user_id: userId,
         p_user_email: userEmail,

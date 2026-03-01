@@ -25,7 +25,7 @@ interface GroupedTeams {
 export function TeamSwitcher() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { context, availableTeams, loadAvailableTeams, isAdmin } = useTeamContext()
+  const { context, availableTeams, loadAvailableTeams } = useTeamContext()
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [orgOwnerStatus, setOrgOwnerStatus] = useState<Record<string, boolean>>({})
 

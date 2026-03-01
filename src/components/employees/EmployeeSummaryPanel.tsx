@@ -6,7 +6,6 @@ import {
   Mail,
   Phone,
   Shield,
-  User,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -148,18 +147,21 @@ export function EmployeeSummaryPanel({ employee, onClose }: EmployeeSummaryPanel
             <div className="flex items-center gap-2 text-sm">
               <Shield className="h-4 w-4 text-muted-foreground" />
               <div className="flex flex-wrap gap-1">
-                {employee.roles.map((role) => (
-                  <span
-                    key={role.id}
-                    className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-                    style={{
-                      backgroundColor: `${role.color}20`,
-                      color: role.color,
-                    }}
-                  >
-                    {role.name}
-                  </span>
-                ))}
+                {employee.roles.map((role) => {
+                  const color = (role as any).color || '#7C3AED'
+                  return (
+                    <span
+                      key={role.id}
+                      className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                      style={{
+                        backgroundColor: `${color}20`,
+                        color: color,
+                      }}
+                    >
+                      {role.name}
+                    </span>
+                  )
+                })}
               </div>
             </div>
           )}

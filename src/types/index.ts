@@ -229,3 +229,33 @@ export {
   EXPENSE_CATEGORY_LABELS,
   JV_TYPE_LABELS,
 } from './deal.types'
+
+// Calendar types
+export type {
+  CalendarEventType,
+  CalendarEventRow,
+  CalendarView,
+  CalendarScope,
+  DateRange,
+} from './calendar.types'
+
+// Comms types
+export type {
+  ConversationType,
+  MessageSenderType,
+  Conversation,
+  ConversationParticipant,
+  Message,
+  ConversationDealLink,
+  MessageAttachment,
+  MessageMetadata,
+  DealReference,
+  ContactReference,
+  FinancialReference,
+  DealSnapshot,
+  MessageConfirmation,
+  MessageWithSender,
+  ConversationPreview,
+  CreateConversationInput,
+  SendMessageInput,
+} from './comms.types'

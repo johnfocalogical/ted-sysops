@@ -1,5 +1,19 @@
 import { useState } from 'react'
-import { ChevronDown, ChevronRight, FileText } from 'lucide-react'
+import { ChevronDown, ChevronRight, FileText, Pencil, AlertTriangle } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { CurrencyField, DateField, TextField } from './DealFormFields'
 import type { DealContractFacts } from '@/types/deal.types'
 
@@ -18,9 +32,8 @@ export function ContractFactsSection({
 }: ContractFactsSectionProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded)
 
-  // Original fields become read-only after being initially set
-  const originalPriceLocked = data.original_contract_price != null
   const originalDDLocked = data.due_diligence_date != null
+  const [editOriginalPrice, setEditOriginalPrice] = useState('')
 
   return (
     <div className="border rounded-lg overflow-hidden">
@@ -90,14 +103,81 @@ export function ContractFactsSection({
             />
           </div>
 
-          {/* Original contract price (frozen after set) */}
+          {/* Original contract price (always locked, editable via warning modal) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <CurrencyField
-              label="Original Contract Price"
-              value={data.original_contract_price}
-              onChange={(v) => onChange({ original_contract_price: v })}
-              readOnly={readOnly || originalPriceLocked}
-            />
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-muted-foreground">Original Contract Price</Label>
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                  <Input
+                    type="text"
+                    className="pl-7 tabular-nums"
+                    value={data.original_contract_price != null ? data.original_contract_price.toFixed(2) : ''}
+                    readOnly
+                    disabled
+                    placeholder="0.00"
+                  />
+                </div>
+                {!readOnly && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9 flex-shrink-0"
+                        title="Edit original contract price"
+                        onClick={() => setEditOriginalPrice(
+                          data.original_contract_price != null ? data.original_contract_price.toString() : ''
+                        )}
+                      >
+                        <Pencil className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center gap-2">
+                          <AlertTriangle className="h-5 w-5 text-amber-500" />
+                          Edit Original Contract Price
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This value is used for KPI tracking and should only be changed if it was originally entered incorrectly. Changing this will affect historical performance metrics.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <div className="py-4">
+                        <Label>New Original Contract Price</Label>
+                        <div className="relative mt-1.5">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                          <Input
+                            type="text"
+                            className="pl-7 tabular-nums"
+                            value={editOriginalPrice}
+                            onChange={(e) => setEditOriginalPrice(e.target.value)}
+                            placeholder="0.00"
+                          />
+                        </div>
+                      </div>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-amber-600 hover:bg-amber-700"
+                          onClick={() => {
+                            const cleaned = editOriginalPrice.replace(/[^0-9.-]/g, '')
+                            const parsed = parseFloat(cleaned)
+                            if (!isNaN(parsed)) {
+                              onChange({ original_contract_price: parsed })
+                            }
+                          }}
+                        >
+                          Update Price
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Earnest money */}

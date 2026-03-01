@@ -314,6 +314,14 @@ export const useTeamContext = create<TeamContextState>((set, get) => ({
     const { context } = get()
     if (!context) return false
 
+    // Comms is always accessible to every user
+    if (section === 'comms') return true
+
+    // Settings access is controlled by permission_level (admin), not roles
+    if (section === 'settings') {
+      return context.membership.permission_level === 'admin'
+    }
+
     // Admins can access everything
     if (context.membership.permission_level === 'admin') return true
 
@@ -326,6 +334,14 @@ export const useTeamContext = create<TeamContextState>((set, get) => ({
   hasFullAccess: (section: SectionKey) => {
     const { context } = get()
     if (!context) return false
+
+    // Comms always has full access for every user
+    if (section === 'comms') return true
+
+    // Settings full access is controlled by permission_level (admin), not roles
+    if (section === 'settings') {
+      return context.membership.permission_level === 'admin'
+    }
 
     // Admins have full access to everything
     if (context.membership.permission_level === 'admin') return true

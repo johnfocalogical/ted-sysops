@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { User, Settings, LogOut, ChevronDown, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -16,6 +16,7 @@ import { supabase } from '@/lib/supabase'
 export function UserMenu() {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
+  const { orgId, teamId } = useParams<{ orgId: string; teamId: string }>()
   const [isSuperadmin, setIsSuperadmin] = useState(false)
 
   // Check superadmin status
@@ -76,7 +77,13 @@ export function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => navigate('/settings')}>
+        <DropdownMenuItem onClick={() => {
+          if (orgId && teamId) {
+            navigate(`/org/${orgId}/team/${teamId}/settings/profile`)
+          } else {
+            navigate('/settings')
+          }
+        }}>
           <User className="mr-2 h-4 w-4" />
           Profile
         </DropdownMenuItem>

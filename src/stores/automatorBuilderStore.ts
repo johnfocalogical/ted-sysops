@@ -26,6 +26,7 @@ import type {
   DecisionNodeData,
   DataCollectionNodeData,
   WaitNodeData,
+  MessageConfirmationNodeData,
 } from '@/types/automator.types'
 import { getEffectiveOptions } from '@/lib/decisionNodeUtils'
 
@@ -137,6 +138,15 @@ const getDefaultNodeData = (type: AutomatorNodeType): AutomatorNodeData => {
         showAfter: { days: 0, hours: 0 },
         dueIn: { days: 0, hours: 0 },
       } as WaitNodeData
+    case 'messageConfirmation':
+      return {
+        type: 'messageConfirmation',
+        label: 'Confirmation',
+        description: '',
+        prompt_message: { source: 'static', value: '' },
+        assignee: 'any_participant',
+        confirmation_method: 'button',
+      } as MessageConfirmationNodeData
     default:
       throw new Error(`Unknown node type: ${type}`)
   }
@@ -454,8 +464,8 @@ export const useAutomatorBuilderStore = create<AutomatorBuilderState>((set, get)
       id: edge.id,
       source: edge.source,
       target: edge.target,
-      sourceHandle: edge.sourceHandle,
-      targetHandle: edge.targetHandle,
+      sourceHandle: edge.sourceHandle ?? undefined,
+      targetHandle: edge.targetHandle ?? undefined,
       label: edge.label as string | undefined,
       type: (edge.type === 'builderEdge' ? 'smoothstep' : edge.type) as 'default' | 'smoothstep' | 'step' | undefined,
       animated: edge.animated,

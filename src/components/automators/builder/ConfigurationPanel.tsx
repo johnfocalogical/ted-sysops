@@ -26,12 +26,14 @@ import type {
   AutomatorNodeData,
   EndNodeData,
   DecisionNodeData,
-  DecisionOption,
   DataCollectionNodeData,
   DataCollectionField,
   DataCollectionFieldType,
   AutomatorAction,
   WaitNodeData,
+  MessageConfirmationNodeData,
+  MessageConfirmationAssignee,
+  MessageConfirmationTimeoutAction,
 } from '@/types/automator.types'
 import { getEffectiveOptions } from '@/lib/decisionNodeUtils'
 
@@ -82,7 +84,7 @@ export function ConfigurationPanel({ onClose }: ConfigurationPanelProps) {
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b">
         <h3 className="font-semibold capitalize">
-          {{ start: 'Start', end: 'End', decision: 'Decision', dataCollection: 'Action', wait: 'Wait' }[nodeType ?? ''] ?? nodeType} Node
+          {({ start: 'Start', end: 'End', decision: 'Decision', dataCollection: 'Action', wait: 'Wait', messageConfirmation: 'Confirmation' } as Record<string, string>)[nodeType ?? ''] ?? nodeType} Node
         </h3>
         <Button variant="ghost" size="icon" onClick={onClose}>
           <X className="h-4 w-4" />
@@ -144,11 +146,18 @@ export function ConfigurationPanel({ onClose }: ConfigurationPanelProps) {
           />
         )}
 
+        {nodeType === 'messageConfirmation' && (
+          <MessageConfirmationNodeConfig
+            data={data as MessageConfirmationNodeData}
+            onUpdate={handleUpdateData}
+          />
+        )}
+
         {/* Backend Actions Section — all non-start nodes */}
         {nodeType !== 'start' && (
           <BackendActionsSection
             data={data}
-            nodeType={nodeType}
+            nodeType={nodeType || ''}
             branchLabels={branchLabels}
             onUpdate={handleUpdateData}
           />
@@ -869,5 +878,169 @@ function FieldEditor({
         </CollapsibleContent>
       </div>
     </Collapsible>
+  )
+}
+
+// ============================================================================
+// Message Confirmation Node Config
+// ============================================================================
+
+function MessageConfirmationNodeConfig({
+  data,
+  onUpdate,
+}: {
+  data: MessageConfirmationNodeData
+  onUpdate: (updates: Record<string, unknown>) => void
+}) {
+  const promptValue =
+    data.prompt_message?.source === 'static'
+      ? String(data.prompt_message.value)
+      : ''
+  const timeoutEnabled = data.timeout_hours != null && data.timeout_hours > 0
+
+  return (
+    <>
+      <div className="space-y-2">
+        <Label htmlFor="prompt_message">Prompt Message</Label>
+        <Textarea
+          id="prompt_message"
+          value={promptValue}
+          onChange={(e) =>
+            onUpdate({
+              prompt_message: { source: 'static' as const, value: e.target.value },
+            })
+          }
+          placeholder="e.g., Please confirm inspection completed for this deal"
+          rows={3}
+        />
+        <p className="text-[10px] text-muted-foreground">
+          Message sent to the deal chat requesting confirmation.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Assignee</Label>
+        <Select
+          value={data.assignee}
+          onValueChange={(value) =>
+            onUpdate({ assignee: value as MessageConfirmationAssignee })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="any_participant">Any Participant</SelectItem>
+            <SelectItem value="deal_owner">Deal Owner</SelectItem>
+            <SelectItem value="specific_user">Specific User</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-[10px] text-muted-foreground">
+          Who can confirm this step.
+        </p>
+      </div>
+
+      {data.assignee === 'specific_user' && (
+        <div className="space-y-2">
+          <Label htmlFor="assignee_user_id">User ID</Label>
+          <Input
+            id="assignee_user_id"
+            value={data.assignee_user_id ?? ''}
+            onChange={(e) => onUpdate({ assignee_user_id: e.target.value })}
+            placeholder="User ID"
+          />
+        </div>
+      )}
+
+      <div className="space-y-2">
+        <Label>Confirmation Method</Label>
+        <Select value={data.confirmation_method} disabled>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="button">Button confirmation</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-[10px] text-muted-foreground">
+          V1 supports button confirmation. Keyword confirmation coming soon.
+        </p>
+      </div>
+
+      <Separator />
+
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="timeout_toggle">Timeout</Label>
+          <Switch
+            id="timeout_toggle"
+            checked={timeoutEnabled}
+            onCheckedChange={(checked) => {
+              if (checked) {
+                onUpdate({ timeout_hours: 24, timeout_action: 'remind' })
+              } else {
+                onUpdate({
+                  timeout_hours: undefined,
+                  timeout_action: undefined,
+                  reminder_message: undefined,
+                })
+              }
+            }}
+          />
+        </div>
+      </div>
+
+      {timeoutEnabled && (
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="timeout_hours">Timeout (hours)</Label>
+            <Input
+              id="timeout_hours"
+              type="number"
+              min={1}
+              max={720}
+              value={data.timeout_hours ?? 24}
+              onChange={(e) =>
+                onUpdate({
+                  timeout_hours: Math.max(1, Math.min(720, Number(e.target.value) || 1)),
+                })
+              }
+              className="h-8"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Timeout Action</Label>
+            <Select
+              value={data.timeout_action ?? 'remind'}
+              onValueChange={(value) =>
+                onUpdate({ timeout_action: value as MessageConfirmationTimeoutAction })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="remind">Send reminder</SelectItem>
+                <SelectItem value="default_branch">Take default branch</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {data.timeout_action === 'remind' && (
+            <div className="space-y-2">
+              <Label htmlFor="reminder_message">Reminder Message</Label>
+              <Textarea
+                id="reminder_message"
+                value={data.reminder_message ?? ''}
+                onChange={(e) => onUpdate({ reminder_message: e.target.value })}
+                placeholder="Reminder: please confirm..."
+                rows={2}
+              />
+            </div>
+          )}
+        </>
+      )}
+    </>
   )
 }

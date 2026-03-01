@@ -592,13 +592,13 @@ export async function getCompanyContacts(companyId: string): Promise<
 
   if (error) throw error
 
-  return (data || []).map((link: {
+  return ((data || []) as unknown as {
     id: string
     contact_id: string
     role_title: string | null
     is_primary: boolean
     contact: { id: string; first_name: string; last_name: string | null }
-  }) => ({
+  }[]).map((link) => ({
     link_id: link.id,
     contact_id: link.contact_id,
     first_name: link.contact.first_name,

@@ -213,7 +213,7 @@ function FlowMapInner({ instance, completedSteps, onNodeClick }: FlowMapProps) {
       const flowData: FlowMapNodeData = {
         label: node.data.label,
         description: node.data.description,
-        type: node.type,
+        type: node.type as FlowMapNodeData['type'],
         nodeState: state,
         stepInfo: step
           ? {
@@ -303,7 +303,6 @@ function FlowMapInner({ instance, completedSteps, onNodeClick }: FlowMapProps) {
       >
         <Background color="#e5e7eb" gap={20} size={1} />
         <Controls
-          showInteractiveButton={false}
           className="!bg-card !border-border !shadow-sm"
         />
         <MiniMap
