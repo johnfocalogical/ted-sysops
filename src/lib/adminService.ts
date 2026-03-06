@@ -24,10 +24,12 @@ export interface UserWithMemberships extends User {
         name: string
       }
     }
-    role: {
-      id: string
-      name: string
-    } | null
+    team_member_roles: {
+      role: {
+        id: string
+        name: string
+      }
+    }[]
   }[]
 }
 
@@ -147,9 +149,11 @@ export async function getUserDetails(userId: string): Promise<UserWithMembership
             name
           )
         ),
-        role:team_roles (
-          id,
-          name
+        team_member_roles (
+          role:team_roles (
+            id,
+            name
+          )
         )
       )
     `)
@@ -410,9 +414,11 @@ export async function getTeamDetails(teamId: string): Promise<TeamWithDetails & 
           full_name,
           email
         ),
-        role:team_roles (
-          id,
-          name
+        team_member_roles (
+          role:team_roles (
+            id,
+            name
+          )
         )
       )
     `)
@@ -501,7 +507,7 @@ export async function createRoleTemplate(dto: {
 }
 
 /**
- * Update a role template (only non-system templates)
+ * Update a role template
  */
 export async function updateRoleTemplate(
   templateId: string,
@@ -524,7 +530,6 @@ export async function updateRoleTemplate(
     .from('role_templates')
     .update(updates)
     .eq('id', templateId)
-    .eq('is_system', false) // Only allow updating non-system templates
     .select()
     .single()
 
@@ -533,7 +538,7 @@ export async function updateRoleTemplate(
 }
 
 /**
- * Delete a role template (only non-system templates)
+ * Delete a role template
  */
 export async function deleteRoleTemplate(templateId: string): Promise<void> {
   if (!supabase) throw new Error('Supabase not configured')
@@ -542,7 +547,6 @@ export async function deleteRoleTemplate(templateId: string): Promise<void> {
     .from('role_templates')
     .delete()
     .eq('id', templateId)
-    .eq('is_system', false) // Only allow deleting non-system templates
 
   if (error) throw error
 }

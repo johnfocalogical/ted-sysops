@@ -206,17 +206,25 @@ export function AdminUserDetails() {
               <TableBody>
                 {user.team_members.map((membership, index) => (
                   <TableRow key={index}>
-                    <TableCell className="font-medium">
-                      {membership.team.name}
+                    <TableCell>
+                      <Link
+                        to={`/admin/teams/${membership.team.id}`}
+                        className="font-medium text-primary hover:underline"
+                      >
+                        {membership.team.name}
+                      </Link>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2 text-muted-foreground">
+                      <Link
+                        to={`/admin/organizations/${membership.team.organization.id}`}
+                        className="flex items-center gap-2 text-primary hover:underline"
+                      >
                         <Building2 className="h-4 w-4" />
                         {membership.team.organization.name}
-                      </div>
+                      </Link>
                     </TableCell>
                     <TableCell>
-                      {membership.role?.name || (
+                      {membership.team_member_roles?.[0]?.role?.name || (
                         <span className="text-muted-foreground">No role</span>
                       )}
                     </TableCell>

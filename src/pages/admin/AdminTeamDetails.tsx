@@ -22,10 +22,12 @@ type TeamMember = {
     full_name: string | null
     email: string
   }
-  role: {
-    id: string
-    name: string
-  } | null
+  team_member_roles: {
+    role: {
+      id: string
+      name: string
+    }
+  }[]
 }
 
 export function AdminTeamDetails() {
@@ -195,9 +197,12 @@ export function AdminTeamDetails() {
                           </span>
                         </div>
                         <div>
-                          <div className="font-medium">
+                          <Link
+                            to={`/admin/users/${member.user?.id}`}
+                            className="font-medium text-primary hover:underline"
+                          >
                             {member.user?.full_name || member.user?.email?.split('@')[0]}
-                          </div>
+                          </Link>
                           <div className="text-sm text-muted-foreground flex items-center gap-1">
                             <Mail className="h-3 w-3" />
                             {member.user?.email}
@@ -206,10 +211,10 @@ export function AdminTeamDetails() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {member.role ? (
+                      {member.team_member_roles?.length > 0 ? (
                         <Badge variant="outline" className="gap-1">
                           <Shield className="h-3 w-3" />
-                          {member.role.name}
+                          {member.team_member_roles[0].role.name}
                         </Badge>
                       ) : (
                         <span className="text-muted-foreground">No role</span>

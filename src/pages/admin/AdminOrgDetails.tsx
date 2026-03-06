@@ -121,9 +121,12 @@ export function AdminOrgDetails() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Owner</p>
-              <p className="font-medium">
+              <Link
+                to={`/admin/users/${org.owner_id}`}
+                className="font-medium text-primary hover:underline"
+              >
                 {org.owner?.full_name || org.owner?.email?.split('@')[0]}
-              </p>
+              </Link>
               <p className="text-sm text-muted-foreground">{org.owner?.email}</p>
             </div>
           </div>
@@ -154,7 +157,14 @@ export function AdminOrgDetails() {
               <TableBody>
                 {org.teams.map((team) => (
                   <TableRow key={team.id}>
-                    <TableCell className="font-medium">{team.name}</TableCell>
+                    <TableCell>
+                      <Link
+                        to={`/admin/teams/${team.id}`}
+                        className="font-medium text-primary hover:underline"
+                      >
+                        {team.name}
+                      </Link>
+                    </TableCell>
                     <TableCell className="text-muted-foreground">{team.slug}</TableCell>
                     <TableCell>
                       <Button
